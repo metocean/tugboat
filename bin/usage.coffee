@@ -26,6 +26,10 @@ if args.length is 0
   return commands.status tugboat
 
 cmds =
+  status: ->
+    return commands.status tugboat if args.length is 0
+    usage_error 'tug status requires no arguments'
+  
   ps: ->
     return commands.ps tugboat if args.length is 0
     usage_error 'tug ps requires no arguments'
@@ -37,4 +41,4 @@ cmds =
 command = args[0]
 args.shift()
 return cmds[command]() if cmds[command]?
-usage_error "#{command} is not a known docker command"
+usage_error "#{command} is not a known tug command"

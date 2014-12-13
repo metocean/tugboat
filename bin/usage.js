@@ -31,6 +31,12 @@ if (args.length === 0) {
 }
 
 cmds = {
+  status: function() {
+    if (args.length === 0) {
+      return commands.status(tugboat);
+    }
+    return usage_error('tug status requires no arguments');
+  },
   ps: function() {
     if (args.length === 0) {
       return commands.ps(tugboat);
@@ -53,4 +59,4 @@ if (cmds[command] != null) {
   return cmds[command]();
 }
 
-usage_error("" + command + " is not a known docker command");
+usage_error("" + command + " is not a known tug command");

@@ -3,6 +3,11 @@ yaml = require 'js-yaml'
 fs = require 'fs'
 path = require 'path'
 
+class TUGBOATFormatException extends Error
+  constructor: (message) ->
+    @name = 'TUGBOATFormatException'
+    @message = message
+
 # Copy all of the properties on source to target, recurse if an object
 copy = (source, target) ->
   for key, value of source
@@ -39,6 +44,10 @@ module.exports = class Tugboat
         content = yaml.safeLoad content
       catch e
         return cb e if e?
+      
+      if content instanceof Array
+        return cb new TUGBOATFormatException 'Expecting names and definitions of docker containers.'
+      
       cb null,
         name: path.basename item, '.yml'
         path: item
@@ -50,7 +59,10 @@ module.exports = class Tugboat
     try
       items = fs.readdirSync @_options.groupsdir
     catch e
-      return callback [e]
+      return callback [
+        path: @_options.groupsdir
+        error: e
+      ]
     
     tasks = []
     errors = []
@@ -62,8 +74,12 @@ module.exports = class Tugboat
           item = "#{process.cwd()}/#{item}"
           @_loadGroup item, (err, group) =>
             if err?
-              errors.push err
+              errors.push
+                path: item
+                error: err
               return cb()
             @_groups[group.name] = group
             cb()
-    parallel tasks, -> callback null
+    parallel tasks, ->
+      return callback errors if errors.length isnt 0
+      callback null
