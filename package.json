@@ -1,0 +1,32 @@
+{
+  "name": "tugboat",
+  "version": "1.3.0",
+  "description": "Manage groups of dockers",
+  "bin": {
+    "tug": "bin/tug.js"
+  },
+  "dependencies": {
+    "colors": "1.0.3",
+    "docke": "*",
+    "js-yaml": "^3.2.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:metocean/tugboat.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/*.js --reporter spec"
+  },
+  "author": "Thomas Coats",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/metocean/tugboat/issues"
+  },
+  "readmeFilename": "README.md",
+  "homepage": "https://github.com/metocean/tugboat",
+  "devDependencies": {
+    "chai": "1.*",
+    "mocha": "2.*"
+  }
+}

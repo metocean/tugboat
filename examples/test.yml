@@ -1,0 +1,5 @@
+test: true
+value: 'awesome'
+list:
+  - 'even'
+  - 'better'
