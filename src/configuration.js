@@ -79,14 +79,14 @@ validation = {
   privileged: isboolean
 };
 
-module.exports = function(name, containers, cb) {
-  var chunks, config, env, errors, key, result, value, _i, _len, _ref, _ref1;
+module.exports = function(groupname, containers, cb) {
+  var chunks, config, count, env, errors, key, name, result, value, _i, _len, _ref, _ref1;
   if (typeof containers !== 'object') {
     return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.')]);
   }
   errors = [];
-  if (!name.match(/^[a-zA-Z0-9_-]+$/)) {
-    errors.push(new TUGBOATFormatException("The YAML file " + name.cyan + " is not a valid docker container name."));
+  if (!groupname.match(/^[a-zA-Z0-9]+$/)) {
+    errors.push(new TUGBOATFormatException("The YAML file " + groupname.cyan + " is not a valid group name."));
   }
   for (name in containers) {
     config = containers[name];
@@ -112,6 +112,16 @@ module.exports = function(name, containers, cb) {
       }
       config.environment = result;
     }
+    count = 0;
+    if (config.build != null) {
+      count++;
+    }
+    if (config.image != null) {
+      count++;
+    }
+    if (count !== 1) {
+      errors.push(new TUGBOATFormatException("" + name.cyan + " requires either a build or an image value."));
+    }
     for (key in config) {
       value = config[key];
       if (validation[key] == null) {
@@ -132,6 +142,7 @@ module.exports = function(name, containers, cb) {
         }
       }
     }
+    config.name = "" + groupname + "_" + name;
   }
   if (errors.length !== 0) {
     return cb(errors);

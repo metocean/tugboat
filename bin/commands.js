@@ -75,14 +75,14 @@ module.exports = {
       } else {
         console.log("  " + (count.toString().green) + " group " + (ess(count, 'definition', 'definitions')) + " available.");
       }
-      return tugboat._docke.ping(function(err, isUp) {
+      return tugboat.ducke.ping(function(err, isUp) {
         if ((err != null) || !isUp) {
           console.error();
           console.error('  docker is down'.red);
           console.error();
           return process.exit(1);
         } else {
-          return tugboat._docke.ps(function(err, results) {
+          return tugboat.ducke.ps(function(err, results) {
             var running, stopped;
             if ((err != null) || results.length === 0) {
               console.error();
@@ -101,6 +101,91 @@ module.exports = {
           });
         }
       });
+    });
+  },
+  build: function(tugboat, names) {
+    return tugboat.init(function(errors) {
+      var group, haderror, name, tasks, _fn, _i, _j, _len, _len1;
+      if (errors != null) {
+        return init_errors(errors);
+      }
+      console.log();
+      if (Object.keys(tugboat._groups).length === 0) {
+        console.error('  There are no groups defined in this directory'.magenta);
+        console.error();
+        process.exit(1);
+      }
+      if (names.length === 0) {
+        names = Object.keys(tugboat._groups);
+      }
+      haderror = false;
+      for (_i = 0, _len = names.length; _i < _len; _i++) {
+        name = names[_i];
+        if (tugboat._groups[name] == null) {
+          console.error(("  The group '" + name + "' is not available in this directory").red);
+          console.error();
+          haderror = true;
+        }
+      }
+      if (haderror) {
+        process.exit(1);
+      }
+      tasks = [];
+      _fn = function(group) {
+        return tasks.push(function(cb) {
+          var config, container, grouptasks, _fn1, _ref;
+          grouptasks = [];
+          console.log("  Building " + name.blue + "...");
+          _ref = group.containers;
+          _fn1 = function(container, config) {
+            var output;
+            output = container.cyan;
+            return grouptasks.push(function(cb) {
+              var results, run;
+              while (output.length < 32) {
+                output += ' ';
+              }
+              process.stdout.write("    " + output + " ");
+              if (config.build == null) {
+                console.log('-'.magenta);
+                return cb();
+              }
+              results = '';
+              run = function(message) {
+                results += message;
+                return results += '\n';
+              };
+              return tugboat.build(group, container, run, function(err) {
+                if (err != null) {
+                  console.error('failed'.red);
+                  console.error(err);
+                  if (results.length !== 0) {
+                    console.error(results);
+                  }
+                  console.error();
+                  return cb();
+                }
+                console.log('done'.green);
+                return cb();
+              });
+            });
+          };
+          for (container in _ref) {
+            config = _ref[container];
+            _fn1(container, config);
+          }
+          return series(grouptasks, function() {
+            console.log();
+            return cb();
+          });
+        });
+      };
+      for (_j = 0, _len1 = names.length; _j < _len1; _j++) {
+        name = names[_j];
+        group = tugboat._groups[name];
+        _fn(group);
+      }
+      return series(tasks, function() {});
     });
   },
   ls: function(tugboat, names) {
@@ -132,7 +217,7 @@ module.exports = {
       for (_i = 0, _len = names.length; _i < _len; _i++) {
         name = names[_i];
         if (tugboat._groups[name] == null) {
-          console.error(("  The group " + name + " is not available in this directory").red);
+          console.error(("  The group '" + name + "' is not available in this directory").red);
           console.error();
           continue;
         }

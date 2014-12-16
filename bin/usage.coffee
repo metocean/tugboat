@@ -2,7 +2,6 @@ require 'colors'
 
 commands = require './commands'
 Tugboat = require '../src/tugboat'
-Docke = require 'docke'
 
 usage = """
 👾
@@ -11,7 +10,8 @@ usage = """
 
   Commands:
   
-    ls       List available groups or list containers in groups
+    ls        List available groups or list containers in groups
+    build     Build all containers or passed containers
 
 """
 
@@ -36,6 +36,9 @@ cmds =
   
   ls: ->
     commands.ls tugboat, args
+  
+  build: ->
+    commands.build tugboat, args
 
 command = args[0]
 args.shift()

@@ -38,7 +38,7 @@ validation =
   mem_limit: isnumber
   privileged: isboolean
 
-module.exports = (name, containers, cb) ->
+module.exports = (groupname, containers, cb) ->
   if typeof containers isnt 'object'
     return cb [
       new TUGBOATFormatException 'This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.'
@@ -46,8 +46,8 @@ module.exports = (name, containers, cb) ->
   
   errors = []
   
-  if !name.match /^[a-zA-Z0-9_-]+$/
-    errors.push new TUGBOATFormatException "The YAML file #{name.cyan} is not a valid docker container name."
+  if !groupname.match /^[a-zA-Z0-9]+$/
+    errors.push new TUGBOATFormatException "The YAML file #{groupname.cyan} is not a valid group name."
   
   for name, config of containers
     if !name.match /^[a-zA-Z0-9_-]+$/
@@ -68,6 +68,13 @@ module.exports = (name, containers, cb) ->
         result[key] = value
       config.environment = result
     
+    count = 0
+    count++ if config.build?
+    count++ if config.image?
+    
+    if count isnt 1
+      errors.push new TUGBOATFormatException "#{name.cyan} requires either a build or an image value."
+    
     for key, value of config
       if !validation[key]?
         errors.push new TUGBOATFormatException "In the docker #{name.cyan} #{key.cyan} is not a known configuration option."
@@ -81,6 +88,8 @@ module.exports = (name, containers, cb) ->
       for key, value of config.environment
         if value is '' or value is null and process.env[key]?
           config.environment[key] = process.env[key]
+    
+    config.name = "#{groupname}_#{name}"
   
   return cb errors if errors.length isnt 0
   cb null, containers

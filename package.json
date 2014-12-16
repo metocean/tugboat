@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "colors": "1.0.3",
-    "docke": "*",
+    "ducke": "*",
     "js-yaml": "^3.2.3"
   },
   "repository": {

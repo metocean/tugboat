@@ -1,4 +1,4 @@
-Docke = require 'docke'
+Ducke = require 'ducke'
 yaml = require 'js-yaml'
 fs = require 'fs'
 path = require 'path'
@@ -31,7 +31,7 @@ module.exports = class Tugboat
     
     copy options, @_options
     
-    @_docke = new Docke.API Docke.Parameters options
+    @ducke = new Ducke.API Ducke.Parameters options
   
   _loadGroup: (item, cb) =>
     fs.readFile item, encoding: 'utf8', (err, content) =>
@@ -80,3 +80,18 @@ module.exports = class Tugboat
     parallel tasks, ->
       return callback errors if errors.length isnt 0
       callback null
+  
+  build: (group, container, run, callback) =>
+    config = group.containers[container]
+    
+    @ducke
+      .image config.name
+      .build config.build, run, callback
+    
+    
+    
+    
+    
+    
+    
+    
