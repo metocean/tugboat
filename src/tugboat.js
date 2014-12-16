@@ -151,10 +151,10 @@ module.exports = Tugboat = (function() {
     });
   };
 
-  Tugboat.prototype.build = function(group, container, run, callback) {
+  Tugboat.prototype.build = function(group, container, usecache, run, callback) {
     var config;
     config = group.containers[container];
-    return this.ducke.image(config.name).build(config.build, run, callback);
+    return this.ducke.build_image(config.name, config.build, usecache, run, callback);
   };
 
   return Tugboat;

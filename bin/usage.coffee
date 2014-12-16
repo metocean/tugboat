@@ -10,8 +10,9 @@ usage = """
 
   Commands:
   
-    ls        List available groups or list containers in groups
-    build     Build all containers or passed containers
+    ls          List available groups or list containers in groups
+    build       Build all containers or passed containers
+    rebuild     Build all containers or passed containers from scratch
 
 """
 
@@ -39,6 +40,9 @@ cmds =
   
   build: ->
     commands.build tugboat, args
+  
+  rebuild: ->
+    commands.rebuild tugboat, args
 
 command = args[0]
 args.shift()

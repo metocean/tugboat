@@ -81,12 +81,10 @@ module.exports = class Tugboat
       return callback errors if errors.length isnt 0
       callback null
   
-  build: (group, container, run, callback) =>
+  build: (group, container, usecache, run, callback) =>
     config = group.containers[container]
     
-    @ducke
-      .image config.name
-      .build config.build, run, callback
+    @ducke.build_image config.name, config.build, usecache, run, callback
     
     
     

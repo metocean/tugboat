@@ -31,6 +31,70 @@ init_errors = (errors) ->
   console.error()
   process.exit 1
 
+
+build = (tugboat, names, usecache) ->
+  tugboat.init (errors) ->
+    return init_errors errors if errors?
+    
+    console.log()
+    if Object.keys(tugboat._groups).length is 0
+      console.error '  There are no groups defined in this directory'.magenta
+      console.error()
+      process.exit 1
+    
+    if names.length is 0
+      names = Object.keys tugboat._groups
+    
+    haderror = no
+    for name in names
+      if !tugboat._groups[name]?
+        console.error "  The group '#{name}' is not available in this directory".red
+        console.error()
+        haderror = yes
+    if haderror
+      process.exit 1
+    
+    tasks = []
+    
+    for name in names
+      group = tugboat._groups[name]
+      do (group) ->
+        tasks.push (cb) ->
+          grouptasks = []
+          console.log "  Building #{name.blue}..."
+          for container, config of group.containers
+            do (container, config) ->
+              output = container.cyan
+              grouptasks.push (cb) ->
+                output += ' ' while output.length < 32
+                process.stdout.write "    #{output} "
+                
+                if !config.build?
+                  console.log '-'.magenta
+                  return cb()
+                
+                results = ''
+                run = (message) ->
+                  results += message
+                  results += '\n'
+                
+                tugboat.build group, container, usecache, run, (err) ->
+                  if err?
+                    console.error 'failed'.red
+                    console.error err
+                    console.error results if results.length isnt 0
+                    console.error()
+                    return cb()
+                
+                  console.log 'done'.green
+                  cb()
+          
+          series grouptasks, ->
+            console.log()
+            cb()
+    
+    series tasks, ->
+
 module.exports =
   status: (tugboat) ->
     tugboat.init (errors) ->
@@ -66,67 +130,10 @@ module.exports =
             process.exit 1
   
   build: (tugboat, names) ->
-    tugboat.init (errors) ->
-      return init_errors errors if errors?
-      
-      console.log()
-      if Object.keys(tugboat._groups).length is 0
-        console.error '  There are no groups defined in this directory'.magenta
-        console.error()
-        process.exit 1
-      
-      if names.length is 0
-        names = Object.keys tugboat._groups
-      
-      haderror = no
-      for name in names
-        if !tugboat._groups[name]?
-          console.error "  The group '#{name}' is not available in this directory".red
-          console.error()
-          haderror = yes
-      if haderror
-        process.exit 1
-      
-      tasks = []
-      
-      for name in names
-        group = tugboat._groups[name]
-        do (group) ->
-          tasks.push (cb) ->
-            grouptasks = []
-            console.log "  Building #{name.blue}..."
-            for container, config of group.containers
-              do (container, config) ->
-                output = container.cyan
-                grouptasks.push (cb) ->
-                  output += ' ' while output.length < 32
-                  process.stdout.write "    #{output} "
-                  
-                  if !config.build?
-                    console.log '-'.magenta
-                    return cb()
-                  
-                  results = ''
-                  run = (message) ->
-                    results += message
-                    results += '\n'
-                  
-                  tugboat.build group, container, run, (err) ->
-                    if err?
-                      console.error 'failed'.red
-                      console.error err
-                      console.error results if results.length isnt 0
-                      console.error()
-                      return cb()
-                  
-                    console.log 'done'.green
-                    cb()
-            
-            series grouptasks, ->
-              console.log()
-              cb()
-      
-      series tasks, ->
+    build tugboat, names, yes
+  
+  rebuild: (tugboat, names) ->
+    build tugboat, names, no
   
   ls: (tugboat, names) ->
     tugboat.init (errors) ->
