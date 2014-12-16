@@ -38,13 +38,16 @@ validation =
   mem_limit: isnumber
   privileged: isboolean
 
-module.exports = (dockers, cb) ->
+module.exports = (name, dockers, cb) ->
   if typeof dockers isnt 'object'
     return cb [
-      new TUGBOATFormatException 'This YML file is in the wrong format. Tugboat expects names and definitions of docker containers.'
+      new TUGBOATFormatException 'This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.'
     ]
   
   errors = []
+  
+  if !name.match /^[a-zA-Z0-9_-]+$/
+    errors.push new TUGBOATFormatException "The YAML file #{name.cyan} is not a valid docker container name."
   
   for name, config of dockers
     if !name.match /^[a-zA-Z0-9_-]+$/

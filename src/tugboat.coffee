@@ -41,11 +41,13 @@ module.exports = class Tugboat
       catch e
         return cb [e] if e?
       
-      parse_configuration content, (errors, dockers) ->
+      name = path.basename item, '.yml'
+      
+      parse_configuration name, content, (errors, dockers) ->
         return cb errors if errors?
         
         cb null,
-          name: path.basename item, '.yml'
+          name: name
           path: item
           dockers: dockers
   

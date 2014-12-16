@@ -79,12 +79,15 @@ validation = {
   privileged: isboolean
 };
 
-module.exports = function(dockers, cb) {
-  var chunks, config, env, errors, key, name, result, value, _i, _len, _ref, _ref1;
+module.exports = function(name, dockers, cb) {
+  var chunks, config, env, errors, key, result, value, _i, _len, _ref, _ref1;
   if (typeof dockers !== 'object') {
-    return cb([new TUGBOATFormatException('This YML file is in the wrong format. Tugboat expects names and definitions of docker containers.')]);
+    return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.')]);
   }
   errors = [];
+  if (!name.match(/^[a-zA-Z0-9_-]+$/)) {
+    errors.push(new TUGBOATFormatException("The YAML file " + name.cyan + " is not a valid docker container name."));
+  }
   for (name in dockers) {
     config = dockers[name];
     if (!name.match(/^[a-zA-Z0-9_-]+$/)) {

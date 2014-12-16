@@ -71,7 +71,7 @@ module.exports = Tugboat = (function() {
       encoding: 'utf8'
     }, (function(_this) {
       return function(err, content) {
-        var e;
+        var e, name;
         if (err != null) {
           return cb([err]);
         }
@@ -83,12 +83,13 @@ module.exports = Tugboat = (function() {
             return cb([e]);
           }
         }
-        return parse_configuration(content, function(errors, dockers) {
+        name = path.basename(item, '.yml');
+        return parse_configuration(name, content, function(errors, dockers) {
           if (errors != null) {
             return cb(errors);
           }
           return cb(null, {
-            name: path.basename(item, '.yml'),
+            name: name,
             path: item,
             dockers: dockers
           });
