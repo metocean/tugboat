@@ -65,7 +65,7 @@ module.exports =
               console.error()
             process.exit 1
   
-  list: (tugboat, names) ->
+  ls: (tugboat, names) ->
     tugboat.init (errors) ->
       return init_errors errors if errors?
       
@@ -93,13 +93,11 @@ module.exports =
         
         if Object.keys(group.containers).length is 0
           console.log "  #{name.blue}"
-          #console.log()
           console.log '    No containers defined in group'.magenta
           console.log()
           
         else
           console.log "  #{name.blue}:"
-          #console.log()
           
           for container, _ of group.containers
             console.log "    #{container.cyan}"

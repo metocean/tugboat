@@ -11,7 +11,7 @@ usage = """
 
   Commands:
   
-    list       List available groups or list containers in groups
+    ls       List available groups or list containers in groups
 
 """
 
@@ -34,8 +34,8 @@ cmds =
     return commands.status tugboat if args.length is 0
     usage_error 'tug status requires no arguments'
   
-  list: ->
-    commands.list tugboat, args
+  ls: ->
+    commands.ls tugboat, args
 
 command = args[0]
 args.shift()

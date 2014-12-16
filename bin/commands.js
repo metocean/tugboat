@@ -103,7 +103,7 @@ module.exports = {
       });
     });
   },
-  list: function(tugboat, names) {
+  ls: function(tugboat, names) {
     return tugboat.init(function(errors) {
       var container, count, group, name, _, _i, _len, _ref, _ref1, _results;
       if (errors != null) {
