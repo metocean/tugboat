@@ -36,20 +36,19 @@ module.exports = class Tugboat
   _loadGroup: (item, cb) =>
     fs.readFile item, encoding: 'utf8', (err, content) =>
       return cb [err] if err?
+      
+      name = path.basename item, '.yml'
       try
         content = yaml.safeLoad content
       catch e
         return cb [e] if e?
       
-      name = path.basename item, '.yml'
-      
-      parse_configuration name, content, (errors, dockers) ->
+      parse_configuration name, content, (errors, containers) ->
         return cb errors if errors?
-        
         cb null,
           name: name
           path: item
-          dockers: dockers
+          containers: containers
   
   init: (callback) =>
     @_groups = {} if !@_groups?
@@ -59,7 +58,7 @@ module.exports = class Tugboat
     catch e
       return callback [
         path: @_options.groupsdir
-        error: e
+        errors: [e]
       ]
     
     tasks = []

@@ -38,8 +38,8 @@ validation =
   mem_limit: isnumber
   privileged: isboolean
 
-module.exports = (name, dockers, cb) ->
-  if typeof dockers isnt 'object'
+module.exports = (name, containers, cb) ->
+  if typeof containers isnt 'object'
     return cb [
       new TUGBOATFormatException 'This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.'
     ]
@@ -49,10 +49,10 @@ module.exports = (name, dockers, cb) ->
   if !name.match /^[a-zA-Z0-9_-]+$/
     errors.push new TUGBOATFormatException "The YAML file #{name.cyan} is not a valid docker container name."
   
-  for name, config of dockers
+  for name, config of containers
     if !name.match /^[a-zA-Z0-9_-]+$/
       errors.push new TUGBOATFormatException "#{name.cyan} is not a valid docker container name."
-    if typeof dockers isnt 'object' or dockers instanceof Array
+    if typeof containers isnt 'object' or containers instanceof Array
       errors.push new TUGBOATFormatException "The value of #{name.cyan} is not an object of strings."
       continue
     
@@ -83,4 +83,4 @@ module.exports = (name, dockers, cb) ->
           config.environment[key] = process.env[key]
   
   return cb errors if errors.length isnt 0
-  cb null, dockers
+  cb null, containers

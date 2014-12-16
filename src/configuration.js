@@ -79,21 +79,21 @@ validation = {
   privileged: isboolean
 };
 
-module.exports = function(name, dockers, cb) {
+module.exports = function(name, containers, cb) {
   var chunks, config, env, errors, key, result, value, _i, _len, _ref, _ref1;
-  if (typeof dockers !== 'object') {
+  if (typeof containers !== 'object') {
     return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.')]);
   }
   errors = [];
   if (!name.match(/^[a-zA-Z0-9_-]+$/)) {
     errors.push(new TUGBOATFormatException("The YAML file " + name.cyan + " is not a valid docker container name."));
   }
-  for (name in dockers) {
-    config = dockers[name];
+  for (name in containers) {
+    config = containers[name];
     if (!name.match(/^[a-zA-Z0-9_-]+$/)) {
       errors.push(new TUGBOATFormatException("" + name.cyan + " is not a valid docker container name."));
     }
-    if (typeof dockers !== 'object' || dockers instanceof Array) {
+    if (typeof containers !== 'object' || containers instanceof Array) {
       errors.push(new TUGBOATFormatException("The value of " + name.cyan + " is not an object of strings."));
       continue;
     }
@@ -136,5 +136,5 @@ module.exports = function(name, dockers, cb) {
   if (errors.length !== 0) {
     return cb(errors);
   }
-  return cb(null, dockers);
+  return cb(null, containers);
 };

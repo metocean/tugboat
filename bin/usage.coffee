@@ -9,6 +9,10 @@ usage = """
 
   Usage: #{'tug'.cyan} command parameters
 
+  Commands:
+  
+    list       List available groups or list containers in groups
+
 """
 
 usage_error = (message) =>
@@ -30,13 +34,8 @@ cmds =
     return commands.status tugboat if args.length is 0
     usage_error 'tug status requires no arguments'
   
-  ps: ->
-    return commands.ps tugboat if args.length is 0
-    usage_error 'tug ps requires no arguments'
-  
-  test: ->
-    return commands.test tugboat if args.length is 0
-    usage_error 'tug test requires no arguments'
+  list: ->
+    commands.list tugboat, args
 
 command = args[0]
 args.shift()

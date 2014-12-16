@@ -70,7 +70,11 @@ module.exports = {
       }
       count = Object.keys(tugboat._groups).length;
       console.log();
-      console.log("  " + (count.toString().green) + " group " + (ess(count, 'definition', 'definitions')) + " available.");
+      if (count === 0) {
+        console.log('  There are no groups defined in this directory'.magenta);
+      } else {
+        console.log("  " + (count.toString().green) + " group " + (ess(count, 'definition', 'definitions')) + " available.");
+      }
       return tugboat._docke.ping(function(err, isUp) {
         if ((err != null) || !isUp) {
           console.error();
@@ -85,13 +89,6 @@ module.exports = {
               console.error('  There are no docker containers on this system'.magenta);
               console.error();
             } else {
-              ess = function(num, s, p) {
-                if (num === 1) {
-                  return s;
-                } else {
-                  return p;
-                }
-              };
               running = results.filter(function(d) {
                 return d.inspect.State.Running;
               }).length;
@@ -106,7 +103,55 @@ module.exports = {
       });
     });
   },
-  test: function(tugboat) {
-    return console.log('lul');
+  list: function(tugboat, names) {
+    return tugboat.init(function(errors) {
+      var container, count, group, name, _, _i, _len, _ref, _ref1, _results;
+      if (errors != null) {
+        return init_errors(errors);
+      }
+      console.log();
+      if (Object.keys(tugboat._groups).length === 0) {
+        console.log('  There are no groups defined in this directory'.magenta);
+        console.log();
+        return;
+      }
+      if (names.length === 0) {
+        _ref = tugboat._groups;
+        for (name in _ref) {
+          group = _ref[name];
+          while (name.length < 26) {
+            name += ' ';
+          }
+          count = Object.keys(group.containers).length;
+          console.log("  " + name.blue + " " + (count.toString().green) + " container" + (ess(count, '', 's')) + " defined in group");
+        }
+        console.log();
+        return;
+      }
+      _results = [];
+      for (_i = 0, _len = names.length; _i < _len; _i++) {
+        name = names[_i];
+        if (tugboat._groups[name] == null) {
+          console.error(("  The group " + name + " is not available in this directory").red);
+          console.error();
+          continue;
+        }
+        group = tugboat._groups[name];
+        if (Object.keys(group.containers).length === 0) {
+          console.log("  " + name.blue);
+          console.log('    No containers defined in group'.magenta);
+          _results.push(console.log());
+        } else {
+          console.log("  " + name.blue + ":");
+          _ref1 = group.containers;
+          for (container in _ref1) {
+            _ = _ref1[container];
+            console.log("    " + container.cyan);
+          }
+          _results.push(console.log());
+        }
+      }
+      return _results;
+    });
   }
 };

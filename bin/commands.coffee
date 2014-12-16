@@ -38,7 +38,10 @@ module.exports =
       
       count = Object.keys(tugboat._groups).length
       console.log()
-      console.log "  #{count.toString().green} group #{ess count, 'definition', 'definitions'} available."
+      if count is 0
+        console.log '  There are no groups defined in this directory'.magenta
+      else
+        console.log "  #{count.toString().green} group #{ess count, 'definition', 'definitions'} available."
       
       tugboat._docke.ping (err, isUp) ->
         if err? or !isUp
@@ -53,7 +56,6 @@ module.exports =
               console.error '  There are no docker containers on this system'.magenta
               console.error()
             else
-              ess = (num, s, p) -> if num is 1 then s else p
               running = results
                 .filter (d) -> d.inspect.State.Running
                 .length
@@ -63,6 +65,42 @@ module.exports =
               console.error()
             process.exit 1
   
-  test: (tugboat) ->
-    console.log 'lul'
+  list: (tugboat, names) ->
+    tugboat.init (errors) ->
+      return init_errors errors if errors?
       
+      console.log()
+      if Object.keys(tugboat._groups).length is 0
+        console.log '  There are no groups defined in this directory'.magenta
+        console.log()
+        return
+      
+      if names.length is 0
+        for name, group of tugboat._groups
+          name += ' ' while name.length < 26
+          count = Object.keys(group.containers).length
+          console.log "  #{name.blue} #{count.toString().green} container#{ess count, '', 's'} defined in group"
+        console.log()
+        return
+      
+      for name in names
+        if !tugboat._groups[name]?
+          console.error "  The group #{name} is not available in this directory".red
+          console.error()
+          continue
+        
+        group = tugboat._groups[name]
+        
+        if Object.keys(group.containers).length is 0
+          console.log "  #{name.blue}"
+          #console.log()
+          console.log '    No containers defined in group'.magenta
+          console.log()
+          
+        else
+          console.log "  #{name.blue}:"
+          #console.log()
+          
+          for container, _ of group.containers
+            console.log "    #{container.cyan}"
+          console.log()

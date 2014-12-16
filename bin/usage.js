@@ -9,7 +9,7 @@ Tugboat = require('../src/tugboat');
 
 Docke = require('docke');
 
-usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n";
+usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Commands:\n  \n    list       List available groups or list containers in groups\n";
 
 usage_error = (function(_this) {
   return function(message) {
@@ -37,17 +37,8 @@ cmds = {
     }
     return usage_error('tug status requires no arguments');
   },
-  ps: function() {
-    if (args.length === 0) {
-      return commands.ps(tugboat);
-    }
-    return usage_error('tug ps requires no arguments');
-  },
-  test: function() {
-    if (args.length === 0) {
-      return commands.test(tugboat);
-    }
-    return usage_error('tug test requires no arguments');
+  list: function() {
+    return commands.list(tugboat, args);
   }
 };
 

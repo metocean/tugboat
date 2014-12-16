@@ -75,6 +75,7 @@ module.exports = Tugboat = (function() {
         if (err != null) {
           return cb([err]);
         }
+        name = path.basename(item, '.yml');
         try {
           content = yaml.safeLoad(content);
         } catch (_error) {
@@ -83,15 +84,14 @@ module.exports = Tugboat = (function() {
             return cb([e]);
           }
         }
-        name = path.basename(item, '.yml');
-        return parse_configuration(name, content, function(errors, dockers) {
+        return parse_configuration(name, content, function(errors, containers) {
           if (errors != null) {
             return cb(errors);
           }
           return cb(null, {
             name: name,
             path: item,
-            dockers: dockers
+            containers: containers
           });
         });
       };
@@ -110,7 +110,7 @@ module.exports = Tugboat = (function() {
       return callback([
         {
           path: this._options.groupsdir,
-          error: e
+          errors: [e]
         }
       ]);
     }
