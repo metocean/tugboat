@@ -34,19 +34,27 @@ ess = function(num, s, p) {
 };
 
 init_errors = function(errors) {
-  var e, _i, _len;
+  var e, err, index, _i, _j, _len, _len1, _ref;
   for (_i = 0, _len = errors.length; _i < _len; _i++) {
     e = errors[_i];
     console.error();
-    if ((e.error.name != null) && e.error.name === 'YAMLException') {
-      console.error("  " + e.path + ":" + (e.error.mark.line + 1));
-      console.error("  " + e.error.message);
-    } else if ((e.error.name != null) && e.error.name === 'TUGBOATFormatException') {
-      console.error("  " + e.path);
-      console.error("  " + e.error.message);
-    } else {
-      console.error("  " + e.path);
-      console.error(e);
+    console.error(("  " + e.path).red);
+    _ref = e.errors;
+    for (index = _j = 0, _len1 = _ref.length; _j < _len1; index = ++_j) {
+      err = _ref[index];
+      if (err.name == null) {
+        console.error(err);
+        continue;
+      }
+      if (err.name === 'YAMLException') {
+        console.error("  " + (index + 1) + ") " + e.path + ":" + (err.mark.line + 1));
+        console.error(err.message);
+      } else if (err.name === 'TUGBOATFormatException') {
+        console.error("  " + (index + 1) + ") " + err.message);
+      } else {
+        console.error("  " + (index + 1) + ") Unknown error:");
+        console.error(err);
+      }
     }
   }
   console.error();
@@ -62,7 +70,7 @@ module.exports = {
       }
       count = Object.keys(tugboat._groups).length;
       console.log();
-      console.log("  " + (count.toString().green) + " group " + (ess(count, 'definition', 'definitions')) + " loaded.");
+      console.log("  " + (count.toString().green) + " group " + (ess(count, 'definition', 'definitions')) + " available.");
       return tugboat._docke.ping(function(err, isUp) {
         if ((err != null) || !isUp) {
           console.error();
@@ -96,33 +104,6 @@ module.exports = {
           });
         }
       });
-    });
-  },
-  ps: function(tugboat) {
-    return tugboat._docke.ps(function(err, results) {
-      var image, name, result, status, _i, _len;
-      if (err != null) {
-        console.error(err);
-        process.exit(1);
-      }
-      if (results.length === 0) {
-        console.error();
-        console.error('  There are no docker containers on this system'.magenta);
-        console.error();
-        return;
-      }
-      console.log();
-      for (_i = 0, _len = results.length; _i < _len; _i++) {
-        result = results[_i];
-        status = result.inspect.State.Running ? result.inspect.NetworkSettings.IPAddress.toString().blue : 'stopped'.red;
-        while (status.length < 26) {
-          status += ' ';
-        }
-        name = result.container.Names[0].slice(1);
-        image = result.inspect.Config.Image;
-        console.log("  " + status + " " + name + " (" + image + ")");
-      }
-      return console.log();
     });
   },
   test: function(tugboat) {

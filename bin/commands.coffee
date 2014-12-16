@@ -15,15 +15,19 @@ ess = (num, s, p) -> if num is 1 then s else p
 init_errors = (errors) ->
   for e in errors
     console.error()
-    if e.error.name? and e.error.name is 'YAMLException'
-      console.error "  #{e.path}:#{e.error.mark.line + 1}"
-      console.error "  #{e.error.message}"
-    else if e.error.name? and e.error.name is 'TUGBOATFormatException'
-      console.error "  #{e.path}"
-      console.error "  #{e.error.message}"
-    else
-      console.error "  #{e.path}"
-      console.error e
+    console.error "  #{e.path}".red
+    for err, index in e.errors
+      if !err.name?
+        console.error err
+        continue
+      if err.name is 'YAMLException'
+        console.error "  #{index + 1}) #{e.path}:#{err.mark.line + 1}"
+        console.error err.message
+      else if err.name is 'TUGBOATFormatException'
+        console.error "  #{index + 1}) #{err.message}"
+      else
+        console.error "  #{index + 1}) Unknown error:"
+        console.error err
   console.error()
   process.exit 1
 
@@ -34,7 +38,7 @@ module.exports =
       
       count = Object.keys(tugboat._groups).length
       console.log()
-      console.log "  #{count.toString().green} group #{ess count, 'definition', 'definitions'} loaded."
+      console.log "  #{count.toString().green} group #{ess count, 'definition', 'definitions'} available."
       
       tugboat._docke.ping (err, isUp) ->
         if err? or !isUp
@@ -58,32 +62,6 @@ module.exports =
               console.error "  There #{ess running, 'is', 'are'} #{running.toString().green} running container#{ess running, '', 's'} and #{stopped.toString().red} stopped container#{ess stopped, '', 's'}"
               console.error()
             process.exit 1
-  
-  ps: (tugboat) ->
-    tugboat._docke.ps (err, results) ->
-      if err?
-        console.error err
-        process.exit 1
-      
-      if results.length is 0
-        console.error()
-        console.error '  There are no docker containers on this system'.magenta
-        console.error()
-        return
-      
-      console.log()
-      for result in results
-        status = if result.inspect.State.Running
-          result.inspect.NetworkSettings.IPAddress.toString().blue
-        else
-          'stopped'.red
-        status += ' ' while status.length < 26
-        
-        name = result.container.Names[0][1..]
-        image = result.inspect.Config.Image
-        
-        console.log "  #{status} #{name} (#{image})"
-      console.log()
   
   test: (tugboat) ->
     console.log 'lul'

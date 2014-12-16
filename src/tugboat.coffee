@@ -2,11 +2,7 @@ Docke = require 'docke'
 yaml = require 'js-yaml'
 fs = require 'fs'
 path = require 'path'
-
-class TUGBOATFormatException extends Error
-  constructor: (message) ->
-    @name = 'TUGBOATFormatException'
-    @message = message
+parse_configuration = require './configuration'
 
 # Copy all of the properties on source to target, recurse if an object
 copy = (source, target) ->
@@ -39,19 +35,19 @@ module.exports = class Tugboat
   
   _loadGroup: (item, cb) =>
     fs.readFile item, encoding: 'utf8', (err, content) =>
-      return cb err if err?
+      return cb [err] if err?
       try
         content = yaml.safeLoad content
       catch e
-        return cb e if e?
+        return cb [e] if e?
       
-      if content instanceof Array
-        return cb new TUGBOATFormatException 'Expecting names and definitions of docker containers.'
-      
-      cb null,
-        name: path.basename item, '.yml'
-        path: item
-        dockers: content
+      parse_configuration content, (errors, dockers) ->
+        return cb errors if errors?
+        
+        cb null,
+          name: path.basename item, '.yml'
+          path: item
+          dockers: dockers
   
   init: (callback) =>
     @_groups = {} if !@_groups?
@@ -72,11 +68,11 @@ module.exports = class Tugboat
       do (item) =>
         tasks.push (cb) =>
           item = "#{@_options.groupsdir}/#{item}"
-          @_loadGroup item, (err, group) =>
-            if err?
+          @_loadGroup item, (errs, group) =>
+            if errs?
               errors.push
                 path: item
-                error: err
+                errors: errs
               return cb()
             @_groups[group.name] = group
             cb()
