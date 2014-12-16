@@ -129,7 +129,7 @@ module.exports = Tugboat = (function() {
     _fn = (function(_this) {
       return function(item) {
         return tasks.push(function(cb) {
-          item = "" + (process.cwd()) + "/" + item;
+          item = "" + _this._options.groupsdir + "/" + item;
           return _this._loadGroup(item, function(err, group) {
             if (err != null) {
               errors.push({

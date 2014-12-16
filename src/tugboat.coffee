@@ -71,7 +71,7 @@ module.exports = class Tugboat
       continue if !item.match /\.yml$/
       do (item) =>
         tasks.push (cb) =>
-          item = "#{process.cwd()}/#{item}"
+          item = "#{@_options.groupsdir}/#{item}"
           @_loadGroup item, (err, group) =>
             if err?
               errors.push
