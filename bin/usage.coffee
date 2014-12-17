@@ -7,11 +7,12 @@ usage = """
 
   Usage: #{'tug'.cyan} command parameters
 
-  Commands:
+  Common:
   
     ps          List all running and available groups
+    diff        Describe the changes needed to update
   
-  Group management:
+  Management:
   
     build       Build services
     rebuild     Build services from scratch
@@ -41,6 +42,10 @@ cmds =
   
   ps: ->
     commands.ps tugboat, args
+  
+  diff: ->
+    return commands.diff tugboat, args[0], args[1..] if args.length > 0
+    usage_error 'tug diff requires a group name'
   
   build: ->
     commands.build tugboat, args

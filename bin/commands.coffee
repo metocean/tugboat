@@ -102,6 +102,113 @@ build = (tugboat, groupnames, usecache) ->
     
     series tasks, ->
 
+up = (tugboat, groupname, servicenames, isdryrun) ->
+  tugboat.init (errors) ->
+    return init_errors errors if errors?
+    
+    console.log()
+    if Object.keys(tugboat._groups).length is 0
+      console.error '  There are no groups defined in this directory'.red
+      console.error()
+      process.exit 1
+    
+    if !tugboat._groups[groupname]?
+      console.error "  The group '#{groupname}' is not available in this directory".red
+      console.error()
+      process.exit 1
+    
+    group = tugboat._groups[groupname]
+    
+    if servicenames.length is 0
+      servicenames = Object.keys group.services
+    
+    haderror = no
+    for name in servicenames
+      if !group.services[name]?
+        console.error "  The service '#{name}' is not available in the group '#{groupname}'".red
+        console.error()
+        haderror = yes
+    if haderror
+      process.exit 1
+    
+    tugboat.ducke.ls (err, imagerepo) ->
+      if err?
+        console.error()
+        console.error '  docker is down'.red
+        console.error()
+        process.exit 1
+      
+      tugboat.ps (err, groups) ->
+        if err?
+          console.error()
+          console.error '  docker is down'.red
+          console.error()
+          process.exit 1
+        
+        g = groups[groupname]
+        
+        tasks = []
+        if isdryrun
+          console.log "  Dry run for #{groupname.blue}..."
+        else
+          console.log "  Starting #{groupname.blue}..."
+        console.log()
+        for servicename in servicenames
+          do (servicename) ->
+            tasks.push (cb) ->
+              service = g.services[servicename]
+              s = g.services[servicename]
+              
+              outputname = servicename
+              outputname += ' ' while outputname.length < 18
+              
+              imagename = "#{groupname}_#{servicename}"
+              if service.service.image?
+                imagename = service.service.image
+              
+              if imagename.indexOf ':' is -1
+                imagename += ':latest'
+              
+              if !imagerepo.tags[imagename]?
+                console.error "  #{outputname.blue} image #{imagename.red} is not available"
+                console.error()
+                return cb()
+              image = imagerepo.tags[imagename]
+              
+              primary = null
+              excess = []
+              
+              for c in s.containers
+                if image.image.Id is c.inspect.Image
+                  primary = c
+                else
+                  console.log "  #{outputname.blue} image #{image.image.Id.substr(0, 12).cyan} is newer than #{c.inspect.Image.substr(0, 12).cyan}"
+                  excess.push c
+              
+              for e in excess
+                name = e.container.Names[0].substr 1
+                if e.inspect.State.Running
+                  console.log "  #{outputname.blue} stopping old container #{name.cyan}"
+                  
+                console.log "  #{outputname.blue} removing old container #{name.cyan}"
+              
+              if primary?
+                name = primary.container.Names[0].substr 1
+                if primary.inspect.State.Running
+                  console.log "  #{outputname.blue} container #{name.cyan} already #{'running'.green}"
+                else
+                  console.log "  #{outputname.blue} starting existing container #{name.cyan}"
+              else
+                console.log "  #{outputname.blue} creating new container from #{imagename.cyan}"
+              
+              return cb() if isdryrun?
+              
+              console.log 'WOULD BE DOING IT HERE'
+              cb()
+        
+        series tasks, ->
+          console.log()
+
 module.exports =
   status: (tugboat) ->
     tugboat.init (errors) ->
@@ -136,11 +243,23 @@ module.exports =
               console.error()
             process.exit 1
   
+  diff: (tugboat, groupname, servicenames) ->
+    up tugboat, groupname, servicenames, yes
+  
+  up: (tugboat, groupname, servicenames) ->
+    up tugboat, groupname, servicenames, no
+  
   ps: (tugboat, names) ->
     tugboat.init (errors) ->
       return init_errors errors if errors?
       
       tugboat.ps (err, groups) ->
+        if err?
+          console.error()
+          console.error '  docker is down'.red
+          console.error()
+          process.exit 1
+        
         if Object.keys(groups).length is 0
           console.log()
           console.log '  There are no groups defined in this directory'
@@ -245,6 +364,7 @@ module.exports =
                 status = service.containers
                   .map (c) -> c.inspect.NetworkSettings.IPAddress.toString().blue
                   .join ', '
+            status += ' (unknown)'.magenta if !service.isknown
             
             console.log "    #{servicename} #{status}"
             continue
