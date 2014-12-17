@@ -1,5 +1,4 @@
 require 'colors'
-
 commands = require './commands'
 Tugboat = require '../src/tugboat'
 
@@ -19,6 +18,7 @@ usage = """
 
 """
 
+# General purpose printing an error and usage
 usage_error = (message) =>
   console.error()
   console.error "  #{message}".magenta
@@ -32,6 +32,7 @@ tugboat = new Tugboat args
 if args.length is 0
   console.error usage
   return commands.status tugboat
+
 
 cmds =
   status: ->

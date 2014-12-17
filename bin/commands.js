@@ -213,11 +213,10 @@ module.exports = {
           console.log();
           for (_ in groups) {
             group = groups[_];
-            name = group.name;
+            name = group.name.blue;
             while (name.length < 28) {
               name += ' ';
             }
-            name = name.blue;
             postfix = '';
             if (!group.isknown) {
               postfix += ' (unknown)'.magenta;
@@ -234,7 +233,7 @@ module.exports = {
                 r = service.containers.filter(function(d) {
                   return d.inspect.State.Running;
                 }).length;
-                if (r !== 0) {
+                if (r === service.containers.length) {
                   running++;
                 }
               }
@@ -303,10 +302,12 @@ module.exports = {
               r = service.containers.filter(function(d) {
                 return d.inspect.State.Running;
               }).length;
-              if (r === 0) {
+              if (r !== service.containers.length) {
                 status = 'stopped'.red;
               } else {
-                status = service.containers[0].inspect.NetworkSettings.IPAddress.toString().blue;
+                status = service.containers.map(function(c) {
+                  return c.inspect.NetworkSettings.IPAddress.toString().blue;
+                }).join(', ');
               }
             }
             console.log("    " + servicename + " " + status);

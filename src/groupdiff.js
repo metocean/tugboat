@@ -47,8 +47,7 @@ module.exports = function(groups, statuses) {
         containers: []
       };
     }
-    service = group.services[name];
-    service.containers.push({
+    group.services[name].containers.push({
       index: index,
       container: status.container,
       inspect: status.inspect

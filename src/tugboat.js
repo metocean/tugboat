@@ -79,7 +79,6 @@ module.exports = Tugboat = (function() {
         if (err != null) {
           return cb([err]);
         }
-        name = path.basename(item, '.yml');
         try {
           content = yaml.safeLoad(content);
         } catch (_error) {
@@ -88,6 +87,7 @@ module.exports = Tugboat = (function() {
             return cb([e]);
           }
         }
+        name = path.basename(item, '.yml');
         return parse_configuration(name, content, function(errors, services) {
           if (errors != null) {
             return cb(errors);
@@ -104,9 +104,6 @@ module.exports = Tugboat = (function() {
 
   Tugboat.prototype.init = function(callback) {
     var e, errors, item, items, results, tasks, _fn, _i, _len;
-    if (this._groups == null) {
-      this._groups = {};
-    }
     try {
       items = fs.readdirSync(this._options.groupsdir);
     } catch (_error) {
@@ -117,6 +114,9 @@ module.exports = Tugboat = (function() {
           errors: [e]
         }
       ]);
+    }
+    if (this._groups == null) {
+      this._groups = {};
     }
     tasks = [];
     errors = [];

@@ -1,5 +1,6 @@
 require 'colors'
 
+# Run things one after another - better for human reading
 series = (tasks, callback) ->
   tasks = tasks.slice 0
   next = (cb) ->
@@ -10,8 +11,10 @@ series = (tasks, callback) ->
   result(callback) if callback?
   result
 
+# Pluralise function
 ess = (num, s, p) -> if num is 1 then s else p
 
+# General purpose error reporting
 init_errors = (errors) ->
   for e in errors
     console.error()
@@ -31,7 +34,7 @@ init_errors = (errors) ->
   console.error()
   process.exit 1
 
-
+# Build is here so we can adjust the cache
 build = (tugboat, groupnames, usecache) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
@@ -42,6 +45,7 @@ build = (tugboat, groupnames, usecache) ->
       console.error()
       process.exit 1
     
+    # Build everything if no group names are passed
     if groupnames.length is 0
       groupnames = Object.keys tugboat._groups
     
@@ -58,6 +62,7 @@ build = (tugboat, groupnames, usecache) ->
     
     for name in groupnames
       group = tugboat._groups[name]
+      # Capture variables
       do (name, group) ->
         tasks.push (cb) ->
           grouptasks = []
@@ -65,14 +70,17 @@ build = (tugboat, groupnames, usecache) ->
           for servicename, config of group.services
             do (servicename, config) ->
               output = servicename.cyan
+              # Build each group, build each service
               grouptasks.push (cb) ->
                 output += ' ' while output.length < 32
                 process.stdout.write "    #{output} "
                 
+                # Skip services that are based on images
                 if !config.build?
                   console.log '-'.magenta
                   return cb()
                 
+                # Record results incase of error
                 results = ''
                 run = (message) ->
                   results += message
@@ -85,7 +93,6 @@ build = (tugboat, groupnames, usecache) ->
                     console.error results if results.length isnt 0
                     console.error()
                     return cb()
-                
                   console.log 'done'.green
                   cb()
           
@@ -150,10 +157,12 @@ module.exports =
         if names.length is 0
           console.log()
           for _, group of groups
-            name = group.name
+            name = group.name.blue
             name += ' ' while name.length < 28
-            name = name.blue
             
+            # We discover groups by parsing active docker container names
+            # These might not be detailed in group yaml files
+            # so we identify this with the label (unknown)
             postfix = ''
             postfix += ' (unknown)'.magenta if !group.isknown
             
@@ -167,20 +176,24 @@ module.exports =
                 r = service.containers
                   .filter (d) -> d.inspect.State.Running
                   .length
-                running++ if r isnt 0
+                running++ if r is service.containers.length
             
+            # If every service is running
             if running is total
               console.log "  #{name} #{"#{total} up".green}#{postfix}"
               continue
             
+            # If no services have been created
             if created is 0
               console.log "  #{name} #{"#{total} uncreated".magenta}#{postfix}"
               continue
             
+            # If all services are stopped
             if created is total and running is 0
               console.log "  #{name} #{"#{total} stopped".red}#{postfix}"
               continue
             
+            # Incrementally build a description of each state
             output = "  #{name}"
             if running > 0
               output += " #{running.toString().green}"
@@ -208,7 +221,6 @@ module.exports =
             continue
           
           group = groups[name]
-          
           if group.isknown
             console.log "  #{group.name.blue}:"
           else
@@ -220,23 +232,24 @@ module.exports =
               servicename += " #{i.index}"
             servicename += ' ' while servicename.length < 36
             
+            # Calculate a status for each service
             status = '-'.magenta
-            
             if service.containers.length > 0
               r = service.containers
                 .filter (d) -> d.inspect.State.Running
                 .length
-              if r is 0
+              if r isnt service.containers.length
                 status = 'stopped'.red
               else
-                status = service.containers[0].inspect.NetworkSettings.IPAddress.toString().blue
+                # There might be multiple containers
+                status = service.containers
+                  .map (c) -> c.inspect.NetworkSettings.IPAddress.toString().blue
+                  .join ', '
             
             console.log "    #{servicename} #{status}"
             continue
           console.log()
   
-  build: (tugboat, names) ->
-    build tugboat, names, yes
-  
-  rebuild: (tugboat, names) ->
-    build tugboat, names, no
+  # These are just different cache options for the same build function
+  build: (tugboat, names) -> build tugboat, names, yes
+  rebuild: (tugboat, names) -> build tugboat, names, no

@@ -1,6 +1,6 @@
 module.exports = (groups, statuses) ->
   # Start with all the known groups
-  # So they are filled with matching containers
+  # So we can compare them to running containers
   results = {}
   for groupname, group of groups
     g =
@@ -17,12 +17,13 @@ module.exports = (groups, statuses) ->
         containers: []
     results[groupname] = g
   
-  # 
+  # Merge information about running containers
   for status in statuses
     name = status.container.Names[0].substr 1
     chunks = name.split '_'
     continue if chunks.length isnt 3
     [groupname, name, index] = chunks
+    # Create groups that we don't know about
     if !results[groupname]?
       results[groupname] =
         name: groupname
@@ -31,6 +32,7 @@ module.exports = (groups, statuses) ->
         services: {}
     group = results[groupname]
     
+    # Create services that we don't know about
     if !group.services[name]?
       group.services[name] =
         name: name
@@ -38,8 +40,8 @@ module.exports = (groups, statuses) ->
         isknown: no
         containers: []
     
-    service = group.services[name]
-    service.containers.push
+    # Record multiple containers for each service
+    group.services[name].containers.push
       index: index
       container: status.container
       inspect: status.inspect

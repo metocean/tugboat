@@ -3,6 +3,7 @@ class TUGBOATFormatException extends Error
     @name = 'TUGBOATFormatException'
     @message = message
 
+# Helper functions to check types
 isstring = (s) -> typeof s is 'string'
 isnumber = (s) -> typeof s is 'number'
 isboolean = (s) -> typeof s is 'boolean'
@@ -19,6 +20,7 @@ isobjectofstringsornull = (s) ->
     return no
   yes
 
+# The expecations
 validation =
   build: isstring
   image: isstring
@@ -44,8 +46,11 @@ module.exports = (groupname, services, cb) ->
       new TUGBOATFormatException 'This YAML file is in the wrong format. Tugboat expects names and definitions of services.'
     ]
   
+  # Errors are reported as a list
   errors = []
   
+  # We use underscore for separating, otherwise this is the same
+  # as the allowed characters in a docker name
   if !groupname.match /^[a-zA-Z0-9-]+$/
     errors.push new TUGBOATFormatException "The YAML file #{groupname.cyan} is not a valid group name."
   
@@ -56,9 +61,11 @@ module.exports = (groupname, services, cb) ->
       errors.push new TUGBOATFormatException "The value of #{name.cyan} is not an object of strings."
       continue
     
+    # Fig syntax allows a single value, let's convert that
     if config.dns? and typeof config.dns is 'string'
       config.dns = [config.dns]
     
+    # Fig syntax allows strings of x=y let's convert that
     if config.environment? and typeof config.environment is 'array'
       result = {}
       for env in config.environment
@@ -68,12 +75,14 @@ module.exports = (groupname, services, cb) ->
         result[key] = value
       config.environment = result
     
+    # Either build or image, not both but at least one
     count = 0
     count++ if config.build?
     count++ if config.image?
     if count isnt 1
       errors.push new TUGBOATFormatException "#{name.cyan} requires either a build or an image value."
     
+    # Compare all values against expected
     for key, value of config
       if !validation[key]?
         errors.push new TUGBOATFormatException "In the service #{name.cyan} #{key.cyan} is not a known configuration option."
@@ -82,7 +91,7 @@ module.exports = (groupname, services, cb) ->
         errors.push new TUGBOATFormatException "In the service #{name.cyan} the value of #{key.cyan} was an unexpected format."
         continue
     
-    # copy current environment variables
+    # Fig - copy current environment variables into empty values
     if config.environment? and isobjectofstringsornull config.environment
       for key, value of config.environment
         if value is '' or value is null and process.env[key]?
