@@ -159,7 +159,7 @@ module.exports = {
       if (count === 0) {
         console.log('  There are no groups defined in this directory'.magenta);
       } else {
-        console.log("  " + (count.toString().green) + " group " + (ess(count, 'definition', 'definitions')) + " available.");
+        console.log("  There are " + (count.toString().green) + " group " + (ess(count, 'definition', 'definitions')) + " in this directory");
       }
       return tugboat.ducke.ping(function(err, isUp) {
         if ((err != null) || !isUp) {
@@ -189,61 +189,138 @@ module.exports = {
       });
     });
   },
+  ls: function(tugboat, names) {
+    return tugboat.init(function(errors) {
+      if (errors != null) {
+        return init_errors(errors);
+      }
+      return tugboat.ls(function(err, groups) {
+        var container, containername, created, group, i, name, output, postfix, r, running, status, total, _, _i, _j, _len, _len1, _ref, _ref1, _ref2, _results;
+        if (Object.keys(groups).length === 0) {
+          console.log();
+          console.log('  There are no groups defined in this directory or containers running that match'.magenta);
+          console.log();
+          return;
+        }
+        if (err != null) {
+          console.error();
+          console.error('  docker is down'.red);
+          console.error();
+          process.exit(1);
+        }
+        if (names.length === 0) {
+          console.log();
+          for (_ in groups) {
+            group = groups[_];
+            name = group.name;
+            while (name.length < 28) {
+              name += ' ';
+            }
+            name = name.blue;
+            postfix = '';
+            if (!group.isknown) {
+              postfix += ' (unknown)'.magenta;
+            }
+            total = 0;
+            created = 0;
+            running = 0;
+            _ref = group.containers;
+            for (_ in _ref) {
+              container = _ref[_];
+              total++;
+              if (container.indexes.length !== 0) {
+                created++;
+                r = container.indexes.filter(function(d) {
+                  return d.inspect.State.Running;
+                }).length;
+                if (r !== 0) {
+                  running++;
+                }
+              }
+            }
+            if (running === total) {
+              console.log("  " + name + " " + ("" + total + " up").green + postfix);
+              continue;
+            }
+            if (created === 0) {
+              console.log("  " + name + " " + ("" + total + " uncreated").magenta + postfix);
+              continue;
+            }
+            if (created === total && running === 0) {
+              console.log("  " + name + " " + ("" + total + " stopped").red + postfix);
+              continue;
+            }
+            output = "  " + name;
+            if (running > 0) {
+              output += " " + (running.toString().green);
+              output += ' running';
+            }
+            if (created - running > 0) {
+              output += (" " + (created - running)).red;
+              output += ' stopped';
+            }
+            if (total - created > 0) {
+              output += ("" + (total - created)).magenta;
+              output += ' uncreated';
+            }
+            output += postfix;
+            console.log(output);
+          }
+          console.log();
+          return;
+        }
+        console.log();
+        _results = [];
+        for (_i = 0, _len = names.length; _i < _len; _i++) {
+          name = names[_i];
+          if (groups[name] == null) {
+            console.error(("  The group '" + name + "' is not available in this directory").red);
+            console.error("  and has no created containers".red);
+            console.error();
+            continue;
+          }
+          group = groups[name];
+          if (group.isknown) {
+            console.log("  " + group.name.blue + ":");
+          } else {
+            console.log("  " + group.name.blue + ": " + '(unknown)'.magenta);
+          }
+          _ref1 = group.containers;
+          for (_ in _ref1) {
+            container = _ref1[_];
+            containername = container.name.cyan;
+            _ref2 = container.indexes;
+            for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+              i = _ref2[_j];
+              containername += " " + i.index;
+            }
+            while (containername.length < 36) {
+              containername += ' ';
+            }
+            status = '-'.magenta;
+            if (container.indexes.length > 0) {
+              r = container.indexes.filter(function(d) {
+                return d.inspect.State.Running;
+              }).length;
+              if (r === 0) {
+                status = 'stopped'.red;
+              } else {
+                status = container.indexes[0].inspect.NetworkSettings.IPAddress.toString().blue;
+              }
+            }
+            console.log("    " + containername + " " + status);
+            continue;
+          }
+          _results.push(console.log());
+        }
+        return _results;
+      });
+    });
+  },
   build: function(tugboat, names) {
     return build(tugboat, names, true);
   },
   rebuild: function(tugboat, names) {
     return build(tugboat, names, false);
-  },
-  ls: function(tugboat, names) {
-    return tugboat.init(function(errors) {
-      var container, count, group, name, _, _i, _len, _ref, _ref1, _results;
-      if (errors != null) {
-        return init_errors(errors);
-      }
-      console.log();
-      if (Object.keys(tugboat._groups).length === 0) {
-        console.log('  There are no groups defined in this directory'.magenta);
-        console.log();
-        return;
-      }
-      if (names.length === 0) {
-        _ref = tugboat._groups;
-        for (name in _ref) {
-          group = _ref[name];
-          while (name.length < 26) {
-            name += ' ';
-          }
-          count = Object.keys(group.containers).length;
-          console.log("  " + name.blue + " " + (count.toString().green) + " container" + (ess(count, '', 's')) + " defined in group");
-        }
-        console.log();
-        return;
-      }
-      _results = [];
-      for (_i = 0, _len = names.length; _i < _len; _i++) {
-        name = names[_i];
-        if (tugboat._groups[name] == null) {
-          console.error(("  The group '" + name + "' is not available in this directory").red);
-          console.error();
-          continue;
-        }
-        group = tugboat._groups[name];
-        if (Object.keys(group.containers).length === 0) {
-          console.log("  " + name.blue);
-          console.log('    No containers defined in group'.magenta);
-          _results.push(console.log());
-        } else {
-          console.log("  " + name.blue + ":");
-          _ref1 = group.containers;
-          for (container in _ref1) {
-            _ = _ref1[container];
-            console.log("    " + container.cyan);
-          }
-          _results.push(console.log());
-        }
-      }
-      return _results;
-    });
   }
 };

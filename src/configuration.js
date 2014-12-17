@@ -85,12 +85,12 @@ module.exports = function(groupname, containers, cb) {
     return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.')]);
   }
   errors = [];
-  if (!groupname.match(/^[a-zA-Z0-9]+$/)) {
+  if (!groupname.match(/^[a-zA-Z0-9-]+$/)) {
     errors.push(new TUGBOATFormatException("The YAML file " + groupname.cyan + " is not a valid group name."));
   }
   for (name in containers) {
     config = containers[name];
-    if (!name.match(/^[a-zA-Z0-9_-]+$/)) {
+    if (!name.match(/^[a-zA-Z0-9-]+$/)) {
       errors.push(new TUGBOATFormatException("" + name.cyan + " is not a valid docker container name."));
     }
     if (typeof containers !== 'object' || containers instanceof Array) {

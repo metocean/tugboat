@@ -3,6 +3,7 @@ yaml = require 'js-yaml'
 fs = require 'fs'
 path = require 'path'
 parse_configuration = require './configuration'
+groupdiff = require './groupdiff'
 
 # Copy all of the properties on source to target, recurse if an object
 copy = (source, target) ->
@@ -85,11 +86,8 @@ module.exports = class Tugboat
     config = group.containers[container]
     
     @ducke.build_image config.name, config.build, usecache, run, callback
-    
-    
-    
-    
-    
-    
-    
-    
+  
+  ls: (callback) =>
+    @ducke.ps (err, containers) =>
+      return callback err if err?
+      callback null, groupdiff @_groups, containers

@@ -10,7 +10,10 @@ usage = """
 
   Commands:
   
-    ls          List available groups or list containers in groups
+    ls          List all running and available groups
+  
+  Group management:
+  
     build       Build all containers or passed containers
     rebuild     Build all containers or passed containers from scratch
 

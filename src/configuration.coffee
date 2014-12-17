@@ -46,11 +46,11 @@ module.exports = (groupname, containers, cb) ->
   
   errors = []
   
-  if !groupname.match /^[a-zA-Z0-9]+$/
+  if !groupname.match /^[a-zA-Z0-9-]+$/
     errors.push new TUGBOATFormatException "The YAML file #{groupname.cyan} is not a valid group name."
   
   for name, config of containers
-    if !name.match /^[a-zA-Z0-9_-]+$/
+    if !name.match /^[a-zA-Z0-9-]+$/
       errors.push new TUGBOATFormatException "#{name.cyan} is not a valid docker container name."
     if typeof containers isnt 'object' or containers instanceof Array
       errors.push new TUGBOATFormatException "The value of #{name.cyan} is not an object of strings."
