@@ -129,11 +129,11 @@ module.exports =
               console.error()
             process.exit 1
   
-  ls: (tugboat, names) ->
+  ps: (tugboat, names) ->
     tugboat.init (errors) ->
       return init_errors errors if errors?
       
-      tugboat.ls (err, groups) ->
+      tugboat.ps (err, groups) ->
         if Object.keys(groups).length is 0
           console.log()
           console.log '  There are no groups defined in this directory or containers running that match'.magenta

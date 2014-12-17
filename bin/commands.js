@@ -189,12 +189,12 @@ module.exports = {
       });
     });
   },
-  ls: function(tugboat, names) {
+  ps: function(tugboat, names) {
     return tugboat.init(function(errors) {
       if (errors != null) {
         return init_errors(errors);
       }
-      return tugboat.ls(function(err, groups) {
+      return tugboat.ps(function(err, groups) {
         var container, containername, created, group, i, name, output, postfix, r, running, status, total, _, _i, _j, _len, _len1, _ref, _ref1, _ref2, _results;
         if (Object.keys(groups).length === 0) {
           console.log();

@@ -10,7 +10,7 @@ usage = """
 
   Commands:
   
-    ls          List all running and available groups
+    ps          List all running and available groups
   
   Group management:
   
@@ -38,8 +38,8 @@ cmds =
     return commands.status tugboat if args.length is 0
     usage_error 'tug status requires no arguments'
   
-  ls: ->
-    commands.ls tugboat, args
+  ps: ->
+    commands.ps tugboat, args
   
   build: ->
     commands.build tugboat, args

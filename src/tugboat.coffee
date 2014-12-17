@@ -87,7 +87,7 @@ module.exports = class Tugboat
     
     @ducke.build_image config.name, config.build, usecache, run, callback
   
-  ls: (callback) =>
+  ps: (callback) =>
     @ducke.ps (err, containers) =>
       return callback err if err?
       callback null, groupdiff @_groups, containers

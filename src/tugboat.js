@@ -59,7 +59,7 @@ parallel = function(tasks, callback) {
 
 module.exports = Tugboat = (function() {
   function Tugboat(options) {
-    this.ls = __bind(this.ls, this);
+    this.ps = __bind(this.ps, this);
     this.build = __bind(this.build, this);
     this.init = __bind(this.init, this);
     this._loadGroup = __bind(this._loadGroup, this);
@@ -160,7 +160,7 @@ module.exports = Tugboat = (function() {
     return this.ducke.build_image(config.name, config.build, usecache, run, callback);
   };
 
-  Tugboat.prototype.ls = function(callback) {
+  Tugboat.prototype.ps = function(callback) {
     return this.ducke.ps((function(_this) {
       return function(err, containers) {
         if (err != null) {
