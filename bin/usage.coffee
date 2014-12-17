@@ -10,6 +10,7 @@ usage = """
   Common:
   
     ps          List all running and available groups
+    up          Update and run services
     diff        Describe the changes needed to update
   
   Management:
@@ -46,6 +47,10 @@ cmds =
   diff: ->
     return commands.diff tugboat, args[0], args[1..] if args.length > 0
     usage_error 'tug diff requires a group name'
+  
+  up: ->
+    return commands.up tugboat, args[0], args[1..] if args.length > 0
+    usage_error 'tug up requires a group name'
   
   build: ->
     commands.build tugboat, args

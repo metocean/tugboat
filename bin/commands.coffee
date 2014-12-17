@@ -182,29 +182,75 @@ up = (tugboat, groupname, servicenames, isdryrun) ->
                 if image.image.Id is c.inspect.Image
                   primary = c
                 else
-                  console.log "  #{outputname.blue} image #{image.image.Id.substr(0, 12).cyan} is newer than #{c.inspect.Image.substr(0, 12).cyan}"
                   excess.push c
               
+              servicetasks = []
+              
               for e in excess
-                name = e.container.Names[0].substr 1
-                if e.inspect.State.Running
-                  console.log "  #{outputname.blue} stopping old container #{name.cyan}"
-                  
-                console.log "  #{outputname.blue} removing old container #{name.cyan}"
+                do (e) ->
+                  name = e.container.Names[0].substr 1
+                  servicetasks.push (cb) ->
+                    console.log "  #{outputname.blue} image #{image.image.Id.substr(0, 12).cyan} is newer than #{c.inspect.Image.substr(0, 12).cyan}"
+                    cb()
+                  if e.inspect.State.Running
+                    servicetasks.push (cb) ->
+                      console.log "  #{outputname.blue} stopping old container #{name.cyan}"
+                      return cb() if isdryrun
+                      tugboat.ducke
+                        .container e.container.Id
+                        .stop (err, result) ->
+                          if err?
+                            console.error err
+                            console.error()
+                          cb()
+                  servicetasks.push (cb) ->
+                    console.log "  #{outputname.blue} removing old container #{name.cyan}"
+                    return cb() if isdryrun
+                    tugboat.ducke
+                      .container e.container.Id
+                      .rm (err, result) ->
+                        if err?
+                          console.error err
+                          console.error()
+                        cb()
               
               if primary?
                 name = primary.container.Names[0].substr 1
                 if primary.inspect.State.Running
-                  console.log "  #{outputname.blue} container #{name.cyan} already #{'running'.green}"
+                  servicetasks.push (cb) ->
+                    console.log "  #{outputname.blue} container #{name.cyan} already #{'running'.green}"
+                    cb()
                 else
-                  console.log "  #{outputname.blue} starting existing container #{name.cyan}"
+                  servicetasks.push (cb) ->
+                    console.log "  #{outputname.blue} starting existing container #{name.cyan}"
+                    return cb() if isdryrun
+                    tugboat.ducke
+                      .container primary.container.Id
+                      .start (err, result) ->
+                        if err?
+                          console.error err
+                          console.error()
+                        cb()
               else
-                console.log "  #{outputname.blue} creating new container from #{imagename.cyan}"
+                servicetasks.push (cb) ->
+                  newname = "#{groupname}_#{servicename}"
+                  newindex = 1
+                  newindex++ while s.containers
+                    .filter (c) -> c.index is newindex
+                    .length isnt 0
+                  newname += "_#{newindex}"
+                  console.log "  #{outputname.blue} starting new container #{newname.cyan}"
+                  return cb() if isdryrun
+                  tugboat.ducke
+                    .image imagename
+                    .up newname, [], (err, result) ->
+                      if err?
+                        console.error err
+                        console.error()
+                      cb()
               
-              return cb() if isdryrun?
-              
-              console.log 'WOULD BE DOING IT HERE'
-              cb()
+              series servicetasks, ->
+                cb()
         
         series tasks, ->
           console.log()
