@@ -61,7 +61,7 @@ init_errors = function(errors) {
   return process.exit(1);
 };
 
-build = function(tugboat, names, usecache) {
+build = function(tugboat, groupnames, usecache) {
   return tugboat.init(function(errors) {
     var group, haderror, name, tasks, _fn, _i, _j, _len, _len1;
     if (errors != null) {
@@ -73,12 +73,12 @@ build = function(tugboat, names, usecache) {
       console.error();
       process.exit(1);
     }
-    if (names.length === 0) {
-      names = Object.keys(tugboat._groups);
+    if (groupnames.length === 0) {
+      groupnames = Object.keys(tugboat._groups);
     }
     haderror = false;
-    for (_i = 0, _len = names.length; _i < _len; _i++) {
-      name = names[_i];
+    for (_i = 0, _len = groupnames.length; _i < _len; _i++) {
+      name = groupnames[_i];
       if (tugboat._groups[name] == null) {
         console.error(("  The group '" + name + "' is not available in this directory").red);
         console.error();
@@ -89,15 +89,15 @@ build = function(tugboat, names, usecache) {
       process.exit(1);
     }
     tasks = [];
-    _fn = function(group) {
+    _fn = function(name, group) {
       return tasks.push(function(cb) {
-        var config, container, grouptasks, _fn1, _ref;
+        var config, grouptasks, servicename, _fn1, _ref;
         grouptasks = [];
         console.log("  Building " + name.blue + "...");
-        _ref = group.containers;
-        _fn1 = function(container, config) {
+        _ref = group.services;
+        _fn1 = function(servicename, config) {
           var output;
-          output = container.cyan;
+          output = servicename.cyan;
           return grouptasks.push(function(cb) {
             var results, run;
             while (output.length < 32) {
@@ -113,7 +113,7 @@ build = function(tugboat, names, usecache) {
               results += message;
               return results += '\n';
             };
-            return tugboat.build(group, container, usecache, run, function(err) {
+            return tugboat.build(group, servicename, usecache, run, function(err) {
               if (err != null) {
                 console.error('failed'.red);
                 console.error(err);
@@ -128,9 +128,9 @@ build = function(tugboat, names, usecache) {
             });
           });
         };
-        for (container in _ref) {
-          config = _ref[container];
-          _fn1(container, config);
+        for (servicename in _ref) {
+          config = _ref[servicename];
+          _fn1(servicename, config);
         }
         return series(grouptasks, function() {
           console.log();
@@ -138,10 +138,10 @@ build = function(tugboat, names, usecache) {
         });
       });
     };
-    for (_j = 0, _len1 = names.length; _j < _len1; _j++) {
-      name = names[_j];
+    for (_j = 0, _len1 = groupnames.length; _j < _len1; _j++) {
+      name = groupnames[_j];
       group = tugboat._groups[name];
-      _fn(group);
+      _fn(name, group);
     }
     return series(tasks, function() {});
   });
@@ -195,10 +195,11 @@ module.exports = {
         return init_errors(errors);
       }
       return tugboat.ps(function(err, groups) {
-        var container, containername, created, group, i, name, output, postfix, r, running, status, total, _, _i, _j, _len, _len1, _ref, _ref1, _ref2, _results;
+        var created, group, i, name, output, postfix, r, running, service, servicename, status, total, _, _i, _j, _len, _len1, _ref, _ref1, _ref2, _results;
         if (Object.keys(groups).length === 0) {
           console.log();
-          console.log('  There are no groups defined in this directory or containers running that match'.magenta);
+          console.log('  There are no groups defined in this directory');
+          console.log('  or running containers that match known services'.magenta);
           console.log();
           return;
         }
@@ -224,13 +225,13 @@ module.exports = {
             total = 0;
             created = 0;
             running = 0;
-            _ref = group.containers;
+            _ref = group.services;
             for (_ in _ref) {
-              container = _ref[_];
+              service = _ref[_];
               total++;
-              if (container.indexes.length !== 0) {
+              if (service.containers.length !== 0) {
                 created++;
-                r = container.indexes.filter(function(d) {
+                r = service.containers.filter(function(d) {
                   return d.inspect.State.Running;
                 }).length;
                 if (r !== 0) {
@@ -285,30 +286,30 @@ module.exports = {
           } else {
             console.log("  " + group.name.blue + ": " + '(unknown)'.magenta);
           }
-          _ref1 = group.containers;
+          _ref1 = group.services;
           for (_ in _ref1) {
-            container = _ref1[_];
-            containername = container.name.cyan;
-            _ref2 = container.indexes;
+            service = _ref1[_];
+            servicename = service.name.cyan;
+            _ref2 = service.containers;
             for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
               i = _ref2[_j];
-              containername += " " + i.index;
+              servicename += " " + i.index;
             }
-            while (containername.length < 36) {
-              containername += ' ';
+            while (servicename.length < 36) {
+              servicename += ' ';
             }
             status = '-'.magenta;
-            if (container.indexes.length > 0) {
-              r = container.indexes.filter(function(d) {
+            if (service.containers.length > 0) {
+              r = service.containers.filter(function(d) {
                 return d.inspect.State.Running;
               }).length;
               if (r === 0) {
                 status = 'stopped'.red;
               } else {
-                status = container.indexes[0].inspect.NetworkSettings.IPAddress.toString().blue;
+                status = service.containers[0].inspect.NetworkSettings.IPAddress.toString().blue;
               }
             }
-            console.log("    " + containername + " " + status);
+            console.log("    " + servicename + " " + status);
             continue;
           }
           _results.push(console.log());

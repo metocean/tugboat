@@ -7,7 +7,7 @@ commands = require('./commands');
 
 Tugboat = require('../src/tugboat');
 
-usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Commands:\n  \n    ps          List all running and available groups\n  \n  Group management:\n  \n    build       Build all containers or passed containers\n    rebuild     Build all containers or passed containers from scratch\n";
+usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Commands:\n  \n    ps          List all running and available groups\n  \n  Group management:\n  \n    build       Build services\n    rebuild     Build services from scratch\n";
 
 usage_error = (function(_this) {
   return function(message) {

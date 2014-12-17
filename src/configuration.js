@@ -79,21 +79,21 @@ validation = {
   privileged: isboolean
 };
 
-module.exports = function(groupname, containers, cb) {
+module.exports = function(groupname, services, cb) {
   var chunks, config, count, env, errors, key, name, result, value, _i, _len, _ref, _ref1;
-  if (typeof containers !== 'object') {
-    return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.')]);
+  if (typeof services !== 'object') {
+    return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of services.')]);
   }
   errors = [];
   if (!groupname.match(/^[a-zA-Z0-9-]+$/)) {
     errors.push(new TUGBOATFormatException("The YAML file " + groupname.cyan + " is not a valid group name."));
   }
-  for (name in containers) {
-    config = containers[name];
+  for (name in services) {
+    config = services[name];
     if (!name.match(/^[a-zA-Z0-9-]+$/)) {
-      errors.push(new TUGBOATFormatException("" + name.cyan + " is not a valid docker container name."));
+      errors.push(new TUGBOATFormatException("" + name.cyan + " is not a valid service name."));
     }
-    if (typeof containers !== 'object' || containers instanceof Array) {
+    if (typeof services !== 'object' || services instanceof Array) {
       errors.push(new TUGBOATFormatException("The value of " + name.cyan + " is not an object of strings."));
       continue;
     }
@@ -125,11 +125,11 @@ module.exports = function(groupname, containers, cb) {
     for (key in config) {
       value = config[key];
       if (validation[key] == null) {
-        errors.push(new TUGBOATFormatException("In the docker " + name.cyan + " " + key.cyan + " is not a known configuration option."));
+        errors.push(new TUGBOATFormatException("In the service " + name.cyan + " " + key.cyan + " is not a known configuration option."));
         continue;
       }
       if (!validation[key](value)) {
-        errors.push(new TUGBOATFormatException("In the docker " + name.cyan + " the value of " + key.cyan + " was an unexpected format."));
+        errors.push(new TUGBOATFormatException("In the service " + name.cyan + " the value of " + key.cyan + " was an unexpected format."));
         continue;
       }
     }
@@ -147,5 +147,5 @@ module.exports = function(groupname, containers, cb) {
   if (errors.length !== 0) {
     return cb(errors);
   }
-  return cb(null, containers);
+  return cb(null, services);
 };

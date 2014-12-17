@@ -1,23 +1,25 @@
-module.exports = (groups, containers) ->
+module.exports = (groups, statuses) ->
+  # Start with all the known groups
+  # So they are filled with matching containers
   results = {}
   for groupname, group of groups
-    
     g =
       name: groupname
       group: group
       isknown: yes
-      containers: {}
+      services: {}
     
-    for name, container of group.containers
-      g.containers[name] =
+    for name, service of group.services
+      g.services[name] =
         name: name
-        container: container
+        service: service
         isknown: yes
-        indexes: []
+        containers: []
     results[groupname] = g
   
-  for c in containers
-    name = c.container.Names[0].substr 1
+  # 
+  for status in statuses
+    name = status.container.Names[0].substr 1
     chunks = name.split '_'
     continue if chunks.length isnt 3
     [groupname, name, index] = chunks
@@ -26,20 +28,20 @@ module.exports = (groups, containers) ->
         name: groupname
         group: null
         isknown: no
-        containers: {}
+        services: {}
     group = results[groupname]
     
-    if !group.containers[name]?
-      group.containers[name] =
+    if !group.services[name]?
+      group.services[name] =
         name: name
-        container: null
+        service: null
         isknown: no
-        indexes: []
+        containers: []
     
-    container = group.containers[name]
-    container.indexes.push
+    service = group.services[name]
+    service.containers.push
       index: index
-      container: c.container
-      inspect: c.inspect
+      container: status.container
+      inspect: status.inspect
   
   results

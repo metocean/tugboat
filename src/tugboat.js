@@ -88,14 +88,14 @@ module.exports = Tugboat = (function() {
             return cb([e]);
           }
         }
-        return parse_configuration(name, content, function(errors, containers) {
+        return parse_configuration(name, content, function(errors, services) {
           if (errors != null) {
             return cb(errors);
           }
           return cb(null, {
             name: name,
             path: item,
-            containers: containers
+            services: services
           });
         });
       };
@@ -154,9 +154,9 @@ module.exports = Tugboat = (function() {
     });
   };
 
-  Tugboat.prototype.build = function(group, container, usecache, run, callback) {
+  Tugboat.prototype.build = function(group, servicename, usecache, run, callback) {
     var config;
-    config = group.containers[container];
+    config = group.services[servicename];
     return this.ducke.build_image(config.name, config.build, usecache, run, callback);
   };
 

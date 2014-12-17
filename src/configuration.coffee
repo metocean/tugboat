@@ -38,10 +38,10 @@ validation =
   mem_limit: isnumber
   privileged: isboolean
 
-module.exports = (groupname, containers, cb) ->
-  if typeof containers isnt 'object'
+module.exports = (groupname, services, cb) ->
+  if typeof services isnt 'object'
     return cb [
-      new TUGBOATFormatException 'This YAML file is in the wrong format. Tugboat expects names and definitions of docker containers.'
+      new TUGBOATFormatException 'This YAML file is in the wrong format. Tugboat expects names and definitions of services.'
     ]
   
   errors = []
@@ -49,10 +49,10 @@ module.exports = (groupname, containers, cb) ->
   if !groupname.match /^[a-zA-Z0-9-]+$/
     errors.push new TUGBOATFormatException "The YAML file #{groupname.cyan} is not a valid group name."
   
-  for name, config of containers
+  for name, config of services
     if !name.match /^[a-zA-Z0-9-]+$/
-      errors.push new TUGBOATFormatException "#{name.cyan} is not a valid docker container name."
-    if typeof containers isnt 'object' or containers instanceof Array
+      errors.push new TUGBOATFormatException "#{name.cyan} is not a valid service name."
+    if typeof services isnt 'object' or services instanceof Array
       errors.push new TUGBOATFormatException "The value of #{name.cyan} is not an object of strings."
       continue
     
@@ -71,16 +71,15 @@ module.exports = (groupname, containers, cb) ->
     count = 0
     count++ if config.build?
     count++ if config.image?
-    
     if count isnt 1
       errors.push new TUGBOATFormatException "#{name.cyan} requires either a build or an image value."
     
     for key, value of config
       if !validation[key]?
-        errors.push new TUGBOATFormatException "In the docker #{name.cyan} #{key.cyan} is not a known configuration option."
+        errors.push new TUGBOATFormatException "In the service #{name.cyan} #{key.cyan} is not a known configuration option."
         continue
       if !validation[key] value
-        errors.push new TUGBOATFormatException "In the docker #{name.cyan} the value of #{key.cyan} was an unexpected format."
+        errors.push new TUGBOATFormatException "In the service #{name.cyan} the value of #{key.cyan} was an unexpected format."
         continue
     
     # copy current environment variables
@@ -92,4 +91,4 @@ module.exports = (groupname, containers, cb) ->
     config.name = "#{groupname}_#{name}"
   
   return cb errors if errors.length isnt 0
-  cb null, containers
+  cb null, services

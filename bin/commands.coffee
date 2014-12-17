@@ -32,7 +32,7 @@ init_errors = (errors) ->
   process.exit 1
 
 
-build = (tugboat, names, usecache) ->
+build = (tugboat, groupnames, usecache) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
     
@@ -42,11 +42,11 @@ build = (tugboat, names, usecache) ->
       console.error()
       process.exit 1
     
-    if names.length is 0
-      names = Object.keys tugboat._groups
+    if groupnames.length is 0
+      groupnames = Object.keys tugboat._groups
     
     haderror = no
-    for name in names
+    for name in groupnames
       if !tugboat._groups[name]?
         console.error "  The group '#{name}' is not available in this directory".red
         console.error()
@@ -56,15 +56,15 @@ build = (tugboat, names, usecache) ->
     
     tasks = []
     
-    for name in names
+    for name in groupnames
       group = tugboat._groups[name]
-      do (group) ->
+      do (name, group) ->
         tasks.push (cb) ->
           grouptasks = []
           console.log "  Building #{name.blue}..."
-          for container, config of group.containers
-            do (container, config) ->
-              output = container.cyan
+          for servicename, config of group.services
+            do (servicename, config) ->
+              output = servicename.cyan
               grouptasks.push (cb) ->
                 output += ' ' while output.length < 32
                 process.stdout.write "    #{output} "
@@ -78,7 +78,7 @@ build = (tugboat, names, usecache) ->
                   results += message
                   results += '\n'
                 
-                tugboat.build group, container, usecache, run, (err) ->
+                tugboat.build group, servicename, usecache, run, (err) ->
                   if err?
                     console.error 'failed'.red
                     console.error err
@@ -136,7 +136,8 @@ module.exports =
       tugboat.ps (err, groups) ->
         if Object.keys(groups).length is 0
           console.log()
-          console.log '  There are no groups defined in this directory or containers running that match'.magenta
+          console.log '  There are no groups defined in this directory'
+          console.log '  or running containers that match known services'.magenta
           console.log()
           return
           
@@ -159,11 +160,11 @@ module.exports =
             total = 0
             created = 0
             running = 0
-            for _, container of group.containers
+            for _, service of group.services
               total++
-              if container.indexes.length isnt 0
+              if service.containers.length isnt 0
                 created++
-                r = container.indexes
+                r = service.containers
                   .filter (d) -> d.inspect.State.Running
                   .length
                 running++ if r isnt 0
@@ -213,24 +214,24 @@ module.exports =
           else
             console.log "  #{group.name.blue}: #{'(unknown)'.magenta}"
           
-          for _, container of group.containers
-            containername = container.name.cyan
-            for i in container.indexes
-              containername += " #{i.index}"
-            containername += ' ' while containername.length < 36
+          for _, service of group.services
+            servicename = service.name.cyan
+            for i in service.containers
+              servicename += " #{i.index}"
+            servicename += ' ' while servicename.length < 36
             
             status = '-'.magenta
             
-            if container.indexes.length > 0
-              r = container.indexes
+            if service.containers.length > 0
+              r = service.containers
                 .filter (d) -> d.inspect.State.Running
                 .length
               if r is 0
                 status = 'stopped'.red
               else
-                status = container.indexes[0].inspect.NetworkSettings.IPAddress.toString().blue
+                status = service.containers[0].inspect.NetworkSettings.IPAddress.toString().blue
             
-            console.log "    #{containername} #{status}"
+            console.log "    #{servicename} #{status}"
             continue
           console.log()
   

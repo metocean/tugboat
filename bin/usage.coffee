@@ -14,8 +14,8 @@ usage = """
   
   Group management:
   
-    build       Build all containers or passed containers
-    rebuild     Build all containers or passed containers from scratch
+    build       Build services
+    rebuild     Build services from scratch
 
 """
 

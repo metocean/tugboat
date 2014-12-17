@@ -44,12 +44,12 @@ module.exports = class Tugboat
       catch e
         return cb [e] if e?
       
-      parse_configuration name, content, (errors, containers) ->
+      parse_configuration name, content, (errors, services) ->
         return cb errors if errors?
         cb null,
           name: name
           path: item
-          containers: containers
+          services: services
   
   init: (callback) =>
     @_groups = {} if !@_groups?
@@ -82,8 +82,8 @@ module.exports = class Tugboat
       return callback errors if errors.length isnt 0
       callback null
   
-  build: (group, container, usecache, run, callback) =>
-    config = group.containers[container]
+  build: (group, servicename, usecache, run, callback) =>
+    config = group.services[servicename]
     
     @ducke.build_image config.name, config.build, usecache, run, callback
   
