@@ -204,7 +204,7 @@ up = function(tugboat, groupname, servicenames, isdryrun) {
         console.log();
         _fn = function(servicename) {
           return tasks.push(function(cb) {
-            var c, e, excess, image, imagename, outputname, primary, s, servicetasks, _fn1, _k, _l, _len2, _len3, _ref;
+            var c, e, excess, image, imagename, outputname, primary, s, servicetasks, tagname, _fn1, _k, _l, _len2, _len3, _ref;
             s = g.services[servicename];
             outputname = servicename;
             while (outputname.length < 18) {
@@ -214,14 +214,15 @@ up = function(tugboat, groupname, servicenames, isdryrun) {
             if (s.service.image != null) {
               imagename = s.service.image;
             }
-            if (imagename.indexOf(':' === -1)) {
-              imagename += ':latest';
+            tagname = imagename;
+            if (tagname.indexOf(':' === -1)) {
+              tagname += ':latest';
             }
-            if (imagerepo.tags[imagename] == null) {
+            if (imagerepo.tags[tagname] == null) {
               console.error("  " + outputname.blue + " image " + imagename.red + " is not available");
               return cb();
             }
-            image = imagerepo.tags[imagename];
+            image = imagerepo.tags[tagname];
             primary = null;
             excess = [];
             _ref = s.containers;
@@ -317,9 +318,7 @@ up = function(tugboat, groupname, servicenames, isdryrun) {
                 });
               });
             }
-            return series(servicetasks, function() {
-              return cb();
-            });
+            return series(servicetasks, cb);
           });
         };
         for (_j = 0, _len1 = servicenames.length; _j < _len1; _j++) {

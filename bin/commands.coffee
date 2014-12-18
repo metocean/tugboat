@@ -164,13 +164,14 @@ up = (tugboat, groupname, servicenames, isdryrun) ->
               if s.service.image?
                 imagename = s.service.image
               
-              if imagename.indexOf ':' is -1
-                imagename += ':latest'
+              tagname = imagename
+              if tagname.indexOf ':' is -1
+                tagname += ':latest'
               
-              if !imagerepo.tags[imagename]?
+              if !imagerepo.tags[tagname]?
                 console.error "  #{outputname.blue} image #{imagename.red} is not available"
                 return cb()
-              image = imagerepo.tags[imagename]
+              image = imagerepo.tags[tagname]
               
               primary = null
               excess = []
@@ -243,8 +244,7 @@ up = (tugboat, groupname, servicenames, isdryrun) ->
                       console.error err
                     cb()
               
-              series servicetasks, ->
-                cb()
+              series servicetasks, cb
         
         series tasks, ->
           console.log()

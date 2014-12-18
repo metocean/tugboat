@@ -89,7 +89,7 @@ module.exports = Tugboat = (function() {
           }
         }
         name = path.basename(item, '.yml');
-        return parse_configuration(name, content, function(errors, services) {
+        return parse_configuration(name, content, _this._options.groupsdir, function(errors, services) {
           if (errors != null) {
             return cb(errors);
           }
@@ -173,7 +173,7 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.up = function(config, imagename, containername, callback) {
-    var e, key, params, value, _i, _j, _len, _len1, _ref, _ref1;
+    var params;
     params = {
       Image: imagename
     };
@@ -185,12 +185,6 @@ module.exports = Tugboat = (function() {
     }
     if (config.mem_limit != null) {
       params.Memory = config.mem_limit;
-    }
-    if (config.dns != null) {
-      params.Dns = config.dns;
-    }
-    if (config.privileged != null) {
-      params.Privileged = config.privileged;
     }
     if (config.hostname != null) {
       params.Hostname = config.hostname;
@@ -204,42 +198,30 @@ module.exports = Tugboat = (function() {
     if (config.working_dir != null) {
       params.WorkingDir = config.working_dir;
     }
-    if (config.net != null) {
-      params.NetworkMode = config.net;
-    }
-    if (config.volumes != null) {
-      params.Binds = config.volumes;
-    }
-    if (config.links != null) {
-      params.Links = config.links;
+    if (config.environment != null) {
+      params.Env = config.environment;
     }
     if (config.expose != null) {
-      params.ExposedPorts = {};
-      _ref = config.expose;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        e = _ref[_i];
-        params.ExposedPorts[e] = {};
-      }
+      params.ExposedPorts = config.expose;
+    }
+    params.HostConfig = {};
+    if (config.volumes != null) {
+      params.HostConfig.Binds = config.volumes;
+    }
+    if (config.links != null) {
+      params.HostConfig.Links = config.links;
+    }
+    if (config.dns != null) {
+      params.HostConfig.Dns = config.dns;
+    }
+    if (config.net != null) {
+      params.HostConfig.NetworkMode = config.net;
+    }
+    if (config.privileged != null) {
+      params.HostConfig.Privileged = config.privileged;
     }
     if (config.ports != null) {
-      params.PortBindings = {};
-      _ref1 = config.ports;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        e = _ref1[_j];
-        params.PortBindings[e] = {};
-      }
-    }
-    if (config.environment != null) {
-      params.Env = (function() {
-        var _ref2, _results;
-        _ref2 = config.environment;
-        _results = [];
-        for (key in _ref2) {
-          value = _ref2[key];
-          _results.push("" + key + "=" + value);
-        }
-        return _results;
-      })();
+      params.HostConfig.PortBindings = config.ports;
     }
     return this.ducke.createContainer(containername, params, (function(_this) {
       return function(err, container) {

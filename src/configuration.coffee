@@ -1,3 +1,5 @@
+resolve = require('path').resolve
+
 class TUGBOATFormatException extends Error
   constructor: (message) ->
     @name = 'TUGBOATFormatException'
@@ -40,7 +42,15 @@ validation =
   mem_limit: isnumber
   privileged: isboolean
 
-module.exports = (groupname, services, cb) ->
+parse_port = (port) ->
+  udp = '/udp'
+  tcp = '/tcp'
+  
+  if port.substr(port.length - udp.length) isnt udp and port.substr(port.length - tcp.length) isnt tcp
+    port = "#{port}/tcp"
+  port
+
+module.exports = (groupname, services, path, cb) ->
   if typeof services isnt 'object'
     return cb [
       new TUGBOATFormatException 'This YAML file is in the wrong format. Tugboat expects names and definitions of services.'
@@ -66,7 +76,7 @@ module.exports = (groupname, services, cb) ->
       config.dns = [config.dns]
     
     # Fig syntax allows strings of x=y let's convert that
-    if config.environment? and typeof config.environment is 'array'
+    if config.environment? and config.environment instanceof Array
       result = {}
       for env in config.environment
         chunks = env.split '='
@@ -91,11 +101,50 @@ module.exports = (groupname, services, cb) ->
         errors.push new TUGBOATFormatException "In the service #{name.cyan} the value of #{key.cyan} was an unexpected format."
         continue
     
+    # Make mount paths absolute
+    if config.volumes
+      config.volumes = config.volumes.map (v) ->
+        chunks = v.split ':'
+        chunks[0] = resolve path, chunks[0]
+        chunks.join ':'
+    
     # Fig - copy current environment variables into empty values
     if config.environment? and isobjectofstringsornull config.environment
+      results = []
       for key, value of config.environment
         if value is '' or value is null and process.env[key]?
-          config.environment[key] = process.env[key]
+          results.push "#{key}=#{process.env[key]}"
+        else
+          results.push "#{key}=#{value}"
+      config.environment = results
+    
+    if config.expose?
+      results = {}
+      config.expose = config.expose.map (e) ->
+      for e in config.expose
+        results[parse_port e] = {}
+      config.expose = results
+    
+    if config.ports?
+      results = {}
+      for p in config.ports
+        chunks = p.split ':'
+        if chunks.length is 1
+          results[parse_port chunks[0]] = [
+            HostPort: chunks[0]
+          ]
+        else if chunks.length is 2
+          results[parse_port chunks[1]] = [
+            HostPort: chunks[0]
+          ]
+        else if chunks.length is 3
+          results[parse_port chunks[2]] = [
+            HostIp: chunks[0]
+            HostPort: chunks[1]
+          ]
+        else
+          errors.push new TUGBOATFormatException "In the service #{name.cyan} the port binding '#{p.cyan}'' was an unexpected format."
+      config.ports = results
     
     config.name = "#{groupname}_#{name}"
   
