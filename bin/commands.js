@@ -173,7 +173,6 @@ up = function(tugboat, groupname, servicenames, isdryrun) {
       name = servicenames[_i];
       if (group.services[name] == null) {
         console.error(("  The service '" + name + "' is not available in the group '" + groupname + "'").red);
-        console.error();
         haderror = true;
       }
     }
@@ -220,7 +219,6 @@ up = function(tugboat, groupname, servicenames, isdryrun) {
             }
             if (imagerepo.tags[imagename] == null) {
               console.error("  " + outputname.blue + " image " + imagename.red + " is not available");
-              console.error();
               return cb();
             }
             image = imagerepo.tags[imagename];
@@ -291,7 +289,6 @@ up = function(tugboat, groupname, servicenames, isdryrun) {
                   return tugboat.ducke.container(primary.container.Id).start(function(err, result) {
                     if (err != null) {
                       console.error(err);
-                      console.error();
                     }
                     return cb();
                   });
@@ -315,7 +312,6 @@ up = function(tugboat, groupname, servicenames, isdryrun) {
                 return tugboat.up(s.service, imagename, newname, function(err) {
                   if (err != null) {
                     console.error(err);
-                    console.error();
                   }
                   return cb();
                 });
@@ -434,7 +430,6 @@ module.exports = {
               name = servicenames[_j];
               if (g.services[name] == null) {
                 console.error(("  The service '" + name + "' is not available in the group '" + g.name + "'").red);
-                console.error();
                 haderror = true;
               } else {
                 servicestoprocess.push(g.services[name]);
@@ -549,7 +544,6 @@ module.exports = {
               name = servicenames[_j];
               if (g.services[name] == null) {
                 console.error(("  The service '" + name + "' is not available in the group '" + g.name + "'").red);
-                console.error();
                 haderror = true;
               } else {
                 servicestoprocess.push(g.services[name]);
@@ -590,7 +584,6 @@ module.exports = {
                   if (err != null) {
                     console.error('error'.red);
                     console.error(err);
-                    console.error();
                   } else {
                     console.log('stopped'.green);
                   }

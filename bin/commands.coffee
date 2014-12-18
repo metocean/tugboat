@@ -126,7 +126,6 @@ up = (tugboat, groupname, servicenames, isdryrun) ->
     for name in servicenames
       if !group.services[name]?
         console.error "  The service '#{name}' is not available in the group '#{groupname}'".red
-        console.error()
         haderror = yes
     if haderror
       process.exit 1
@@ -170,7 +169,6 @@ up = (tugboat, groupname, servicenames, isdryrun) ->
               
               if !imagerepo.tags[imagename]?
                 console.error "  #{outputname.blue} image #{imagename.red} is not available"
-                console.error()
                 return cb()
               image = imagerepo.tags[imagename]
               
@@ -228,7 +226,6 @@ up = (tugboat, groupname, servicenames, isdryrun) ->
                       .start (err, result) ->
                         if err?
                           console.error err
-                          console.error()
                         cb()
               else
                 servicetasks.push (cb) ->
@@ -244,7 +241,6 @@ up = (tugboat, groupname, servicenames, isdryrun) ->
                   tugboat.up s.service, imagename, newname, (err) ->
                     if err?
                       console.error err
-                      console.error()
                     cb()
               
               series servicetasks, ->
@@ -334,7 +330,6 @@ module.exports =
               for name in servicenames
                 if !g.services[name]?
                   console.error "  The service '#{name}' is not available in the group '#{g.name}'".red
-                  console.error()
                   haderror = yes
                 else
                   servicestoprocess.push g.services[name]
@@ -419,7 +414,6 @@ module.exports =
               for name in servicenames
                 if !g.services[name]?
                   console.error "  The service '#{name}' is not available in the group '#{g.name}'".red
-                  console.error()
                   haderror = yes
                 else
                   servicestoprocess.push g.services[name]
@@ -452,7 +446,6 @@ module.exports =
                         if err?
                           console.error 'error'.red
                           console.error err
-                          console.error()
                         else
                           console.log 'stopped'.green
                         cb()
