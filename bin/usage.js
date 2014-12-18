@@ -7,7 +7,7 @@ commands = require('./commands');
 
 Tugboat = require('../src/tugboat');
 
-usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  \n    ps          List all running and available groups\n    up          Update and run services\n    diff        Describe the changes needed to update\n  \n  Management:\n  \n    build       Build services\n    rebuild     Build services from scratch\n";
+usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  \n    ps          List all running and available groups\n    up          Update and run services\n    down        Stop services\n    diff        Describe the changes needed to update\n  \n  Management:\n  \n    build       Build services\n    rebuild     Build services from scratch\n";
 
 usage_error = (function(_this) {
   return function(message) {
@@ -44,11 +44,20 @@ cmds = {
     }
     return usage_error('tug diff requires a group name');
   },
+  start: function() {
+    return cmds.up();
+  },
   up: function() {
     if (args.length > 0) {
       return commands.up(tugboat, args[0], args.slice(1));
     }
     return usage_error('tug up requires a group name');
+  },
+  stop: function() {
+    return cmds.down();
+  },
+  down: function() {
+    return commands.down(tugboat, args[0], args.slice(1));
   },
   build: function() {
     return commands.build(tugboat, args);

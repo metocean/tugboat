@@ -92,3 +92,43 @@ module.exports = class Tugboat
     @ducke.ps (err, containers) =>
       return callback err if err?
       callback null, groupdiff @_groups, containers
+  
+  # Run a service
+  up: (config, imagename, containername, callback) =>
+    params =
+      Image: imagename
+    
+    params.Cmd = config.command.split ' ' if config.command?
+    params.User = config.user if config.user?
+    params.Memory = config.mem_limit if config.mem_limit?
+    params.Dns = config.dns if config.dns?
+    params.Privileged = config.privileged if config.privileged?
+    params.Hostname = config.hostname if config.hostname?
+    params.Domainname = config.domainname if config.domainname?
+    params.Entrypoint = config.entrypoint if config.entrypoint?
+    params.WorkingDir = config.working_dir if config.working_dir?
+    params.NetworkMode = config.net if config.net?
+    params.Binds = config.volumes if config.volumes?
+    params.Links = config.links if config.links?
+    
+    if config.expose?
+      params.ExposedPorts = {}
+      for e in config.expose
+        params.ExposedPorts[e] = {}
+    
+    if config.ports?
+      params.PortBindings = {}
+      for e in config.ports
+        params.PortBindings[e] = {}
+    
+    if config.environment?
+      params.Env = for key, value of config.environment
+        "#{key}=#{value}"
+    
+    @ducke.createContainer containername, params, (err, container) =>
+      return callback err if err?
+      id = container.Id
+      container = @ducke.container id
+      container.start (err) =>
+        return callback err if err?
+        callback null, id

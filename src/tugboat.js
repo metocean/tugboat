@@ -59,6 +59,7 @@ parallel = function(tasks, callback) {
 
 module.exports = Tugboat = (function() {
   function Tugboat(options) {
+    this.up = __bind(this.up, this);
     this.ps = __bind(this.ps, this);
     this.build = __bind(this.build, this);
     this.init = __bind(this.init, this);
@@ -167,6 +168,93 @@ module.exports = Tugboat = (function() {
           return callback(err);
         }
         return callback(null, groupdiff(_this._groups, containers));
+      };
+    })(this));
+  };
+
+  Tugboat.prototype.up = function(config, imagename, containername, callback) {
+    var e, key, params, value, _i, _j, _len, _len1, _ref, _ref1;
+    params = {
+      Image: imagename
+    };
+    if (config.command != null) {
+      params.Cmd = config.command.split(' ');
+    }
+    if (config.user != null) {
+      params.User = config.user;
+    }
+    if (config.mem_limit != null) {
+      params.Memory = config.mem_limit;
+    }
+    if (config.dns != null) {
+      params.Dns = config.dns;
+    }
+    if (config.privileged != null) {
+      params.Privileged = config.privileged;
+    }
+    if (config.hostname != null) {
+      params.Hostname = config.hostname;
+    }
+    if (config.domainname != null) {
+      params.Domainname = config.domainname;
+    }
+    if (config.entrypoint != null) {
+      params.Entrypoint = config.entrypoint;
+    }
+    if (config.working_dir != null) {
+      params.WorkingDir = config.working_dir;
+    }
+    if (config.net != null) {
+      params.NetworkMode = config.net;
+    }
+    if (config.volumes != null) {
+      params.Binds = config.volumes;
+    }
+    if (config.links != null) {
+      params.Links = config.links;
+    }
+    if (config.expose != null) {
+      params.ExposedPorts = {};
+      _ref = config.expose;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        e = _ref[_i];
+        params.ExposedPorts[e] = {};
+      }
+    }
+    if (config.ports != null) {
+      params.PortBindings = {};
+      _ref1 = config.ports;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        e = _ref1[_j];
+        params.PortBindings[e] = {};
+      }
+    }
+    if (config.environment != null) {
+      params.Env = (function() {
+        var _ref2, _results;
+        _ref2 = config.environment;
+        _results = [];
+        for (key in _ref2) {
+          value = _ref2[key];
+          _results.push("" + key + "=" + value);
+        }
+        return _results;
+      })();
+    }
+    return this.ducke.createContainer(containername, params, (function(_this) {
+      return function(err, container) {
+        var id;
+        if (err != null) {
+          return callback(err);
+        }
+        id = container.Id;
+        container = _this.ducke.container(id);
+        return container.start(function(err) {
+          if (err != null) {
+            return callback(err);
+          }
+          return callback(null, id);
+        });
       };
     })(this));
   };
