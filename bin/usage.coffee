@@ -16,6 +16,7 @@ usage = """
   
   Management:
   
+    rm          Delete services
     build       Build services
     rebuild     Build services from scratch
 
@@ -57,6 +58,9 @@ cmds =
   stop: -> cmds.down()
   down: ->
     return commands.down tugboat, args[0], args[1..]
+  
+  rm: ->
+    return commands.rm tugboat, args[0], args[1..]
   
   build: ->
     commands.build tugboat, args
