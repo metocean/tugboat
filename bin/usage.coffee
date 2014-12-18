@@ -19,6 +19,7 @@ usage = """
     rm          Delete services
     build       Build services
     rebuild     Build services from scratch
+    prune       Stop and delete unknown containers
 
 """
 
@@ -67,6 +68,10 @@ cmds =
   
   rebuild: ->
     commands.rebuild tugboat, args
+  
+  prune: ->
+    return commands.prune tugboat, args if args.length > 0
+    usage_error 'tug prune requires a group name'
 
 command = args[0]
 args.shift()
