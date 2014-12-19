@@ -69,7 +69,7 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
           console.log();
           _fn = function(servicename) {
             return tasks.push(function(cb) {
-              var additional, c, count, different, e, excess, found, image, isdifferent, item, output, outputname, primary, s, servicetasks, source, tagname, target, _fn1, _fn2, _k, _l, _len2, _len3, _len4, _len5, _len6, _len7, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+              var additional, binding, c, count, different, e, excess, found, image, isdifferent, item, output, outputname, port, primary, s, servicetasks, source, tagname, target, _, _fn1, _fn2, _k, _l, _len2, _len3, _len4, _len5, _len6, _len7, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
               s = g.services[servicename];
               servicetasks = [];
               if (!s.isknown) {
@@ -194,6 +194,43 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
                       output = target.Env.join(' ');
                     } else if (source.Config.Env.length !== count) {
                       different('Env', source.Config.Env.join(' '), output);
+                    }
+                    if ((source.Config.ExposedPorts == null) && (target.ExposedPorts == null)) {
+
+                    } else if (source.Config.ExposedPorts === null || target.ExposedPorts === null) {
+                      different('ExposedPorts', source.Config.ExposedPorts, target.ExposedPorts);
+                    } else if (Object.keys(source.Config.ExposedPorts).length !== Object.keys(target.ExposedPorts).length) {
+                      different('ExposedPorts', Object.keys(source.Config.ExposedPorts).length, Object.keys(target.ExposedPorts).length);
+                    } else {
+                      _ref6 = source.Config.ExposedPorts;
+                      for (port in _ref6) {
+                        _ = _ref6[port];
+                        if (target.ExposedPorts[port] == null) {
+                          different('ExposedPorts', port, 'not found');
+                        }
+                      }
+                    }
+                    if ((source.NetworkSettings.Ports == null) && (target.HostConfig.PortBindings == null)) {
+
+                    } else if (source.NetworkSettings.Ports === null || target.HostConfig.PortBindings === null) {
+                      different('PortBindings', source.NetworkSettings.Ports, target.HostConfig.PortBindings);
+                    } else if (Object.keys(source.NetworkSettings.Ports).length !== Object.keys(target.HostConfig.PortBindings).length) {
+                      different('PortBindings', Object.keys(source.NetworkSettings.Ports).length, Object.keys(target.HostConfig.PortBindings).length);
+                    } else {
+                      _ref7 = source.NetworkSettings.Ports;
+                      for (port in _ref7) {
+                        binding = _ref7[port];
+                        if (target.HostConfig.PortBindings[port] == null) {
+                          different('PortBindings', port, 'not found');
+                        } else {
+                          if (binding.HostIp !== target.HostConfig.PortBindings[port].HostIp) {
+                            different('PortBindings', binding.HostIp, target.HostConfig.PortBindings[port].HostIp);
+                          }
+                          if (binding.HostPort !== target.HostConfig.PortBindings[port].HostPort) {
+                            different('PortBindings', binding.HostPort, target.HostConfig.PortBindings[port].HostPort);
+                          }
+                        }
+                      }
                     }
                     if (isdifferent) {
                       excess.push(c);

@@ -171,6 +171,33 @@ module.exports = (tugboat, groupname, servicenames, isdryrun) ->
                       else if source.Config.Env.length isnt count
                         different 'Env', source.Config.Env.join(' '), output
                       
+                      if !source.Config.ExposedPorts? and !target.ExposedPorts?
+                        # All good
+                      else if source.Config.ExposedPorts is null or target.ExposedPorts is null
+                        different 'ExposedPorts', source.Config.ExposedPorts, target.ExposedPorts
+                      else if Object.keys(source.Config.ExposedPorts).length != Object.keys(target.ExposedPorts).length
+                        different 'ExposedPorts', Object.keys(source.Config.ExposedPorts).length, Object.keys(target.ExposedPorts).length
+                      else
+                        for port, _ of source.Config.ExposedPorts
+                          if !target.ExposedPorts[port]?
+                            different 'ExposedPorts', port, 'not found'
+                      
+                      if !source.NetworkSettings.Ports? and !target.HostConfig.PortBindings?
+                        # All good
+                      else if source.NetworkSettings.Ports is null or target.HostConfig.PortBindings is null
+                        different 'PortBindings', source.NetworkSettings.Ports, target.HostConfig.PortBindings
+                      else if Object.keys(source.NetworkSettings.Ports).length != Object.keys(target.HostConfig.PortBindings).length
+                        different 'PortBindings', Object.keys(source.NetworkSettings.Ports).length, Object.keys(target.HostConfig.PortBindings).length
+                      else
+                        for port, binding of source.NetworkSettings.Ports
+                          if !target.HostConfig.PortBindings[port]?
+                            different 'PortBindings', port, 'not found'
+                          else
+                            if binding.HostIp isnt target.HostConfig.PortBindings[port].HostIp
+                              different 'PortBindings', binding.HostIp, target.HostConfig.PortBindings[port].HostIp
+                            if binding.HostPort isnt target.HostConfig.PortBindings[port].HostPort
+                              different 'PortBindings', binding.HostPort, target.HostConfig.PortBindings[port].HostPort
+                      
                       if isdifferent
                         excess.push c
                         continue

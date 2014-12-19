@@ -24,7 +24,7 @@ usage = """
 
 process.on 'uncaughtException', (err) ->
   console.log '  Caught exception: '.red
-  console.log err
+  console.log err.stack
 
 # General purpose printing an error and usage
 usage_error = (message) =>

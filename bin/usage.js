@@ -11,7 +11,7 @@ usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  
 
 process.on('uncaughtException', function(err) {
   console.log('  Caught exception: '.red);
-  return console.log(err);
+  return console.log(err.stack);
 });
 
 usage_error = (function(_this) {

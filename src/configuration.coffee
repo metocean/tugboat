@@ -121,7 +121,6 @@ module.exports = (groupname, services, path, cb) ->
     if config.expose?
       results = {}
       config.expose = config.expose.map (e) ->
-      for e in config.expose
         results[parse_port e] = {}
       config.expose = results
     
