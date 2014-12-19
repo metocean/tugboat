@@ -160,7 +160,7 @@ module.exports = (groupname, services, path, cb) ->
         User: config.user
         Memory: config.mem_limit
         Hostname: config.hostname
-        Domainname: config.domainnamedomainname?
+        Domainname: config.domainname
         Entrypoint: config.entrypoint
         WorkingDir: config.working_dir
         Env: config.environment
@@ -170,7 +170,7 @@ module.exports = (groupname, services, path, cb) ->
           Links: config.links
           Dns: config.dns
           NetworkMode: config.net
-          Privileged: config.privilegedprivileged?
+          Privileged: config.privileged
           PortBindings: config.ports
   
   return cb errors if errors.length isnt 0
