@@ -64,7 +64,8 @@ cmds =
     return commands.down tugboat, args[0], args[1..]
   
   rm: ->
-    return commands.rm tugboat, args[0], args[1..]
+    return commands.rm tugboat, args[0], args[1..] if args.length > 0
+    usage_error 'tug rm requires a group name'
   
   build: ->
     commands.build tugboat, args

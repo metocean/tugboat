@@ -65,7 +65,10 @@ cmds = {
     return commands.down(tugboat, args[0], args.slice(1));
   },
   rm: function() {
-    return commands.rm(tugboat, args[0], args.slice(1));
+    if (args.length > 0) {
+      return commands.rm(tugboat, args[0], args.slice(1));
+    }
+    return usage_error('tug rm requires a group name');
   },
   build: function() {
     return commands.build(tugboat, args);
