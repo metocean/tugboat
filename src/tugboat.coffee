@@ -94,26 +94,8 @@ module.exports = class Tugboat
       callback null, groupdiff @_groups, containers
   
   # Run a service
-  up: (config, imagename, containername, callback) =>
-    params = Image: imagename
-    params.Cmd = config.command.split ' ' if config.command?
-    params.User = config.user if config.user?
-    params.Memory = config.mem_limit if config.mem_limit?
-    params.Hostname = config.hostname if config.hostname?
-    params.Domainname = config.domainname if config.domainname?
-    params.Entrypoint = config.entrypoint if config.entrypoint?
-    params.WorkingDir = config.working_dir if config.working_dir?
-    params.Env = config.environment if config.environment?
-    params.ExposedPorts = config.expose if config.expose?
-    params.HostConfig = {}
-    params.HostConfig.Binds = config.volumes if config.volumes?
-    params.HostConfig.Links = config.links if config.links?
-    params.HostConfig.Dns = config.dns if config.dns?
-    params.HostConfig.NetworkMode = config.net if config.net?
-    params.HostConfig.Privileged = config.privileged if config.privileged?
-    params.HostConfig.PortBindings = config.ports if config.ports?
-    
-    @ducke.createContainer containername, params, (err, container) =>
+  up: (config, containername, callback) =>
+    @ducke.createContainer containername, config.params, (err, container) =>
       return callback err if err?
       id = container.Id
       container = @ducke.container id

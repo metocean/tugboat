@@ -207,6 +207,38 @@ module.exports = function(groupname, services, path, cb) {
       config.ports = results;
     }
     config.name = "" + groupname + "_" + name;
+    if (config.command != null) {
+      config.command = config.command.split(' ');
+    }
+    if (config.image == null) {
+      config.image = config.name;
+    }
+  }
+  for (name in services) {
+    config = services[name];
+    services[name] = {
+      name: config.name,
+      params: {
+        Image: config.image,
+        Cmd: config.command,
+        User: config.user,
+        Memory: config.mem_limit,
+        Hostname: config.hostname,
+        Domainname: config.domainnamedomainname != null,
+        Entrypoint: config.entrypoint,
+        WorkingDir: config.working_dir,
+        Env: config.environment,
+        ExposedPorts: config.expose,
+        HostConfig: {
+          Binds: config.volumes,
+          Links: config.links,
+          Dns: config.dns,
+          NetworkMode: config.net,
+          Privileged: config.privilegedprivileged != null,
+          PortBindings: config.ports
+        }
+      }
+    };
   }
   if (errors.length !== 0) {
     return cb(errors);

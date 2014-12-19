@@ -98,16 +98,12 @@ module.exports = (tugboat, groupname, servicenames, isdryrun) ->
                   outputname = servicename
                   outputname += ' ' while outputname.length < 26
                 
-                  imagename = "#{groupname}_#{servicename}"
-                  if s.service.image?
-                    imagename = s.service.image
-                  
-                  tagname = imagename
+                  tagname = s.service.params.Image
                   if tagname.indexOf ':' is -1
                     tagname += ':latest'
                   
                   if !imagerepo.tags[tagname]?
-                    console.error "  #{outputname.blue} image #{imagename.red} is not available"
+                    console.error "  #{outputname.blue} image #{s.service.params.Image.red} is not available"
                     return cb()
                   image = imagerepo.tags[tagname]
                   
@@ -172,10 +168,10 @@ module.exports = (tugboat, groupname, servicenames, isdryrun) ->
                         .filter (c) -> c.index is newindex
                         .length isnt 0
                       newname += "_#{newindex}"
-                      console.log "  #{outputname.blue} starting new container #{newname.cyan} (#{imagename})"
+                      console.log "  #{outputname.blue} starting new container #{newname.cyan} (#{s.service.params.Image})"
                       return cb() if isdryrun
                       
-                      tugboat.up s.service, imagename, newname, (err) ->
+                      tugboat.up s.service, newname, (err) ->
                         if err?
                           console.error err
                         cb()

@@ -69,7 +69,7 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
           console.log();
           _fn = function(servicename) {
             return tasks.push(function(cb) {
-              var c, e, excess, image, imagename, outputname, primary, s, servicetasks, tagname, _fn1, _fn2, _k, _l, _len2, _len3, _len4, _m, _ref, _ref1;
+              var c, e, excess, image, outputname, primary, s, servicetasks, tagname, _fn1, _fn2, _k, _l, _len2, _len3, _len4, _m, _ref, _ref1;
               s = g.services[servicename];
               servicetasks = [];
               if (!s.isknown) {
@@ -119,16 +119,12 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
                 while (outputname.length < 26) {
                   outputname += ' ';
                 }
-                imagename = "" + groupname + "_" + servicename;
-                if (s.service.image != null) {
-                  imagename = s.service.image;
-                }
-                tagname = imagename;
+                tagname = s.service.params.Image;
                 if (tagname.indexOf(':' === -1)) {
                   tagname += ':latest';
                 }
                 if (imagerepo.tags[tagname] == null) {
-                  console.error("  " + outputname.blue + " image " + imagename.red + " is not available");
+                  console.error("  " + outputname.blue + " image " + s.service.params.Image.red + " is not available");
                   return cb();
                 }
                 image = imagerepo.tags[tagname];
@@ -214,11 +210,11 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
                       newindex++;
                     }
                     newname += "_" + newindex;
-                    console.log("  " + outputname.blue + " starting new container " + newname.cyan + " (" + imagename + ")");
+                    console.log("  " + outputname.blue + " starting new container " + newname.cyan + " (" + s.service.params.Image + ")");
                     if (isdryrun) {
                       return cb();
                     }
-                    return tugboat.up(s.service, imagename, newname, function(err) {
+                    return tugboat.up(s.service, newname, function(err) {
                       if (err != null) {
                         console.error(err);
                       }

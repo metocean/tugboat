@@ -147,6 +147,31 @@ module.exports = (groupname, services, path, cb) ->
       config.ports = results
     
     config.name = "#{groupname}_#{name}"
+    config.command = config.command.split ' ' if config.command?
+    config.image = config.name if !config.image?
+  
+  # Convert configuration into docker format
+  for name, config of services
+    services[name] =
+      name: config.name
+      params:
+        Image: config.image
+        Cmd: config.command
+        User: config.user
+        Memory: config.mem_limit
+        Hostname: config.hostname
+        Domainname: config.domainnamedomainname?
+        Entrypoint: config.entrypoint
+        WorkingDir: config.working_dir
+        Env: config.environment
+        ExposedPorts: config.expose
+        HostConfig:
+          Binds: config.volumes
+          Links: config.links
+          Dns: config.dns
+          NetworkMode: config.net
+          Privileged: config.privilegedprivileged?
+          PortBindings: config.ports
   
   return cb errors if errors.length isnt 0
   cb null, services

@@ -172,58 +172,8 @@ module.exports = Tugboat = (function() {
     })(this));
   };
 
-  Tugboat.prototype.up = function(config, imagename, containername, callback) {
-    var params;
-    params = {
-      Image: imagename
-    };
-    if (config.command != null) {
-      params.Cmd = config.command.split(' ');
-    }
-    if (config.user != null) {
-      params.User = config.user;
-    }
-    if (config.mem_limit != null) {
-      params.Memory = config.mem_limit;
-    }
-    if (config.hostname != null) {
-      params.Hostname = config.hostname;
-    }
-    if (config.domainname != null) {
-      params.Domainname = config.domainname;
-    }
-    if (config.entrypoint != null) {
-      params.Entrypoint = config.entrypoint;
-    }
-    if (config.working_dir != null) {
-      params.WorkingDir = config.working_dir;
-    }
-    if (config.environment != null) {
-      params.Env = config.environment;
-    }
-    if (config.expose != null) {
-      params.ExposedPorts = config.expose;
-    }
-    params.HostConfig = {};
-    if (config.volumes != null) {
-      params.HostConfig.Binds = config.volumes;
-    }
-    if (config.links != null) {
-      params.HostConfig.Links = config.links;
-    }
-    if (config.dns != null) {
-      params.HostConfig.Dns = config.dns;
-    }
-    if (config.net != null) {
-      params.HostConfig.NetworkMode = config.net;
-    }
-    if (config.privileged != null) {
-      params.HostConfig.Privileged = config.privileged;
-    }
-    if (config.ports != null) {
-      params.HostConfig.PortBindings = config.ports;
-    }
-    return this.ducke.createContainer(containername, params, (function(_this) {
+  Tugboat.prototype.up = function(config, containername, callback) {
+    return this.ducke.createContainer(containername, config.params, (function(_this) {
       return function(err, container) {
         var id;
         if (err != null) {
