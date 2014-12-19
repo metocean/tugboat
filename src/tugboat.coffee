@@ -4,6 +4,7 @@ fs = require 'fs'
 path = require 'path'
 parse_configuration = require './configuration'
 groupdiff = require './groupdiff'
+servicediff = require './servicediff'
 
 # Copy all of the properties on source to target, recurse if an object
 copy = (source, target) ->
@@ -91,7 +92,7 @@ module.exports = class Tugboat
   ps: (callback) =>
     @ducke.ps (err, containers) =>
       return callback err if err?
-      callback null, groupdiff @_groups, containers
+      callback null, servicediff groupdiff @_groups, containers
   
   # Run a service
   up: (config, containername, callback) =>
