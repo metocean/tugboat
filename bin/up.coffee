@@ -112,6 +112,69 @@ module.exports = (tugboat, groupname, servicenames, isdryrun) ->
                   
                   for c in s.containers
                     if image.image.Id is c.inspect.Image
+                      
+                      target = s.service.params
+                      source = c.inspect
+                      
+                      isdifferent = no
+                      different = (key, source, target) ->
+                        console.log "Different #{key}"
+                        console.log "#{source} (#{typeof source}) -> #{target} (#{typeof target})"
+                        isdifferent = yes
+                      
+                      for name in [
+                          'Entrypoint'
+                          'User'
+                          'Memory'
+                          'WorkingDir'
+                        ]
+                        if source.Config[name] != target[name]
+                          different name, source.Config[name], target[name]
+                      
+                      if source.Config.Domainname is 'false'
+                        if target.Domainname isnt no
+                          different 'Domainname', source.Config.Domainname, target.Domainname
+                      else if source.Config.Domainname isnt target.Domainname
+                        different 'Domainname', source.Config.Domainname, target.Domainname
+                      
+                      if target.Hostname? and source.Config.Hostname isnt target.Hostname
+                        different 'Hostname', source.Config.Hostname, target.Hostname
+                      
+                      for name in [
+                          'Privileged'
+                          'NetworkMode'
+                        ]
+                        if source.HostConfig[name] != target.HostConfig[name]
+                          different name, source.HostConfig[name], target.HostConfig[name]
+                      
+                      if source.Config.Cmd.join(' ') isnt target.Cmd.join(' ')
+                        different 'Cmd', source.Config.Cmd.join(' '), target.Cmd.join(' ')
+                      
+                      additional = 0
+                      for item in source.Config.Env
+                        found = no
+                        if target.Env?
+                          found = target.Env
+                            .filter (e) -> e is item
+                            .length isnt 0
+                        if !found
+                          unless item.substr(0, 5) in ['PATH=', 'HOME=']
+                            different 'Env', item, 'not found'
+                          else
+                            additional++
+                      
+                      count = additional
+                      output = ''
+                      if target.Env?
+                        count += target.Env.length
+                        output = target.Env.join ' '
+                      else if source.Config.Env.length isnt count
+                        different 'Env', source.Config.Env.join(' '), output
+                      
+                      if isdifferent
+                        excess.push c
+                        continue
+                      
                       primary = c
                     else
                       excess.push c
@@ -120,7 +183,7 @@ module.exports = (tugboat, groupname, servicenames, isdryrun) ->
                     do (e) ->
                       name = e.container.Names[0].substr 1
                       servicetasks.push (cb) ->
-                        console.log "  #{outputname.blue} image #{image.image.Id.substr(0, 12).cyan} is newer than #{c.inspect.Image.substr(0, 12).cyan}"
+                        console.log "  #{outputname.blue} container #{name.cyan} is out of date"
                         cb()
                       if e.inspect.State.Running
                         servicetasks.push (cb) ->

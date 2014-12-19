@@ -42,7 +42,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       _fn = function(g) {
         var c, haderror, name, outputname, s, service, servicestoprocess, _fn1, _j, _k, _l, _len1, _len2, _len3, _ref, _ref1;
         tasks.push(function(cb) {
-          console.log("  Stopping " + g.name.blue + "...");
+          console.log("  Deleting " + g.name.blue + "...");
           console.log();
           return cb();
         });
@@ -82,7 +82,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
           s = servicestoprocess[_k];
           outputname = s.name;
-          while (outputname.length < 18) {
+          while (outputname.length < 26) {
             outputname += ' ';
           }
           _ref1 = s.containers;

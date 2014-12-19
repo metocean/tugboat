@@ -69,7 +69,7 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
           console.log();
           _fn = function(servicename) {
             return tasks.push(function(cb) {
-              var c, e, excess, image, outputname, primary, s, servicetasks, tagname, _fn1, _fn2, _k, _l, _len2, _len3, _len4, _m, _ref, _ref1;
+              var additional, c, count, different, e, excess, found, image, isdifferent, item, output, outputname, primary, s, servicetasks, source, tagname, target, _fn1, _fn2, _k, _l, _len2, _len3, _len4, _len5, _len6, _len7, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
               s = g.services[servicename];
               servicetasks = [];
               if (!s.isknown) {
@@ -134,6 +134,71 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
                 for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
                   c = _ref1[_l];
                   if (image.image.Id === c.inspect.Image) {
+                    target = s.service.params;
+                    source = c.inspect;
+                    isdifferent = false;
+                    different = function(key, source, target) {
+                      console.log("Different " + key);
+                      console.log("" + source + " (" + (typeof source) + ") -> " + target + " (" + (typeof target) + ")");
+                      return isdifferent = true;
+                    };
+                    _ref2 = ['Entrypoint', 'User', 'Memory', 'WorkingDir'];
+                    for (_m = 0, _len4 = _ref2.length; _m < _len4; _m++) {
+                      name = _ref2[_m];
+                      if (source.Config[name] !== target[name]) {
+                        different(name, source.Config[name], target[name]);
+                      }
+                    }
+                    if (source.Config.Domainname === 'false') {
+                      if (target.Domainname !== false) {
+                        different('Domainname', source.Config.Domainname, target.Domainname);
+                      }
+                    } else if (source.Config.Domainname !== target.Domainname) {
+                      different('Domainname', source.Config.Domainname, target.Domainname);
+                    }
+                    if ((target.Hostname != null) && source.Config.Hostname !== target.Hostname) {
+                      different('Hostname', source.Config.Hostname, target.Hostname);
+                    }
+                    _ref3 = ['Privileged', 'NetworkMode'];
+                    for (_n = 0, _len5 = _ref3.length; _n < _len5; _n++) {
+                      name = _ref3[_n];
+                      if (source.HostConfig[name] !== target.HostConfig[name]) {
+                        different(name, source.HostConfig[name], target.HostConfig[name]);
+                      }
+                    }
+                    if (source.Config.Cmd.join(' ') !== target.Cmd.join(' ')) {
+                      different('Cmd', source.Config.Cmd.join(' '), target.Cmd.join(' '));
+                    }
+                    additional = 0;
+                    _ref4 = source.Config.Env;
+                    for (_o = 0, _len6 = _ref4.length; _o < _len6; _o++) {
+                      item = _ref4[_o];
+                      found = false;
+                      if (target.Env != null) {
+                        found = target.Env.filter(function(e) {
+                          return e === item;
+                        }).length !== 0;
+                      }
+                      if (!found) {
+                        if ((_ref5 = item.substr(0, 5)) !== 'PATH=' && _ref5 !== 'HOME=') {
+                          different('Env', item, 'not found');
+                        } else {
+                          additional++;
+                        }
+                      }
+                    }
+                    count = additional;
+                    output = '';
+                    if (target.Env != null) {
+                      count += target.Env.length;
+                      output = target.Env.join(' ');
+                    } else if (source.Config.Env.length !== count) {
+                      different('Env', source.Config.Env.join(' '), output);
+                    }
+                    if (isdifferent) {
+                      excess.push(c);
+                      continue;
+                    }
                     primary = c;
                   } else {
                     excess.push(c);
@@ -142,7 +207,7 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
                 _fn2 = function(e) {
                   name = e.container.Names[0].substr(1);
                   servicetasks.push(function(cb) {
-                    console.log("  " + outputname.blue + " image " + (image.image.Id.substr(0, 12).cyan) + " is newer than " + (c.inspect.Image.substr(0, 12).cyan));
+                    console.log("  " + outputname.blue + " container " + name.cyan + " is out of date");
                     return cb();
                   });
                   if (e.inspect.State.Running) {
@@ -174,8 +239,8 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
                     });
                   });
                 };
-                for (_m = 0, _len4 = excess.length; _m < _len4; _m++) {
-                  e = excess[_m];
+                for (_p = 0, _len7 = excess.length; _p < _len7; _p++) {
+                  e = excess[_p];
                   _fn2(e);
                 }
                 if (primary != null) {

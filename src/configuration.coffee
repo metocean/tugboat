@@ -156,22 +156,22 @@ module.exports = (groupname, services, path, cb) ->
       name: config.name
       params:
         Image: config.image
-        Cmd: config.command
-        User: config.user
-        Memory: config.mem_limit
-        Hostname: config.hostname
-        Domainname: config.domainname
-        Entrypoint: config.entrypoint
-        WorkingDir: config.working_dir
+        Cmd: config.command ? null
+        User: config.user ? ''
+        Memory: config.mem_limit ? 0
+        Hostname: config.hostname ? null
+        Domainname: config.domainname ? no
+        Entrypoint: config.entrypoint ? null
+        WorkingDir: config.working_dir ? ''
         Env: config.environment
-        ExposedPorts: config.expose
+        ExposedPorts: config.expose ? null
         HostConfig:
-          Binds: config.volumes
-          Links: config.links
-          Dns: config.dns
-          NetworkMode: config.net
-          Privileged: config.privileged
-          PortBindings: config.ports
+          Binds: config.volumes ? null
+          Links: config.links ? null
+          Dns: config.dns ? null
+          NetworkMode: config.net ? ''
+          Privileged: config.privileged ? no
+          PortBindings: config.ports ? null
   
   return cb errors if errors.length isnt 0
   cb null, services

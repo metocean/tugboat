@@ -32,7 +32,7 @@ module.exports = (tugboat, groupname, servicenames) ->
       for g in groupstoprocess
         do (g) ->
           tasks.push (cb) ->
-            console.log "  Stopping #{g.name.blue}..."
+            console.log "  Deleting #{g.name.blue}..."
             console.log()
             cb()
           
@@ -63,7 +63,7 @@ module.exports = (tugboat, groupname, servicenames) ->
           
           for s in servicestoprocess
             outputname = s.name
-            outputname += ' ' while outputname.length < 18
+            outputname += ' ' while outputname.length < 26
             for c in s.containers
               do (outputname, s, c) ->
                 tasks.push (cb) ->
