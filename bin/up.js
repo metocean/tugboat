@@ -7,7 +7,6 @@ init_errors = require('./errors');
 
 module.exports = function(tugboat, groupname, servicenames, isdryrun) {
   return tugboat.init(function(errors) {
-    var group, haderror, name, _i, _len;
     if (errors != null) {
       return init_errors(errors);
     }
@@ -17,174 +16,227 @@ module.exports = function(tugboat, groupname, servicenames, isdryrun) {
       console.error();
       process.exit(1);
     }
-    if (tugboat._groups[groupname] == null) {
-      console.error(("  The group '" + groupname + "' is not available in this directory").red);
-      console.error();
-      process.exit(1);
-    }
-    group = tugboat._groups[groupname];
-    if (servicenames.length === 0) {
-      servicenames = Object.keys(group.services);
-    }
-    haderror = false;
-    for (_i = 0, _len = servicenames.length; _i < _len; _i++) {
-      name = servicenames[_i];
-      if (group.services[name] == null) {
-        console.error(("  The service '" + name + "' is not available in the group '" + groupname + "'").red);
-        haderror = true;
-      }
-    }
-    if (haderror) {
-      process.exit(1);
-    }
-    return tugboat.ducke.ls(function(err, imagerepo) {
+    return tugboat.ps(function(err, groups) {
+      var group, haderror, name, _i, _len;
       if (err != null) {
         console.error();
         console.error('  docker is down'.red);
         console.error();
         process.exit(1);
       }
-      return tugboat.ps(function(err, groups) {
-        var g, servicename, tasks, _fn, _j, _len1;
+      if (groups[groupname] == null) {
+        console.error(("  The group '" + groupname + "' is not available in this directory").red);
+        console.error();
+        process.exit(1);
+      }
+      group = groups[groupname];
+      if (servicenames.length === 0) {
+        servicenames = Object.keys(group.services);
+      }
+      haderror = false;
+      for (_i = 0, _len = servicenames.length; _i < _len; _i++) {
+        name = servicenames[_i];
+        if (group.services[name] == null) {
+          console.error(("  The service '" + name + "' is not available in the group '" + groupname + "'").red);
+          haderror = true;
+        }
+      }
+      if (haderror) {
+        process.exit(1);
+      }
+      return tugboat.ducke.ls(function(err, imagerepo) {
         if (err != null) {
           console.error();
           console.error('  docker is down'.red);
           console.error();
           process.exit(1);
         }
-        g = groups[groupname];
-        tasks = [];
-        if (isdryrun) {
-          console.log("  Dry run for " + groupname.blue + "...");
-        } else {
-          console.log("  Starting " + groupname.blue + "...");
-        }
-        console.log();
-        _fn = function(servicename) {
-          return tasks.push(function(cb) {
-            var c, e, excess, image, imagename, outputname, primary, s, servicetasks, tagname, _fn1, _k, _l, _len2, _len3, _ref;
-            s = g.services[servicename];
-            outputname = servicename;
-            while (outputname.length < 18) {
-              outputname += ' ';
-            }
-            imagename = "" + groupname + "_" + servicename;
-            if (s.service.image != null) {
-              imagename = s.service.image;
-            }
-            tagname = imagename;
-            if (tagname.indexOf(':' === -1)) {
-              tagname += ':latest';
-            }
-            if (imagerepo.tags[tagname] == null) {
-              console.error("  " + outputname.blue + " image " + imagename.red + " is not available");
-              return cb();
-            }
-            image = imagerepo.tags[tagname];
-            primary = null;
-            excess = [];
-            _ref = s.containers;
-            for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
-              c = _ref[_k];
-              if (image.image.Id === c.inspect.Image) {
-                primary = c;
-              } else {
-                excess.push(c);
-              }
-            }
-            servicetasks = [];
-            _fn1 = function(e) {
-              name = e.container.Names[0].substr(1);
-              servicetasks.push(function(cb) {
-                console.log("  " + outputname.blue + " image " + (image.image.Id.substr(0, 12).cyan) + " is newer than " + (c.inspect.Image.substr(0, 12).cyan));
-                return cb();
-              });
-              if (e.inspect.State.Running) {
-                servicetasks.push(function(cb) {
-                  console.log("  " + outputname.blue + " stopping old container " + name.cyan);
-                  if (isdryrun) {
-                    return cb();
+        return tugboat.ps(function(err, groups) {
+          var g, servicename, tasks, _fn, _j, _len1;
+          if (err != null) {
+            console.error();
+            console.error('  docker is down'.red);
+            console.error();
+            process.exit(1);
+          }
+          g = groups[groupname];
+          tasks = [];
+          if (isdryrun) {
+            console.log("  Dry run for " + groupname.blue + "...");
+          } else {
+            console.log("  Starting " + groupname.blue + "...");
+          }
+          console.log();
+          _fn = function(servicename) {
+            return tasks.push(function(cb) {
+              var c, e, excess, image, imagename, outputname, primary, s, servicetasks, tagname, _fn1, _fn2, _k, _l, _len2, _len3, _len4, _m, _ref, _ref1;
+              s = g.services[servicename];
+              servicetasks = [];
+              if (!s.isknown) {
+                outputname = servicename;
+                outputname += ' (unknown)'.magenta;
+                while (outputname.length < 36) {
+                  outputname += ' ';
+                }
+                _ref = s.containers;
+                _fn1 = function(c) {
+                  name = c.container.Names[0].substr(1);
+                  if (c.inspect.State.Running) {
+                    servicetasks.push(function(cb) {
+                      console.log("  " + outputname.blue + " stopping container " + name.cyan);
+                      if (isdryrun) {
+                        return cb();
+                      }
+                      return tugboat.ducke.container(c.container.Id).stop(function(err, result) {
+                        if (err != null) {
+                          console.error(err);
+                          console.error();
+                        }
+                        return cb();
+                      });
+                    });
                   }
-                  return tugboat.ducke.container(e.container.Id).stop(function(err, result) {
-                    if (err != null) {
-                      console.error(err);
-                      console.error();
+                  return servicetasks.push(function(cb) {
+                    console.log("  " + outputname.blue + " deleting " + 'unknown'.magenta + " container " + name.cyan);
+                    if (isdryrun) {
+                      return cb();
                     }
+                    return tugboat.ducke.container(c.container.Id).rm(function(err, result) {
+                      if (err != null) {
+                        console.error(err);
+                        console.error();
+                      }
+                      return cb();
+                    });
+                  });
+                };
+                for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
+                  c = _ref[_k];
+                  _fn1(c);
+                }
+              } else {
+                outputname = servicename;
+                while (outputname.length < 26) {
+                  outputname += ' ';
+                }
+                imagename = "" + groupname + "_" + servicename;
+                if (s.service.image != null) {
+                  imagename = s.service.image;
+                }
+                tagname = imagename;
+                if (tagname.indexOf(':' === -1)) {
+                  tagname += ':latest';
+                }
+                if (imagerepo.tags[tagname] == null) {
+                  console.error("  " + outputname.blue + " image " + imagename.red + " is not available");
+                  return cb();
+                }
+                image = imagerepo.tags[tagname];
+                primary = null;
+                excess = [];
+                _ref1 = s.containers;
+                for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+                  c = _ref1[_l];
+                  if (image.image.Id === c.inspect.Image) {
+                    primary = c;
+                  } else {
+                    excess.push(c);
+                  }
+                }
+                _fn2 = function(e) {
+                  name = e.container.Names[0].substr(1);
+                  servicetasks.push(function(cb) {
+                    console.log("  " + outputname.blue + " image " + (image.image.Id.substr(0, 12).cyan) + " is newer than " + (c.inspect.Image.substr(0, 12).cyan));
                     return cb();
                   });
-                });
-              }
-              return servicetasks.push(function(cb) {
-                console.log("  " + outputname.blue + " removing old container " + name.cyan);
-                if (isdryrun) {
-                  return cb();
-                }
-                return tugboat.ducke.container(e.container.Id).rm(function(err, result) {
-                  if (err != null) {
-                    console.error(err);
-                    console.error();
+                  if (e.inspect.State.Running) {
+                    servicetasks.push(function(cb) {
+                      console.log("  " + outputname.blue + " stopping old container " + name.cyan);
+                      if (isdryrun) {
+                        return cb();
+                      }
+                      return tugboat.ducke.container(e.container.Id).stop(function(err, result) {
+                        if (err != null) {
+                          console.error(err);
+                          console.error();
+                        }
+                        return cb();
+                      });
+                    });
                   }
-                  return cb();
-                });
-              });
-            };
-            for (_l = 0, _len3 = excess.length; _l < _len3; _l++) {
-              e = excess[_l];
-              _fn1(e);
-            }
-            if (primary != null) {
-              name = primary.container.Names[0].substr(1);
-              if (primary.inspect.State.Running) {
-                servicetasks.push(function(cb) {
-                  console.log("  " + outputname.blue + " container " + name.cyan + " already " + 'running'.green);
-                  return cb();
-                });
-              } else {
-                servicetasks.push(function(cb) {
-                  console.log("  " + outputname.blue + " starting existing container " + name.cyan);
-                  if (isdryrun) {
-                    return cb();
-                  }
-                  return tugboat.ducke.container(primary.container.Id).start(function(err, result) {
-                    if (err != null) {
-                      console.error(err);
+                  return servicetasks.push(function(cb) {
+                    console.log("  " + outputname.blue + " removing old container " + name.cyan);
+                    if (isdryrun) {
+                      return cb();
                     }
-                    return cb();
+                    return tugboat.ducke.container(e.container.Id).rm(function(err, result) {
+                      if (err != null) {
+                        console.error(err);
+                        console.error();
+                      }
+                      return cb();
+                    });
                   });
-                });
-              }
-            } else {
-              servicetasks.push(function(cb) {
-                var newindex, newname;
-                newname = "" + groupname + "_" + servicename;
-                newindex = 1;
-                while (s.containers.filter(function(c) {
-                    return c.index === newindex;
-                  }).length !== 0) {
-                  newindex++;
+                };
+                for (_m = 0, _len4 = excess.length; _m < _len4; _m++) {
+                  e = excess[_m];
+                  _fn2(e);
                 }
-                newname += "_" + newindex;
-                console.log("  " + outputname.blue + " starting new container " + newname.cyan + " (" + imagename + ")");
-                if (isdryrun) {
-                  return cb();
-                }
-                return tugboat.up(s.service, imagename, newname, function(err) {
-                  if (err != null) {
-                    console.error(err);
+                if (primary != null) {
+                  name = primary.container.Names[0].substr(1);
+                  if (primary.inspect.State.Running) {
+                    servicetasks.push(function(cb) {
+                      console.log("  " + outputname.blue + " container " + name.cyan + " already " + 'running'.green);
+                      return cb();
+                    });
+                  } else {
+                    servicetasks.push(function(cb) {
+                      console.log("  " + outputname.blue + " starting existing container " + name.cyan);
+                      if (isdryrun) {
+                        return cb();
+                      }
+                      return tugboat.ducke.container(primary.container.Id).start(function(err, result) {
+                        if (err != null) {
+                          console.error(err);
+                        }
+                        return cb();
+                      });
+                    });
                   }
-                  return cb();
-                });
-              });
-            }
-            return series(servicetasks, cb);
+                } else {
+                  servicetasks.push(function(cb) {
+                    var newindex, newname;
+                    newname = "" + groupname + "_" + servicename;
+                    newindex = 1;
+                    while (s.containers.filter(function(c) {
+                        return c.index === newindex;
+                      }).length !== 0) {
+                      newindex++;
+                    }
+                    newname += "_" + newindex;
+                    console.log("  " + outputname.blue + " starting new container " + newname.cyan + " (" + imagename + ")");
+                    if (isdryrun) {
+                      return cb();
+                    }
+                    return tugboat.up(s.service, imagename, newname, function(err) {
+                      if (err != null) {
+                        console.error(err);
+                      }
+                      return cb();
+                    });
+                  });
+                }
+              }
+              return series(servicetasks, cb);
+            });
+          };
+          for (_j = 0, _len1 = servicenames.length; _j < _len1; _j++) {
+            servicename = servicenames[_j];
+            _fn(servicename);
+          }
+          return series(tasks, function() {
+            return console.log();
           });
-        };
-        for (_j = 0, _len1 = servicenames.length; _j < _len1; _j++) {
-          servicename = servicenames[_j];
-          _fn(servicename);
-        }
-        return series(tasks, function() {
-          return console.log();
         });
       });
     });

@@ -19,9 +19,12 @@ usage = """
     rm          Delete services
     build       Build services
     rebuild     Build services from scratch
-    prune       Stop and delete unknown containers
 
 """
+
+process.on 'uncaughtException', (err) ->
+  console.log '  Caught exception: '.red
+  console.log err
 
 # General purpose printing an error and usage
 usage_error = (message) =>
@@ -68,10 +71,6 @@ cmds =
   
   rebuild: ->
     commands.rebuild tugboat, args
-  
-  prune: ->
-    return commands.prune tugboat, args if args.length > 0
-    usage_error 'tug prune requires a group name'
 
 command = args[0]
 args.shift()

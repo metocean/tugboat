@@ -16,10 +16,9 @@ module.exports =
   
   rm: require './rm'
   down: require './down'
-  prune: require './prune'
   ps: require './ps'
   
-  # These are just different cache options for the same build function
+  # Different cache options for the same build function
   build: (tugboat, names) ->
     build tugboat, names, yes
   rebuild: (tugboat, names) ->

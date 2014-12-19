@@ -21,7 +21,6 @@ module.exports = {
   },
   rm: require('./rm'),
   down: require('./down'),
-  prune: require('./prune'),
   ps: require('./ps'),
   build: function(tugboat, names) {
     return build(tugboat, names, true);

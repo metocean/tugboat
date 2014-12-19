@@ -81,8 +81,8 @@ module.exports = function(tugboat, groupname, servicenames) {
         }
         for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
           s = servicestoprocess[_k];
-          outputname = s.name;
-          while (outputname.length < 18) {
+          outputname = s.name.blue;
+          while (outputname.length < 36) {
             outputname += ' ';
           }
           _ref1 = s.containers;

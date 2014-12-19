@@ -62,8 +62,8 @@ module.exports = (tugboat, groupname, servicenames) ->
               cb()
           
           for s in servicestoprocess
-            outputname = s.name
-            outputname += ' ' while outputname.length < 18
+            outputname = s.name.blue
+            outputname += ' ' while outputname.length < 36
             for c in s.containers
               do (outputname, s, c) ->
                 tasks.push (cb) ->

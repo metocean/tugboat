@@ -30,7 +30,7 @@ module.exports = function(tugboat, names) {
         for (_ in groups) {
           group = groups[_];
           name = group.name.blue;
-          while (name.length < 28) {
+          while (name.length < 36) {
             name += ' ';
           }
           postfix = '';
@@ -110,7 +110,7 @@ module.exports = function(tugboat, names) {
             i = _ref2[_j];
             servicename += " " + i.index;
           }
-          while (servicename.length < 36) {
+          while (servicename.length < 34) {
             servicename += ' ';
           }
           status = '-'.magenta;

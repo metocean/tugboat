@@ -23,7 +23,7 @@ module.exports = (tugboat, names) ->
         console.log()
         for _, group of groups
           name = group.name.blue
-          name += ' ' while name.length < 28
+          name += ' ' while name.length < 36
           
           # We discover groups by parsing active docker container names
           # These might not be detailed in group yaml files
@@ -95,7 +95,7 @@ module.exports = (tugboat, names) ->
           servicename = service.name.cyan
           for i in service.containers
             servicename += " #{i.index}"
-          servicename += ' ' while servicename.length < 36
+          servicename += ' ' while servicename.length < 34
           
           # Calculate a status for each service
           status = '-'.magenta
