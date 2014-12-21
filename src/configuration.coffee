@@ -118,12 +118,6 @@ module.exports = (groupname, services, path, cb) ->
           results.push "#{key}=#{value}"
       config.environment = results
     
-    if config.expose?
-      results = {}
-      config.expose = config.expose.map (e) ->
-        results[parse_port e] = {}
-      config.expose = results
-    
     if config.ports?
       results = {}
       for p in config.ports
@@ -146,6 +140,16 @@ module.exports = (groupname, services, path, cb) ->
         else
           errors.push new TUGBOATFormatException "In the service #{name.cyan} the port binding '#{p.cyan}'' was an unexpected format."
       config.ports = results
+    
+    if config.expose?
+      results = {}
+      config.expose = config.expose.map (e) ->
+        results[parse_port e] = {}
+      config.expose = results
+    
+    # Expose port mappings as well
+    for port, _ of config.ports
+      config.expose[port] = {}
     
     config.name = "#{groupname}_#{name}"
     config.command = config.command.split ' ' if config.command?
