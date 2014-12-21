@@ -130,10 +130,12 @@ module.exports = (groupname, services, path, cb) ->
         chunks = p.split ':'
         if chunks.length is 1
           results[parse_port chunks[0]] = [
+            HostIp: '0.0.0.0'
             HostPort: chunks[0]
           ]
         else if chunks.length is 2
           results[parse_port chunks[1]] = [
+            HostIp: '0.0.0.0'
             HostPort: chunks[0]
           ]
         else if chunks.length is 3
@@ -159,7 +161,7 @@ module.exports = (groupname, services, path, cb) ->
         User: config.user ? ''
         Memory: config.mem_limit ? 0
         Hostname: config.hostname ? null
-        Domainname: config.domainname ? no
+        Domainname: config.domainname ? null
         Entrypoint: config.entrypoint ? null
         WorkingDir: config.working_dir ? ''
         Env: config.environment

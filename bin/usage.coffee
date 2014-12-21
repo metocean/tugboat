@@ -23,8 +23,8 @@ usage = """
 """
 
 process.on 'uncaughtException', (err) ->
-  console.log '  Caught exception: '.red
-  console.log err.stack
+  console.error '  Caught exception: '.red
+  console.error err.stack
 
 # General purpose printing an error and usage
 usage_error = (message) =>

@@ -181,12 +181,14 @@ module.exports = function(groupname, services, path, cb) {
         if (chunks.length === 1) {
           results[parse_port(chunks[0])] = [
             {
+              HostIp: '0.0.0.0',
               HostPort: chunks[0]
             }
           ];
         } else if (chunks.length === 2) {
           results[parse_port(chunks[1])] = [
             {
+              HostIp: '0.0.0.0',
               HostPort: chunks[0]
             }
           ];
@@ -221,7 +223,7 @@ module.exports = function(groupname, services, path, cb) {
         User: (_ref4 = config.user) != null ? _ref4 : '',
         Memory: (_ref5 = config.mem_limit) != null ? _ref5 : 0,
         Hostname: (_ref6 = config.hostname) != null ? _ref6 : null,
-        Domainname: (_ref7 = config.domainname) != null ? _ref7 : false,
+        Domainname: (_ref7 = config.domainname) != null ? _ref7 : null,
         Entrypoint: (_ref8 = config.entrypoint) != null ? _ref8 : null,
         WorkingDir: (_ref9 = config.working_dir) != null ? _ref9 : '',
         Env: config.environment,
