@@ -205,10 +205,15 @@ module.exports = function(groupname, services, path, cb) {
       });
       config.expose = results;
     }
-    _ref3 = config.ports;
-    for (port in _ref3) {
-      _ = _ref3[port];
-      config.expose[port] = {};
+    if (config.ports != null) {
+      if (config.expose == null) {
+        config.expose = {};
+      }
+      _ref3 = config.ports;
+      for (port in _ref3) {
+        _ = _ref3[port];
+        config.expose[port] = {};
+      }
     }
     config.name = "" + groupname + "_" + name;
     if (config.command != null) {

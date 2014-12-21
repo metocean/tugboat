@@ -148,8 +148,10 @@ module.exports = (groupname, services, path, cb) ->
       config.expose = results
     
     # Expose port mappings as well
-    for port, _ of config.ports
-      config.expose[port] = {}
+    if config.ports?
+      config.expose = {} if !config.expose?
+      for port, _ of config.ports
+        config.expose[port] = {}
     
     config.name = "#{groupname}_#{name}"
     config.command = config.command.split ' ' if config.command?
