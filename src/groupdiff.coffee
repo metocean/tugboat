@@ -23,6 +23,7 @@ module.exports = (groups, statuses) ->
     chunks = name.split '_'
     continue if chunks.length isnt 3
     [groupname, name, index] = chunks
+    
     # Create groups that we don't know about
     if !results[groupname]?
       results[groupname] =

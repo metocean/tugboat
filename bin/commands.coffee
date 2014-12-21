@@ -1,5 +1,4 @@
 require 'colors'
-series = require '../src/series'
 init_errors = require './errors'
 
 build = require './build'
@@ -10,7 +9,15 @@ module.exports =
   
   # Dry run vs actually doing it
   diff: (tugboat, groupname, servicenames) ->
-    up tugboat, groupname, servicenames, yes
+    tugboat.init (errors) ->
+      return init_errors errors if errors?
+      tugboat.diff (err, results) ->
+        return console.err if err?
+        # console.log results[groupname]
+        # for _, service of results[groupname].services
+        #   console.log service
+    
+    #up tugboat, groupname, servicenames, yes
   up: (tugboat, groupname, servicenames) ->
     up tugboat, groupname, servicenames, no
   

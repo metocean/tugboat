@@ -62,6 +62,7 @@ parallel = function(tasks, callback) {
 module.exports = Tugboat = (function() {
   function Tugboat(options) {
     this.up = __bind(this.up, this);
+    this.diff = __bind(this.diff, this);
     this.ps = __bind(this.ps, this);
     this.build = __bind(this.build, this);
     this.init = __bind(this.init, this);
@@ -169,7 +170,26 @@ module.exports = Tugboat = (function() {
         if (err != null) {
           return callback(err);
         }
-        return callback(null, servicediff(groupdiff(_this._groups, containers)));
+        return callback(null, groupdiff(_this._groups, containers));
+      };
+    })(this));
+  };
+
+  Tugboat.prototype.diff = function(callback) {
+    return this.ducke.ps((function(_this) {
+      return function(err, containers) {
+        if (err != null) {
+          return callback(err);
+        }
+        return _this.ducke.ls(function(err, imagerepo) {
+          var groupsgrouped, servicesdiffed;
+          if (err != null) {
+            return callback(err);
+          }
+          groupsgrouped = groupdiff(_this._groups, containers);
+          servicesdiffed = servicediff(imagerepo, groupsgrouped);
+          return callback(null, servicesdiffed);
+        });
       };
     })(this));
   };
