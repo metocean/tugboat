@@ -1,62 +1,4 @@
-diffcontainer = (container, service, image) ->
-  if container.inspect.Image isnt image.image.Id
-    return 'Different image'
-  
-  target = service.service.params
-  source = container.inspect
-  
-  for name in [
-    'Entrypoint'
-    'User'
-    'Memory'
-    'WorkingDir'
-  ]
-    if source.Config[name] isnt target[name]
-      return "#{name} different - #{source.Config[name]} -> #{target[name]}"
-  
-  if source.Config.Domainname is 'false'
-    if target.Domainname isnt no
-      return "Domainname different - #{source.Config.Domainname} -> target.Domainname"
-  else if source.Config.Domainname isnt target.Domainname
-    return "Domainname different - #{source.Config.Domainname} -> target.Domainname"
-  
-  if target.Hostname? and source.Config.Hostname isnt target.Hostname
-    return "Domainname different - #{source.Config.Hostname} -> target.Hostname"
-  
-  for name in [
-    'Privileged'
-    'NetworkMode'
-  ]
-    if source.HostConfig[name] != target.HostConfig[name]
-      return "#{name} different - #{source.HostConfig[name]} -> #{target.HostConfig[name]}"
-  
-  sourceCmd = source.Config.Cmd.join(' ')
-  targetCmd = target.Cmd.join(' ')
-  if sourceCmd isnt targetCmd
-    return "Cmd different - #{sourceCmd} -> #{targetCmd}"
-  
-  additional = 0
-  for item in source.Config.Env
-    found = no
-    if target.Env?
-      found = target.Env
-        .filter (e) -> e is item
-        .length isnt 0
-    if !found
-      unless item.substr(0, 5) in ['PATH=', 'HOME=']
-        return "Env different - item -> 'not found'"
-      additional++
-  
-  count = additional
-  output = "'not found'"
-  if target.Env?
-    count += target.Env.length
-    output = target.Env.join ', '
-  if source.Config.Env.length isnt count
-    return "Env different - #{source.Config.Env.join(', ')} -> #{output}"
-  
-  
-  null
+containerdiff = require './containerdiff'
 
 identifyprimary = (service, imagerepo) ->
   if !service.isknown
@@ -94,12 +36,11 @@ identifyprimary = (service, imagerepo) ->
       result.discard.push c
       continue
     
-    difference = diffcontainer c, service, image
+    difference = containerdiff c, service, image
     
     if !difference?
       result.keep.push c
     else
-      console.log difference
       result.messages.push difference
       result.discard.push c
   
@@ -140,18 +81,6 @@ servicediff = (group, service, imagerepo) ->
   
   if !result.iserror
     result.create++ while result.create + keep.length < 1
-  
-  console.log "#{group.name} #{service.name}"
-  console.log "  messages:"
-  for m in result.messages
-    console.log "    #{m}"
-  console.log "  stop: #{result.stop.length}"
-  console.log "  rm: #{result.rm.length}"
-  console.log "  start: #{result.start.length}"
-  console.log "  keep: #{result.keep.length}"
-  console.log "  error: #{result.error.length}"
-  console.log "  create: #{result.create}"
-  console.log "  iserror: #{result.iserror}"
   
   result
 

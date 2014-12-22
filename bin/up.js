@@ -5,338 +5,136 @@ series = require('../src/series');
 
 init_errors = require('./errors');
 
-module.exports = function(tugboat, groupname, servicenames, isdryrun) {
+module.exports = function(tugboat, groupname, servicenames) {
   return tugboat.init(function(errors) {
     if (errors != null) {
       return init_errors(errors);
     }
-    console.log();
-    if (Object.keys(tugboat._groups).length === 0) {
-      console.error('  There are no groups defined in this directory'.red);
-      console.error();
-      process.exit(1);
-    }
-    return tugboat.ps(function(err, groups) {
-      var group, haderror, name, _i, _len;
+    return tugboat.diff(function(err, results) {
+      var service, tasks, _, _fn, _ref;
       if (err != null) {
-        console.error();
-        console.error('  docker is down'.red);
-        console.error();
-        process.exit(1);
+        return console.err;
       }
-      if (groups[groupname] == null) {
-        console.error(("  The group '" + groupname + "' is not available in this directory").red);
-        console.error();
-        process.exit(1);
-      }
-      group = groups[groupname];
-      if (servicenames.length === 0) {
-        servicenames = Object.keys(group.services);
-      }
-      haderror = false;
-      for (_i = 0, _len = servicenames.length; _i < _len; _i++) {
-        name = servicenames[_i];
-        if (group.services[name] == null) {
-          console.error(("  The service '" + name + "' is not available in the group '" + groupname + "'").red);
-          haderror = true;
-        }
-      }
-      if (haderror) {
-        process.exit(1);
-      }
-      return tugboat.ducke.ls(function(err, imagerepo) {
-        if (err != null) {
-          console.error();
-          console.error('  docker is down'.red);
-          console.error();
-          process.exit(1);
-        }
-        return tugboat.ps(function(err, groups) {
-          var g, servicename, tasks, _fn, _j, _len1;
-          if (err != null) {
-            console.error();
-            console.error('  docker is down'.red);
-            console.error();
-            process.exit(1);
+      tasks = [];
+      console.log();
+      console.log("  Updating " + groupname.blue + "...");
+      console.log();
+      _ref = results[groupname].services;
+      _fn = function(service) {
+        var c, i, _fn1, _fn2, _fn3, _fn4, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref1, _ref2, _ref3, _ref4, _ref5;
+        tasks.push(function(cb) {
+          var m, _i, _j, _len, _len1, _ref1, _ref2;
+          console.log("  " + service.name.cyan + ":");
+          if (service.diff.iserror) {
+            console.error("  Error:".red);
+            _ref1 = service.diff.messages;
+            for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+              m = _ref1[_i];
+              console.log("  " + m);
+            }
+            return cb();
           }
-          g = groups[groupname];
-          tasks = [];
-          if (isdryrun) {
-            console.log("  Dry run for " + groupname.blue + "...");
-          } else {
-            console.log("  Starting " + groupname.blue + "...");
+          _ref2 = service.diff.messages;
+          for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+            m = _ref2[_j];
+            console.log("    " + m);
           }
-          console.log();
-          _fn = function(servicename) {
-            return tasks.push(function(cb) {
-              var additional, binding, c, count, different, e, excess, found, image, isdifferent, item, output, outputname, port, primary, s, servicetasks, source, tagname, target, _, _fn1, _fn2, _k, _l, _len2, _len3, _len4, _len5, _len6, _len7, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
-              s = g.services[servicename];
-              servicetasks = [];
-              if (!s.isknown) {
-                outputname = servicename;
-                outputname += ' (unknown)'.magenta;
-                while (outputname.length < 36) {
-                  outputname += ' ';
-                }
-                _ref = s.containers;
-                _fn1 = function(c) {
-                  name = c.container.Names[0].substr(1);
-                  if (c.inspect.State.Running) {
-                    servicetasks.push(function(cb) {
-                      console.log("  " + outputname.blue + " stopping container " + name.cyan);
-                      if (isdryrun) {
-                        return cb();
-                      }
-                      return tugboat.ducke.container(c.container.Id).stop(function(err, result) {
-                        if (err != null) {
-                          console.error(err);
-                          console.error();
-                        }
-                        return cb();
-                      });
-                    });
-                  }
-                  return servicetasks.push(function(cb) {
-                    console.log("  " + outputname.blue + " deleting " + 'unknown'.magenta + " container " + name.cyan);
-                    if (isdryrun) {
-                      return cb();
-                    }
-                    return tugboat.ducke.container(c.container.Id).rm(function(err, result) {
-                      if (err != null) {
-                        console.error(err);
-                        console.error();
-                      }
-                      return cb();
-                    });
-                  });
-                };
-                for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
-                  c = _ref[_k];
-                  _fn1(c);
-                }
-              } else {
-                outputname = servicename;
-                while (outputname.length < 26) {
-                  outputname += ' ';
-                }
-                tagname = s.service.params.Image;
-                if (tagname.indexOf(':' === -1)) {
-                  tagname += ':latest';
-                }
-                if (imagerepo.tags[tagname] == null) {
-                  console.error("  " + outputname.blue + " image " + s.service.params.Image.red + " is not available");
-                  return cb();
-                }
-                image = imagerepo.tags[tagname];
-                primary = null;
-                excess = [];
-                _ref1 = s.containers;
-                for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
-                  c = _ref1[_l];
-                  if (image.image.Id === c.inspect.Image) {
-                    target = s.service.params;
-                    source = c.inspect;
-                    isdifferent = false;
-                    different = function(key, source, target) {
-                      console.log("Different " + key);
-                      console.log("" + source + " (" + (typeof source) + ") -> " + target + " (" + (typeof target) + ")");
-                      return isdifferent = true;
-                    };
-                    _ref2 = ['Entrypoint', 'User', 'Memory', 'WorkingDir'];
-                    for (_m = 0, _len4 = _ref2.length; _m < _len4; _m++) {
-                      name = _ref2[_m];
-                      if (source.Config[name] !== target[name]) {
-                        different(name, source.Config[name], target[name]);
-                      }
-                    }
-                    if (source.Config.Domainname === 'false') {
-                      if (target.Domainname !== false) {
-                        different('Domainname', source.Config.Domainname, target.Domainname);
-                      }
-                    } else if (source.Config.Domainname !== target.Domainname) {
-                      different('Domainname', source.Config.Domainname, target.Domainname);
-                    }
-                    if ((target.Hostname != null) && source.Config.Hostname !== target.Hostname) {
-                      different('Hostname', source.Config.Hostname, target.Hostname);
-                    }
-                    _ref3 = ['Privileged', 'NetworkMode'];
-                    for (_n = 0, _len5 = _ref3.length; _n < _len5; _n++) {
-                      name = _ref3[_n];
-                      if (source.HostConfig[name] !== target.HostConfig[name]) {
-                        different(name, source.HostConfig[name], target.HostConfig[name]);
-                      }
-                    }
-                    if (source.Config.Cmd.join(' ') !== target.Cmd.join(' ')) {
-                      different('Cmd', source.Config.Cmd.join(' '), target.Cmd.join(' '));
-                    }
-                    additional = 0;
-                    _ref4 = source.Config.Env;
-                    for (_o = 0, _len6 = _ref4.length; _o < _len6; _o++) {
-                      item = _ref4[_o];
-                      found = false;
-                      if (target.Env != null) {
-                        found = target.Env.filter(function(e) {
-                          return e === item;
-                        }).length !== 0;
-                      }
-                      if (!found) {
-                        if ((_ref5 = item.substr(0, 5)) !== 'PATH=' && _ref5 !== 'HOME=') {
-                          different('Env', item, 'not found');
-                        } else {
-                          additional++;
-                        }
-                      }
-                    }
-                    count = additional;
-                    output = '';
-                    if (target.Env != null) {
-                      count += target.Env.length;
-                      output = target.Env.join(' ');
-                    } else if (source.Config.Env.length !== count) {
-                      different('Env', source.Config.Env.join(' '), output);
-                    }
-                    if ((source.Config.ExposedPorts == null) && (target.ExposedPorts == null)) {
-
-                    } else if (source.Config.ExposedPorts === null || target.ExposedPorts === null) {
-                      different('ExposedPorts', source.Config.ExposedPorts, target.ExposedPorts);
-                    } else if (Object.keys(source.Config.ExposedPorts).length !== Object.keys(target.ExposedPorts).length) {
-                      different('ExposedPorts', Object.keys(source.Config.ExposedPorts).length, Object.keys(target.ExposedPorts).length);
-                    } else {
-                      _ref6 = source.Config.ExposedPorts;
-                      for (port in _ref6) {
-                        _ = _ref6[port];
-                        if (target.ExposedPorts[port] == null) {
-                          different('ExposedPorts', port, 'not found');
-                        }
-                      }
-                    }
-                    if ((source.NetworkSettings.Ports == null) && (target.HostConfig.PortBindings == null)) {
-
-                    } else if (source.NetworkSettings.Ports === null || target.HostConfig.PortBindings === null) {
-                      different('PortBindings', source.NetworkSettings.Ports, target.HostConfig.PortBindings);
-                    } else if (Object.keys(source.NetworkSettings.Ports).length !== Object.keys(target.HostConfig.PortBindings).length) {
-                      different('PortBindings', Object.keys(source.NetworkSettings.Ports).length, Object.keys(target.HostConfig.PortBindings).length);
-                    } else {
-                      _ref7 = source.NetworkSettings.Ports;
-                      for (port in _ref7) {
-                        binding = _ref7[port];
-                        if (target.HostConfig.PortBindings[port] == null) {
-                          different('PortBindings', port, 'not found');
-                        } else {
-                          if (binding.HostIp !== target.HostConfig.PortBindings[port].HostIp) {
-                            different('PortBindings', binding.HostIp, target.HostConfig.PortBindings[port].HostIp);
-                          }
-                          if (binding.HostPort !== target.HostConfig.PortBindings[port].HostPort) {
-                            different('PortBindings', binding.HostPort, target.HostConfig.PortBindings[port].HostPort);
-                          }
-                        }
-                      }
-                    }
-                    if (isdifferent) {
-                      excess.push(c);
-                      continue;
-                    }
-                    primary = c;
-                  } else {
-                    excess.push(c);
-                  }
-                }
-                _fn2 = function(e) {
-                  name = e.container.Names[0].substr(1);
-                  servicetasks.push(function(cb) {
-                    console.log("  " + outputname.blue + " container " + name.cyan + " is out of date");
-                    return cb();
-                  });
-                  if (e.inspect.State.Running) {
-                    servicetasks.push(function(cb) {
-                      console.log("  " + outputname.blue + " stopping old container " + name.cyan);
-                      if (isdryrun) {
-                        return cb();
-                      }
-                      return tugboat.ducke.container(e.container.Id).stop(function(err, result) {
-                        if (err != null) {
-                          console.error(err);
-                          console.error();
-                        }
-                        return cb();
-                      });
-                    });
-                  }
-                  return servicetasks.push(function(cb) {
-                    console.log("  " + outputname.blue + " removing old container " + name.cyan);
-                    if (isdryrun) {
-                      return cb();
-                    }
-                    return tugboat.ducke.container(e.container.Id).rm(function(err, result) {
-                      if (err != null) {
-                        console.error(err);
-                        console.error();
-                      }
-                      return cb();
-                    });
-                  });
-                };
-                for (_p = 0, _len7 = excess.length; _p < _len7; _p++) {
-                  e = excess[_p];
-                  _fn2(e);
-                }
-                if (primary != null) {
-                  name = primary.container.Names[0].substr(1);
-                  if (primary.inspect.State.Running) {
-                    servicetasks.push(function(cb) {
-                      console.log("  " + outputname.blue + " container " + name.cyan + " already " + 'running'.green);
-                      return cb();
-                    });
-                  } else {
-                    servicetasks.push(function(cb) {
-                      console.log("  " + outputname.blue + " starting existing container " + name.cyan);
-                      if (isdryrun) {
-                        return cb();
-                      }
-                      return tugboat.ducke.container(primary.container.Id).start(function(err, result) {
-                        if (err != null) {
-                          console.error(err);
-                        }
-                        return cb();
-                      });
-                    });
-                  }
-                } else {
-                  servicetasks.push(function(cb) {
-                    var newindex, newname;
-                    newname = "" + groupname + "_" + servicename;
-                    newindex = 1;
-                    while (s.containers.filter(function(c) {
-                        return c.index === newindex;
-                      }).length !== 0) {
-                      newindex++;
-                    }
-                    newname += "_" + newindex;
-                    console.log("  " + outputname.blue + " starting new container " + newname.cyan + " (" + s.service.params.Image + ")");
-                    if (isdryrun) {
-                      return cb();
-                    }
-                    return tugboat.up(s.service, newname, function(err) {
-                      if (err != null) {
-                        console.error(err);
-                      }
-                      return cb();
-                    });
-                  });
-                }
-              }
-              return series(servicetasks, cb);
-            });
-          };
-          for (_j = 0, _len1 = servicenames.length; _j < _len1; _j++) {
-            servicename = servicenames[_j];
-            _fn(servicename);
-          }
-          return series(tasks, function() {
-            return console.log();
-          });
+          return cb();
         });
-      });
+        _ref1 = service.diff.stop;
+        _fn1 = function(c) {
+          return tasks.push(function(cb) {
+            console.log("    Stopping " + (c.container.Names[0].substr('1').green));
+            return tugboat.ducke.container(c.container.Id).stop(function(err, result) {
+              if (err != null) {
+                console.error(err);
+                console.error();
+              }
+              return cb();
+            });
+          });
+        };
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          c = _ref1[_i];
+          _fn1(c);
+        }
+        _ref2 = service.diff.rm;
+        _fn2 = function(c) {
+          return tasks.push(function(cb) {
+            console.log("    Deleting " + (c.container.Names[0].substr('1').green));
+            return tugboat.ducke.container(c.container.Id).rm(function(err, result) {
+              if (err != null) {
+                console.error(err);
+                console.error();
+              }
+              return cb();
+            });
+          });
+        };
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          c = _ref2[_j];
+          _fn2(c);
+        }
+        _ref3 = service.diff.start;
+        _fn3 = function(c) {
+          return tasks.push(function(cb) {
+            console.log("    Starting " + (c.container.Names[0].substr('1').green));
+            return tugboat.ducke.container(c.container.Id).start(function(err, result) {
+              if (err != null) {
+                console.error(err);
+                console.error();
+              }
+              return cb();
+            });
+          });
+        };
+        for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
+          c = _ref3[_k];
+          _fn3(c);
+        }
+        _ref4 = service.diff.keep;
+        _fn4 = function(c) {
+          return tasks.push(function(cb) {
+            console.log("    Keeping " + (c.container.Names[0].substr('1').green));
+            return cb();
+          });
+        };
+        for (_l = 0, _len3 = _ref4.length; _l < _len3; _l++) {
+          c = _ref4[_l];
+          _fn4(c);
+        }
+        if (service.diff.create > 0) {
+          for (i = _m = 1, _ref5 = service.diff.create; 1 <= _ref5 ? _m <= _ref5 : _m >= _ref5; i = 1 <= _ref5 ? ++_m : --_m) {
+            tasks.push(function(cb) {
+              var newindex, newname;
+              newname = "" + groupname + "_" + service.name;
+              newindex = 1;
+              while (service.containers.filter(function(c) {
+                  return c.index === newindex;
+                }).length !== 0) {
+                newindex++;
+              }
+              newname += "_" + newindex;
+              console.log("    Creating new container " + newname.cyan + " (" + service.service.params.Image + ")");
+              return tugboat.up(service.service, newname, function(err) {
+                if (err != null) {
+                  console.error(err);
+                }
+                return cb();
+              });
+            });
+          }
+        }
+        return tasks.push(function(cb) {
+          console.log();
+          return cb();
+        });
+      };
+      for (_ in _ref) {
+        service = _ref[_];
+        _fn(service);
+      }
+      return series(tasks, function() {});
     });
   });
 };
