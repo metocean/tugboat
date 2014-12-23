@@ -14,6 +14,7 @@ module.exports = {
   rm: require('./rm'),
   down: require('./down'),
   ps: require('./ps'),
+  pull: require('./pull'),
   build: function(tugboat, names) {
     return build(tugboat, names, true);
   },

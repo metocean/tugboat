@@ -72,6 +72,9 @@ cmds =
   
   rebuild: ->
     commands.rebuild tugboat, args
+  
+  pull: ->
+    commands.pull tugboat, args
 
 command = args[0]
 args.shift()

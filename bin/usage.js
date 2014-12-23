@@ -75,6 +75,9 @@ cmds = {
   },
   rebuild: function() {
     return commands.rebuild(tugboat, args);
+  },
+  pull: function() {
+    return commands.pull(tugboat, args);
   }
 };
 

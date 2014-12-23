@@ -37,7 +37,6 @@ module.exports = (tugboat, groupname, servicenames) ->
                   .stop (err, result) ->
                     if err?
                       console.error err
-                      console.error()
                     cb()
           for c in service.diff.rm
             do (c) ->
@@ -48,7 +47,6 @@ module.exports = (tugboat, groupname, servicenames) ->
                   .rm (err, result) ->
                     if err?
                       console.error err
-                      console.error()
                     cb()
           for c in service.diff.start
             do (c) ->
@@ -59,7 +57,6 @@ module.exports = (tugboat, groupname, servicenames) ->
                   .start (err, result) ->
                     if err?
                       console.error err
-                      console.error()
                     cb()
           for c in service.diff.keep
             do (c) ->
@@ -73,7 +70,7 @@ module.exports = (tugboat, groupname, servicenames) ->
                 newname = "#{groupname}_#{service.name}"
                 newindex = 1
                 newindex++ while service.containers
-                  .filter (c) -> c.index is newindex
+                  .filter (c) -> c.index is newindex.toString()
                   .length isnt 0
                 newname += "_#{newindex}"
                 console.log "    Creating new container #{newname.cyan} (#{service.service.params.Image})"

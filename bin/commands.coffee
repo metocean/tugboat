@@ -10,6 +10,7 @@ module.exports =
   rm: require './rm'
   down: require './down'
   ps: require './ps'
+  pull: require './pull'
   
   # Different cache options for the same build function
   build: (tugboat, names) ->

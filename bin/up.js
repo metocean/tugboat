@@ -48,7 +48,6 @@ module.exports = function(tugboat, groupname, servicenames) {
             return tugboat.ducke.container(c.container.Id).stop(function(err, result) {
               if (err != null) {
                 console.error(err);
-                console.error();
               }
               return cb();
             });
@@ -65,7 +64,6 @@ module.exports = function(tugboat, groupname, servicenames) {
             return tugboat.ducke.container(c.container.Id).rm(function(err, result) {
               if (err != null) {
                 console.error(err);
-                console.error();
               }
               return cb();
             });
@@ -82,7 +80,6 @@ module.exports = function(tugboat, groupname, servicenames) {
             return tugboat.ducke.container(c.container.Id).start(function(err, result) {
               if (err != null) {
                 console.error(err);
-                console.error();
               }
               return cb();
             });
@@ -110,7 +107,7 @@ module.exports = function(tugboat, groupname, servicenames) {
               newname = "" + groupname + "_" + service.name;
               newindex = 1;
               while (service.containers.filter(function(c) {
-                  return c.index === newindex;
+                  return c.index === newindex.toString();
                 }).length !== 0) {
                 newindex++;
               }
