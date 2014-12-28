@@ -1,7 +1,7 @@
 # Does not compare volumes from or links!
 module.exports = (container, service, image) ->
   if container.inspect.Image isnt image.image.Id
-    return 'Different image'
+    return "Different image (#{container.inspect.Image.substr 0, 12} -> image.image.Id.substr 0, 12)"
   
   target = service.service.params
   source = container.inspect
@@ -36,8 +36,12 @@ module.exports = (container, service, image) ->
       return "#{term} different (#{source.HostConfig[name]} -> #{target.HostConfig[name]})"
   
   # console.log 'Checking Cmd'
-  sourceCmd = source.Config.Cmd.join(' ')
-  targetCmd = target.Cmd.join(' ')
+  sourceCmd = source.Config.Cmd.join ' '
+  targetCmd = target.Cmd
+  if !targetCmd?
+    targetCmd = image.inspect.Config.Cmd
+  if targetCmd?
+    targetCmd = targetCmd.join ' '
   if sourceCmd isnt targetCmd
     return "command different (#{sourceCmd} -> #{targetCmd})"
   

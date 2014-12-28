@@ -11,43 +11,52 @@ module.exports = function(tugboat, groupname, servicenames) {
       return init_errors(errors);
     }
     return tugboat.diff(function(err, results) {
-      var service, tasks, _, _fn, _ref;
+      var outputname, service, tasks, _, _fn, _ref;
       if (err != null) {
-        return console.err;
+        if (err.stack) {
+          console.error(err.stack);
+        } else {
+          console.error(err);
+        }
+        return;
       }
       tasks = [];
       console.log();
       console.log("  Updating " + groupname.blue + "...");
       console.log();
       _ref = results[groupname].services;
-      _fn = function(service) {
+      _fn = function(outputname, service) {
         var c, i, _fn1, _fn2, _fn3, _fn4, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref1, _ref2, _ref3, _ref4, _ref5;
         tasks.push(function(cb) {
           var m, _i, _j, _len, _len1, _ref1, _ref2;
-          console.log("  " + service.name.cyan + ":");
           if (service.diff.iserror) {
-            console.error("  Error:".red);
+            console.error("  " + outputname + " " + 'Error:'.red);
             _ref1 = service.diff.messages;
             for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
               m = _ref1[_i];
-              console.log("  " + m);
+              console.log("  " + outputname + " " + m);
             }
             return cb();
           }
           _ref2 = service.diff.messages;
           for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
             m = _ref2[_j];
-            console.log("    " + m);
+            console.log("  " + outputname + " " + m);
           }
           return cb();
         });
         _ref1 = service.diff.stop;
         _fn1 = function(c) {
           return tasks.push(function(cb) {
-            console.log("    Stopping " + (c.container.Names[0].substr('1').green));
+            console.log("  " + outputname + " Stopping " + (c.container.Names[0].substr('1').green));
             return tugboat.ducke.container(c.container.Id).stop(function(err, result) {
               if (err != null) {
-                console.error(err);
+                if (err.stack) {
+                  console.error(err.stack);
+                } else {
+                  console.error(err);
+                }
+                return;
               }
               return cb();
             });
@@ -60,10 +69,15 @@ module.exports = function(tugboat, groupname, servicenames) {
         _ref2 = service.diff.rm;
         _fn2 = function(c) {
           return tasks.push(function(cb) {
-            console.log("    Deleting " + (c.container.Names[0].substr('1').green));
+            console.log("  " + outputname + " Deleting " + (c.container.Names[0].substr('1').green));
             return tugboat.ducke.container(c.container.Id).rm(function(err, result) {
               if (err != null) {
-                console.error(err);
+                if (err.stack) {
+                  console.error(err.stack);
+                } else {
+                  console.error(err);
+                }
+                return;
               }
               return cb();
             });
@@ -76,10 +90,15 @@ module.exports = function(tugboat, groupname, servicenames) {
         _ref3 = service.diff.start;
         _fn3 = function(c) {
           return tasks.push(function(cb) {
-            console.log("    Starting " + (c.container.Names[0].substr('1').green));
+            console.log("  " + outputname + " Starting " + (c.container.Names[0].substr('1').green));
             return tugboat.ducke.container(c.container.Id).start(function(err, result) {
               if (err != null) {
-                console.error(err);
+                if (err.stack) {
+                  console.error(err.stack);
+                } else {
+                  console.error(err);
+                }
+                return;
               }
               return cb();
             });
@@ -92,7 +111,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         _ref4 = service.diff.keep;
         _fn4 = function(c) {
           return tasks.push(function(cb) {
-            console.log("    Keeping " + (c.container.Names[0].substr('1').green));
+            console.log("  " + outputname + " Keeping " + (c.container.Names[0].substr('1').green));
             return cb();
           });
         };
@@ -112,10 +131,15 @@ module.exports = function(tugboat, groupname, servicenames) {
                 newindex++;
               }
               newname += "_" + newindex;
-              console.log("    Creating new container " + newname.cyan + " (" + service.service.params.Image + ")");
+              console.log("  " + outputname + " Creating new container " + newname.cyan + " (" + service.service.params.Image + ")");
               return tugboat.up(service.service, newname, function(err) {
                 if (err != null) {
-                  console.error(err);
+                  if (err.stack) {
+                    console.error(err.stack);
+                  } else {
+                    console.error(err);
+                  }
+                  return;
                 }
                 return cb();
               });
@@ -129,7 +153,11 @@ module.exports = function(tugboat, groupname, servicenames) {
       };
       for (_ in _ref) {
         service = _ref[_];
-        _fn(service);
+        outputname = service.name.blue;
+        while (outputname.length < 36) {
+          outputname += ' ';
+        }
+        _fn(outputname, service);
       }
       return series(tasks, function() {});
     });

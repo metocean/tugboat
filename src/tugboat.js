@@ -182,13 +182,26 @@ module.exports = Tugboat = (function() {
           return callback(err);
         }
         return _this.ducke.ls(function(err, imagerepo) {
-          var groupsgrouped, servicesdiffed;
+          var images;
           if (err != null) {
             return callback(err);
           }
-          groupsgrouped = groupdiff(_this._groups, containers);
-          servicesdiffed = servicediff(imagerepo, groupsgrouped);
-          return callback(null, servicesdiffed);
+          images = containers.map(function(c) {
+            return c.inspect.Image;
+          });
+          return _this.ducke.lls(images, function(err, detailedimages) {
+            var groupsgrouped, id, inspect, servicesdiffed;
+            if (err != null) {
+              return callback(err);
+            }
+            for (id in detailedimages) {
+              inspect = detailedimages[id];
+              imagerepo.ids[id].inspect = inspect;
+            }
+            groupsgrouped = groupdiff(_this._groups, containers);
+            servicesdiffed = servicediff(imagerepo, groupsgrouped);
+            return callback(null, servicesdiffed);
+          });
         });
       };
     })(this));

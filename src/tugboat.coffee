@@ -100,9 +100,15 @@ module.exports = class Tugboat
       return callback err if err?
       @ducke.ls (err, imagerepo) =>
         return callback err if err?
-        groupsgrouped = groupdiff @_groups, containers
-        servicesdiffed = servicediff imagerepo, groupsgrouped
-        callback null, servicesdiffed
+        images = containers.map (c) -> c.inspect.Image
+        # Pull in more details for images
+        @ducke.lls images, (err, detailedimages) =>
+          return callback err if err?
+          for id, inspect of detailedimages
+            imagerepo.ids[id].inspect = inspect
+          groupsgrouped = groupdiff @_groups, containers
+          servicesdiffed = servicediff imagerepo, groupsgrouped
+          callback null, servicesdiffed
   
   # Run a service
   up: (config, containername, callback) =>

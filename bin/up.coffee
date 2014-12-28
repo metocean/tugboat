@@ -5,7 +5,10 @@ module.exports = (tugboat, groupname, servicenames) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
     tugboat.diff (err, results) ->
-      return console.err if err?
+      if err?
+        if err.stack then console.error err.stack
+        else console.error err
+        return
       
       tasks = []
       
@@ -14,54 +17,60 @@ module.exports = (tugboat, groupname, servicenames) ->
       console.log()
       
       for _, service of results[groupname].services
-        do (service) ->
+        outputname = service.name.blue
+        outputname += ' ' while outputname.length < 36
+        do (outputname, service) ->
           tasks.push (cb) ->
-            console.log "  #{service.name.cyan}:"
-          
             if service.diff.iserror
-              console.error "  Error:".red
+              console.error "  #{outputname} #{'Error:'.red}"
               for m in service.diff.messages
-                console.log "  #{m}"
+                console.log "  #{outputname} #{m}"
               return cb()
             for m in service.diff.messages
-              console.log "    #{m}"
+              console.log "  #{outputname} #{m}"
             
             cb()
           
           for c in service.diff.stop
             do (c) ->
               tasks.push (cb) ->
-                console.log "    Stopping #{c.container.Names[0].substr('1').green}"
+                console.log "  #{outputname} Stopping #{c.container.Names[0].substr('1').green}"
                 tugboat.ducke
                   .container c.container.Id
                   .stop (err, result) ->
                     if err?
-                      console.error err
+                      if err.stack then console.error err.stack
+                      else console.error err
+                      return
                     cb()
           for c in service.diff.rm
             do (c) ->
               tasks.push (cb) ->
-                console.log "    Deleting #{c.container.Names[0].substr('1').green}"
+                console.log "  #{outputname} Deleting #{c.container.Names[0].substr('1').green}"
                 tugboat.ducke
                   .container c.container.Id
                   .rm (err, result) ->
                     if err?
-                      console.error err
+                      if err.stack then console.error err.stack
+                      else console.error err
+                      return
                     cb()
           for c in service.diff.start
             do (c) ->
               tasks.push (cb) ->
-                console.log "    Starting #{c.container.Names[0].substr('1').green}"
+                console.log "  #{outputname} Starting #{c.container.Names[0].substr('1').green}"
                 tugboat.ducke
                   .container c.container.Id
                   .start (err, result) ->
                     if err?
-                      console.error err
+                      if err.stack then console.error err.stack
+                      else console.error err
+                      return
                     cb()
           for c in service.diff.keep
             do (c) ->
               tasks.push (cb) ->
-                console.log "    Keeping #{c.container.Names[0].substr('1').green}"
+                console.log "  #{outputname} Keeping #{c.container.Names[0].substr('1').green}"
                 cb()
           
           if service.diff.create > 0
@@ -73,11 +82,13 @@ module.exports = (tugboat, groupname, servicenames) ->
                   .filter (c) -> c.index is newindex.toString()
                   .length isnt 0
                 newname += "_#{newindex}"
-                console.log "    Creating new container #{newname.cyan} (#{service.service.params.Image})"
+                console.log "  #{outputname} Creating new container #{newname.cyan} (#{service.service.params.Image})"
                 
                 tugboat.up service.service, newname, (err) ->
                   if err?
-                    console.error err
+                    if err.stack then console.error err.stack
+                    else console.error err
+                    return
                   cb()
           
           tasks.push (cb) ->

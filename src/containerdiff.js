@@ -2,7 +2,7 @@
 module.exports = function(container, service, image) {
   var additional, binding, binding2, count, e, found, item, name, output, port, source, sourceCmd, sourceout, target, targetCmd, targetout, term, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
   if (container.inspect.Image !== image.image.Id) {
-    return 'Different image';
+    return "Different image (" + (container.inspect.Image.substr(0, 12)) + " -> image.image.Id.substr 0, 12)";
   }
   target = service.service.params;
   source = container.inspect;
@@ -39,7 +39,13 @@ module.exports = function(container, service, image) {
     }
   }
   sourceCmd = source.Config.Cmd.join(' ');
-  targetCmd = target.Cmd.join(' ');
+  targetCmd = target.Cmd;
+  if (targetCmd == null) {
+    targetCmd = image.inspect.Config.Cmd;
+  }
+  if (targetCmd != null) {
+    targetCmd = targetCmd.join(' ');
+  }
   if (sourceCmd !== targetCmd) {
     return "command different (" + sourceCmd + " -> " + targetCmd + ")";
   }
