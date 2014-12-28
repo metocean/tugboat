@@ -7,7 +7,7 @@ init_errors = require('./errors');
 
 module.exports = function(tugboat, groupnames) {
   return tugboat.init(function(errors) {
-    var groupname, haderror, _i, _len;
+    var group, groupname, haderror, tasks, _fn, _i, _j, _len, _len1, _results;
     if (errors != null) {
       return init_errors(errors);
     }
@@ -32,50 +32,52 @@ module.exports = function(tugboat, groupnames) {
     if (haderror) {
       process.exit(1);
     }
-    return tugboat.ducke.ls(function(err, images) {
-      var group, tasks, _fn, _j, _len1;
-      if (err != null) {
-        console.error();
-        console.error('  docker is down'.red);
-        console.error();
-        process.exit(1);
-      }
-      console.log(images.tags['phusion/baseimage:0.9.15']);
-      tasks = [];
-      _fn = function(groupname, group) {
-        var config, servicename, _fn1, _ref;
-        tasks.push(function(cb) {
-          console.log("  Pulling images for " + groupname.blue + "...");
-          console.log();
-          return cb();
-        });
-        _ref = group.services;
-        _fn1 = function(servicename, config) {
-          return tasks.push(function(cb) {
-            var output;
-            output = servicename.cyan;
-            while (output.length < 32) {
-              output += ' ';
-            }
-            console.log("  " + output + " Pulling " + config.params.Image.cyan);
-            return cb();
-          });
-        };
-        for (servicename in _ref) {
-          config = _ref[servicename];
-          _fn1(servicename, config);
+    tasks = [];
+    _fn = function(groupname, group) {
+      var config, servicename, _fn1, _ref;
+      tasks.push(function(cb) {
+        console.log("  Pulling images for " + groupname.blue + "...");
+        console.log();
+        return cb();
+      });
+      _ref = group.services;
+      _fn1 = function(servicename, config) {
+        var chunks, image, repo;
+        image = config.params.Image;
+        if (image.indexOf('/' === -1)) {
+          return;
+        }
+        chunks = image.split('/');
+        repo = chunks[0];
+        if (repo.indexOf('.' === -1)) {
+          repo = 'asdasdasdasd';
         }
         return tasks.push(function(cb) {
-          console.log();
+          var output;
+          output = servicename.cyan;
+          while (output.length < 32) {
+            output += ' ';
+          }
+          console.log("  " + output + " Pulling " + config.params.Image.cyan);
           return cb();
         });
       };
-      for (_j = 0, _len1 = groupnames.length; _j < _len1; _j++) {
-        groupname = groupnames[_j];
-        group = tugboat._groups[groupname];
-        _fn(groupname, group);
+      for (servicename in _ref) {
+        config = _ref[servicename];
+        _fn1(servicename, config);
       }
-      return series(tasks, function() {});
-    });
+      return tasks.push(function(cb) {
+        console.log();
+        return cb();
+      });
+    };
+    _results = [];
+    for (_j = 0, _len1 = groupnames.length; _j < _len1; _j++) {
+      groupname = groupnames[_j];
+      group = tugboat._groups[groupname];
+      _fn(groupname, group);
+      _results.push(series(tasks, function() {}));
+    }
+    return _results;
   });
 };
