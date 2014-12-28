@@ -26,7 +26,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       console.log();
       _ref = results[groupname].services;
       _fn = function(outputname, service) {
-        var c, i, _fn1, _fn2, _fn3, _fn4, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref1, _ref2, _ref3, _ref4, _ref5;
+        var c, i, _fn1, _fn2, _fn3, _fn4, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref1, _ref2, _ref3, _ref4, _ref5, _results;
         tasks.push(function(cb) {
           var m, _i, _j, _len, _len1, _ref1, _ref2;
           if (service.diff.iserror) {
@@ -120,8 +120,9 @@ module.exports = function(tugboat, groupname, servicenames) {
           _fn4(c);
         }
         if (service.diff.create > 0) {
+          _results = [];
           for (i = _m = 1, _ref5 = service.diff.create; 1 <= _ref5 ? _m <= _ref5 : _m >= _ref5; i = 1 <= _ref5 ? ++_m : --_m) {
-            tasks.push(function(cb) {
+            _results.push(tasks.push(function(cb) {
               var newindex, newname;
               newname = "" + groupname + "_" + service.name;
               newindex = 1;
@@ -143,13 +144,10 @@ module.exports = function(tugboat, groupname, servicenames) {
                 }
                 return cb();
               });
-            });
+            }));
           }
+          return _results;
         }
-        return tasks.push(function(cb) {
-          console.log();
-          return cb();
-        });
       };
       for (_ in _ref) {
         service = _ref[_];
@@ -159,7 +157,9 @@ module.exports = function(tugboat, groupname, servicenames) {
         }
         _fn(outputname, service);
       }
-      return series(tasks, function() {});
+      return series(tasks, function() {
+        return console.log();
+      });
     });
   });
 };

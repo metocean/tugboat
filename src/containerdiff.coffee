@@ -75,7 +75,7 @@ module.exports = (container, service, image) ->
       return "dns different (#{source.HostConfig.Dns.length} items -> #{target.HostConfig.Dns.length} items)"
     
     for e in source.HostConfig.Dns
-      if target.HostConfig.Dns.indexOf e is -1
+      if target.HostConfig.Dns.indexOf(e) is -1
         return "dns different (#{e} -> no dns provided)"
   
   # console.log 'Checking PortBindings'

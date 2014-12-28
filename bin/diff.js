@@ -67,7 +67,6 @@ module.exports = function(tugboat, groupname, servicenames) {
         } else if (service.diff.create > 1) {
           console.log("  " + outputname + " Creating " + (service.diff.create.toString().green) + " new containers");
         }
-        console.log();
       }
       return console.log();
     });

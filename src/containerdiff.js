@@ -85,7 +85,7 @@ module.exports = function(container, service, image) {
     _ref4 = source.HostConfig.Dns;
     for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
       e = _ref4[_k];
-      if (target.HostConfig.Dns.indexOf(e === -1)) {
+      if (target.HostConfig.Dns.indexOf(e) === -1) {
         return "dns different (" + e + " -> no dns provided)";
       }
     }
