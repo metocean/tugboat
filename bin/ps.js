@@ -97,10 +97,11 @@ module.exports = function(tugboat, names) {
         }
         group = groups[name];
         if (group.isknown) {
-          console.log("  " + group.name.blue + ":");
+          console.log("  " + group.name.blue + " services:");
         } else {
-          console.log("  " + group.name.blue + ": " + '(unknown)'.magenta);
+          console.log("  " + group.name.blue + " services: " + '(unknown)'.magenta);
         }
+        console.log();
         _ref1 = group.services;
         for (_ in _ref1) {
           service = _ref1[_];
@@ -110,7 +111,7 @@ module.exports = function(tugboat, names) {
             i = _ref2[_j];
             servicename += " " + i.index;
           }
-          while (servicename.length < 34) {
+          while (servicename.length < 36) {
             servicename += ' ';
           }
           status = '-'.magenta;
@@ -129,7 +130,7 @@ module.exports = function(tugboat, names) {
           if (!service.isknown) {
             status += ' (unknown)'.magenta;
           }
-          console.log("    " + servicename + " " + status);
+          console.log("  " + servicename + " " + status);
           continue;
         }
         _results.push(console.log());

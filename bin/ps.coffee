@@ -87,15 +87,16 @@ module.exports = (tugboat, names) ->
         
         group = groups[name]
         if group.isknown
-          console.log "  #{group.name.blue}:"
+          console.log "  #{group.name.blue} services:"
         else
-          console.log "  #{group.name.blue}: #{'(unknown)'.magenta}"
+          console.log "  #{group.name.blue} services: #{'(unknown)'.magenta}"
+        console.log()
         
         for _, service of group.services
           servicename = service.name.cyan
           for i in service.containers
             servicename += " #{i.index}"
-          servicename += ' ' while servicename.length < 34
+          servicename += ' ' while servicename.length < 36
           
           # Calculate a status for each service
           status = '-'.magenta
@@ -112,6 +113,6 @@ module.exports = (tugboat, names) ->
                 .join ', '
           status += ' (unknown)'.magenta if !service.isknown
           
-          console.log "    #{servicename} #{status}"
+          console.log "  #{servicename} #{status}"
           continue
         console.log()

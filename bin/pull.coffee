@@ -49,8 +49,8 @@ module.exports = (tugboat, groupnames) ->
             
             tasks.push (cb) ->
               output = servicename.cyan
-              output += ' ' while output.length < 32
-              console.log "  #{output} Pulling #{config.params.Image.cyan}"
+              output += ' ' while output.length < 36
+              console.log "  #{output} Pulling #{config.params.Image.green}"
               cb()
         
         tasks.push (cb) ->

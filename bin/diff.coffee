@@ -14,25 +14,25 @@ module.exports = (tugboat, groupname, servicenames) ->
       console.log()
       
       for _, service of results[groupname].services
-        outputname = service.name.blue
+        outputname = service.name.cyan
         outputname += ' ' while outputname.length < 36
         
         if service.diff.iserror
           console.error "  #{outputname} #{'Error:'.red}"
           for m in service.diff.messages
-            console.log "  #{outputname} #{m}"
+            console.log "  #{outputname} #{m.red}"
           continue
-        
         for m in service.diff.messages
-          console.log "  #{outputname} #{m}"
+          console.log "  #{outputname} #{m.magenta}"
+        
         for c in service.diff.stop
-          console.log "  #{outputname} Stopping #{c.container.Names[0].substr('1').green}"
+          console.log "  #{outputname} Stopping #{c.container.Names[0].substr('1').cyan}"
         for c in service.diff.rm
-          console.log "  #{outputname} Deleting #{c.container.Names[0].substr('1').green}"
+          console.log "  #{outputname} Deleting #{c.container.Names[0].substr('1').cyan}"
         for c in service.diff.start
-          console.log "  #{outputname} Starting #{c.container.Names[0].substr('1').green}"
+          console.log "  #{outputname} Starting #{c.container.Names[0].substr('1').cyan}"
         for c in service.diff.keep
-          console.log "  #{outputname} Keeping #{c.container.Names[0].substr('1').green}"
+          console.log "  #{outputname} Keeping #{c.container.Names[0].substr('1').cyan}"
         if service.diff.create is 1
           console.log "  #{outputname} Creating a new container"
         else if service.diff.create > 1

@@ -55,10 +55,10 @@ module.exports = function(tugboat, groupnames) {
         return tasks.push(function(cb) {
           var output;
           output = servicename.cyan;
-          while (output.length < 32) {
+          while (output.length < 36) {
             output += ' ';
           }
-          console.log("  " + output + " Pulling " + config.params.Image.cyan);
+          console.log("  " + output + " Pulling " + config.params.Image.green);
           return cb();
         });
       };

@@ -62,21 +62,21 @@ module.exports = (tugboat, groupname, servicenames) ->
               cb()
           
           for s in servicestoprocess
-            outputname = s.name
-            outputname += ' ' while outputname.length < 26
+            outputname = s.name.cyan
+            outputname += ' ' while outputname.length < 36
             for c in s.containers
               do (outputname, s, c) ->
                 tasks.push (cb) ->
-                  process.stdout.write "  #{outputname.blue} deleting #{c.container.Names[0].substr(1).cyan} "
+                  process.stdout.write "  #{outputname} deleting #{c.container.Names[0].substr(1).cyan} "
                   tugboat.ducke
                     .container c.container.Id
                     .rm (err) ->
                       if err?
-                        console.error 'error'.red
+                        console.error 'X'.red
                         console.error err
                         console.error()
                       else
-                        console.log 'deleted'.green
+                        console.log '√'.green
                       cb()
           
           tasks.push (cb) ->

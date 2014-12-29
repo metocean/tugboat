@@ -24,7 +24,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       _ref = results[groupname].services;
       for (_ in _ref) {
         service = _ref[_];
-        outputname = service.name.blue;
+        outputname = service.name.cyan;
         while (outputname.length < 36) {
           outputname += ' ';
         }
@@ -33,34 +33,34 @@ module.exports = function(tugboat, groupname, servicenames) {
           _ref1 = service.diff.messages;
           for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
             m = _ref1[_i];
-            console.log("  " + outputname + " " + m);
+            console.log("  " + outputname + " " + m.red);
           }
           continue;
         }
         _ref2 = service.diff.messages;
         for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
           m = _ref2[_j];
-          console.log("  " + outputname + " " + m);
+          console.log("  " + outputname + " " + m.magenta);
         }
         _ref3 = service.diff.stop;
         for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
           c = _ref3[_k];
-          console.log("  " + outputname + " Stopping " + (c.container.Names[0].substr('1').green));
+          console.log("  " + outputname + " Stopping " + (c.container.Names[0].substr('1').cyan));
         }
         _ref4 = service.diff.rm;
         for (_l = 0, _len3 = _ref4.length; _l < _len3; _l++) {
           c = _ref4[_l];
-          console.log("  " + outputname + " Deleting " + (c.container.Names[0].substr('1').green));
+          console.log("  " + outputname + " Deleting " + (c.container.Names[0].substr('1').cyan));
         }
         _ref5 = service.diff.start;
         for (_m = 0, _len4 = _ref5.length; _m < _len4; _m++) {
           c = _ref5[_m];
-          console.log("  " + outputname + " Starting " + (c.container.Names[0].substr('1').green));
+          console.log("  " + outputname + " Starting " + (c.container.Names[0].substr('1').cyan));
         }
         _ref6 = service.diff.keep;
         for (_n = 0, _len5 = _ref6.length; _n < _len5; _n++) {
           c = _ref6[_n];
-          console.log("  " + outputname + " Keeping " + (c.container.Names[0].substr('1').green));
+          console.log("  " + outputname + " Keeping " + (c.container.Names[0].substr('1').cyan));
         }
         if (service.diff.create === 1) {
           console.log("  " + outputname + " Creating a new container");

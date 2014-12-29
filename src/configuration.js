@@ -92,7 +92,7 @@ parse_port = function(port) {
 };
 
 module.exports = function(groupname, services, path, cb) {
-  var chunks, config, count, env, errors, key, name, p, port, result, results, value, _, _i, _j, _len, _len1, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+  var chunks, config, count, env, errors, key, name, p, port, result, results, value, _, _i, _j, _len, _len1, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref18, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
   if (typeof services !== 'object') {
     return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of services.')]);
   }
@@ -227,24 +227,25 @@ module.exports = function(groupname, services, path, cb) {
     config = services[name];
     services[name] = {
       name: config.name,
+      build: (_ref4 = config.build) != null ? _ref4 : null,
       params: {
         Image: config.image,
-        Cmd: (_ref4 = config.command) != null ? _ref4 : null,
-        User: (_ref5 = config.user) != null ? _ref5 : '',
-        Memory: (_ref6 = config.mem_limit) != null ? _ref6 : 0,
-        Hostname: (_ref7 = config.hostname) != null ? _ref7 : null,
-        Domainname: (_ref8 = config.domainname) != null ? _ref8 : null,
-        Entrypoint: (_ref9 = config.entrypoint) != null ? _ref9 : null,
-        WorkingDir: (_ref10 = config.working_dir) != null ? _ref10 : '',
+        Cmd: (_ref5 = config.command) != null ? _ref5 : null,
+        User: (_ref6 = config.user) != null ? _ref6 : '',
+        Memory: (_ref7 = config.mem_limit) != null ? _ref7 : 0,
+        Hostname: (_ref8 = config.hostname) != null ? _ref8 : null,
+        Domainname: (_ref9 = config.domainname) != null ? _ref9 : null,
+        Entrypoint: (_ref10 = config.entrypoint) != null ? _ref10 : null,
+        WorkingDir: (_ref11 = config.working_dir) != null ? _ref11 : '',
         Env: config.environment,
-        ExposedPorts: (_ref11 = config.expose) != null ? _ref11 : null,
+        ExposedPorts: (_ref12 = config.expose) != null ? _ref12 : null,
         HostConfig: {
-          Binds: (_ref12 = config.volumes) != null ? _ref12 : null,
-          Links: (_ref13 = config.links) != null ? _ref13 : null,
-          Dns: (_ref14 = config.dns) != null ? _ref14 : null,
-          NetworkMode: (_ref15 = config.net) != null ? _ref15 : '',
-          Privileged: (_ref16 = config.privileged) != null ? _ref16 : false,
-          PortBindings: (_ref17 = config.ports) != null ? _ref17 : null
+          Binds: (_ref13 = config.volumes) != null ? _ref13 : null,
+          Links: (_ref14 = config.links) != null ? _ref14 : null,
+          Dns: (_ref15 = config.dns) != null ? _ref15 : null,
+          NetworkMode: (_ref16 = config.net) != null ? _ref16 : '',
+          Privileged: (_ref17 = config.privileged) != null ? _ref17 : false,
+          PortBindings: (_ref18 = config.ports) != null ? _ref18 : null
         }
       }
     };

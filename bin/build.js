@@ -38,16 +38,17 @@ module.exports = function(tugboat, groupnames, usecache) {
         var config, grouptasks, servicename, _fn1, _ref;
         grouptasks = [];
         console.log("  Building " + name.blue + "...");
+        console.log();
         _ref = group.services;
         _fn1 = function(servicename, config) {
           var output;
           output = servicename.cyan;
           return grouptasks.push(function(cb) {
             var results, run;
-            while (output.length < 32) {
+            while (output.length < 36) {
               output += ' ';
             }
-            process.stdout.write("    " + output + " ");
+            process.stdout.write("  " + output + " ");
             if (config.build == null) {
               console.log('-'.magenta);
               return cb();
@@ -59,7 +60,7 @@ module.exports = function(tugboat, groupnames, usecache) {
             };
             return tugboat.build(group, servicename, usecache, run, function(err) {
               if (err != null) {
-                console.error('failed'.red);
+                console.error('X'.red);
                 console.error(err);
                 if (results.length !== 0) {
                   console.error(results);
@@ -67,7 +68,7 @@ module.exports = function(tugboat, groupnames, usecache) {
                 console.error();
                 return cb();
               }
-              console.log('done'.green);
+              console.log('√'.green);
               return cb();
             });
           });

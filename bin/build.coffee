@@ -33,13 +33,14 @@ module.exports = (tugboat, groupnames, usecache) ->
         tasks.push (cb) ->
           grouptasks = []
           console.log "  Building #{name.blue}..."
+          console.log()
           for servicename, config of group.services
             do (servicename, config) ->
               output = servicename.cyan
               # Build each group, build each service
               grouptasks.push (cb) ->
-                output += ' ' while output.length < 32
-                process.stdout.write "    #{output} "
+                output += ' ' while output.length < 36
+                process.stdout.write "  #{output} "
                 
                 # Skip services that are based on images
                 if !config.build?
@@ -54,12 +55,12 @@ module.exports = (tugboat, groupnames, usecache) ->
                 
                 tugboat.build group, servicename, usecache, run, (err) ->
                   if err?
-                    console.error 'failed'.red
+                    console.error 'X'.red
                     console.error err
                     console.error results if results.length isnt 0
                     console.error()
                     return cb()
-                  console.log 'done'.green
+                  console.log '√'.green
                   cb()
           
           series grouptasks, ->

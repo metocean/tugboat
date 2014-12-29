@@ -161,6 +161,7 @@ module.exports = (groupname, services, path, cb) ->
   for name, config of services
     services[name] =
       name: config.name
+      build: config.build ? null
       params:
         Image: config.image
         Cmd: config.command ? null

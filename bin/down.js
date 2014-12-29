@@ -81,20 +81,20 @@ module.exports = function(tugboat, groupname, servicenames) {
         }
         for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
           s = servicestoprocess[_k];
-          outputname = s.name.blue;
+          outputname = s.name.cyan;
           while (outputname.length < 36) {
             outputname += ' ';
           }
           _ref1 = s.containers;
           _fn1 = function(outputname, s, c) {
             return tasks.push(function(cb) {
-              process.stdout.write("  " + outputname.blue + " stopping " + (c.container.Names[0].substr(1).cyan) + " ");
+              process.stdout.write("  " + outputname + " stopping " + (c.container.Names[0].substr(1).cyan) + " ");
               return tugboat.ducke.container(c.container.Id).stop(function(err) {
                 if (err != null) {
-                  console.error('error'.red);
+                  console.error('X'.red);
                   console.error(err);
                 } else {
-                  console.log('stopped'.green);
+                  console.log('√'.green);
                 }
                 return cb();
               });
