@@ -2,7 +2,7 @@
 module.exports = function(container, service, image) {
   var additional, binding, binding2, count, e, found, item, name, output, port, source, sourceCmd, sourceout, target, targetCmd, targetout, term, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
   if (container.inspect.Image !== image.image.Id) {
-    return "Different image (" + (container.inspect.Image.substr(0, 12)) + " -> image.image.Id.substr 0, 12)";
+    return "Different image (" + (container.inspect.Image.substr(0, 12)) + " -> " + (image.image.Id.substr(0, 12)) + ")";
   }
   target = service.service.params;
   source = container.inspect;

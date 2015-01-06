@@ -88,7 +88,7 @@ module.exports = (tugboat, groupname, servicenames) ->
                   .filter (c) -> c.index is newindex.toString()
                   .length isnt 0
                 newname += "_#{newindex}"
-                process.stdout.write "  #{outputname} Creating new container #{newname.cyan} (#{service.service.params.Image}) "
+                process.stdout.write "  #{outputname} Creating #{newname.cyan} (#{service.service.params.Image}) "
                 
                 tugboat.up service.service, newname, (err) ->
                   if err?

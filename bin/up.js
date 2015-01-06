@@ -138,7 +138,7 @@ module.exports = function(tugboat, groupname, servicenames) {
                 newindex++;
               }
               newname += "_" + newindex;
-              process.stdout.write("  " + outputname + " Creating new container " + newname.cyan + " (" + service.service.params.Image + ") ");
+              process.stdout.write("  " + outputname + " Creating " + newname.cyan + " (" + service.service.params.Image + ") ");
               return tugboat.up(service.service, newname, function(err) {
                 if (err != null) {
                   console.error('X'.red);

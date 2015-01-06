@@ -1,4 +1,5 @@
 resolve = require('path').resolve
+template = require './template'
 
 class TUGBOATFormatException extends Error
   constructor: (message) ->
@@ -63,6 +64,9 @@ module.exports = (groupname, services, path, cb) ->
   # as the allowed characters in a docker name
   if !groupname.match /^[a-zA-Z0-9-]+$/
     errors.push new TUGBOATFormatException "The YAML file #{groupname.cyan} is not a valid group name."
+  
+  # replace templates
+  services = template services
   
   for name, config of services
     if !name.match /^[a-zA-Z0-9-]+$/

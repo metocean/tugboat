@@ -1,7 +1,7 @@
 # Does not compare volumes from or links!
 module.exports = (container, service, image) ->
   if container.inspect.Image isnt image.image.Id
-    return "Different image (#{container.inspect.Image.substr 0, 12} -> image.image.Id.substr 0, 12)"
+    return "Different image (#{container.inspect.Image.substr 0, 12} -> #{image.image.Id.substr 0, 12})"
   
   target = service.service.params
   source = container.inspect
