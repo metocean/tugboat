@@ -229,7 +229,6 @@ module.exports = Tugboat = (function() {
           if (c.inspect.State.Running) {
             tasks.push(function(cb) {
               messages.push("" + outputname + " Stopping " + containername);
-              cb();
               return _this.ducke.container(c.container.Id).stop(function(err, result) {
                 if (err != null) {
                   errors.push(err);
@@ -240,7 +239,6 @@ module.exports = Tugboat = (function() {
           }
           return tasks.push(function(cb) {
             messages.push("" + outputname + " Deleting " + containername);
-            cb();
             return _this.ducke.container(c.container.Id).rm(function(err, result) {
               if (err != null) {
                 errors.push(err);
@@ -291,7 +289,12 @@ module.exports = Tugboat = (function() {
         _fn1 = function(containername, c) {
           return tasks.push(function(cb) {
             messages.push("" + outputname + " Stopping " + containername);
-            return cb();
+            return _this.ducke.container(c.container.Id).stop(function(err, result) {
+              if (err != null) {
+                errors.push(err);
+              }
+              return cb();
+            });
           });
         };
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
@@ -303,7 +306,12 @@ module.exports = Tugboat = (function() {
         _fn2 = function(containername, c) {
           return tasks.push(function(cb) {
             messages.push("" + outputname + " Deleting " + containername);
-            return cb();
+            return _this.ducke.container(c.container.Id).stop(function(err, result) {
+              if (err != null) {
+                errors.push(err);
+              }
+              return cb();
+            });
           });
         };
         for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
@@ -315,7 +323,12 @@ module.exports = Tugboat = (function() {
         _fn3 = function(containername, c) {
           return tasks.push(function(cb) {
             messages.push("" + outputname + " Starting " + containername);
-            return cb();
+            return _this.ducke.container(c.container.Id).stop(function(err, result) {
+              if (err != null) {
+                errors.push(err);
+              }
+              return cb();
+            });
           });
         };
         for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
@@ -337,7 +350,12 @@ module.exports = Tugboat = (function() {
               }
               newname += "_" + newindex;
               messages.push("" + outputname + " Creating " + newname + " (" + service.service.params.Image + ") ");
-              return cb();
+              return _this.up(service.service, newname, function(err) {
+                if (err != null) {
+                  errors.push(err);
+                }
+                return cb();
+              });
             }));
           }
           return _results;

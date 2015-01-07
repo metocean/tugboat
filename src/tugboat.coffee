@@ -124,7 +124,6 @@ module.exports = class Tugboat
           if c.inspect.State.Running
             tasks.push (cb) =>
               messages.push "#{outputname} Stopping #{containername}"
-              cb()
               @ducke
                 .container c.container.Id
                 .stop (err, result) ->
@@ -132,7 +131,6 @@ module.exports = class Tugboat
                   cb()
           tasks.push (cb) =>
             messages.push "#{outputname} Deleting #{containername}"
-            cb()
             @ducke
               .container c.container.Id
               .rm (err, result) ->
@@ -160,34 +158,31 @@ module.exports = class Tugboat
           do (containername, c) =>
             tasks.push (cb) =>
               messages.push "#{outputname} Stopping #{containername}"
-              cb()
-              # @ducke
-              #   .container c.container.Id
-              #   .stop (err, result) ->
-              #     errors.push err if err?
-              #     cb()
+              @ducke
+                .container c.container.Id
+                .stop (err, result) ->
+                  errors.push err if err?
+                  cb()
         for c in service.diff.rm
           containername = c.container.Names[0].substr('1')
           do (containername, c) =>
             tasks.push (cb) =>
               messages.push "#{outputname} Deleting #{containername}"
-              cb()
-              # @ducke
-              #   .container c.container.Id
-              #   .stop (err, result) ->
-              #     errors.push err if err?
-              #     cb()
+              @ducke
+                .container c.container.Id
+                .stop (err, result) ->
+                  errors.push err if err?
+                  cb()
         for c in service.diff.start
           containername = c.container.Names[0].substr('1')
           do (containername, c) =>
             tasks.push (cb) =>
               messages.push "#{outputname} Starting #{containername}"
-              cb()
-              # @ducke
-              #   .container c.container.Id
-              #   .stop (err, result) ->
-              #     errors.push err if err?
-              #     cb()
+              @ducke
+                .container c.container.Id
+                .stop (err, result) ->
+                  errors.push err if err?
+                  cb()
         
         if service.diff.create > 0
             for i in [1..service.diff.create]
@@ -199,10 +194,9 @@ module.exports = class Tugboat
                   .length isnt 0
                 newname += "_#{newindex}"
                 messages.push "#{outputname} Creating #{newname} (#{service.service.params.Image}) "
-                cb()
-                # @up service.service, newname, (err) ->
-                #   errors.push err if err?
-                #   cb()
+                @up service.service, newname, (err) ->
+                  errors.push err if err?
+                  cb()
     
     series tasks, -> callback errors, messages
   
