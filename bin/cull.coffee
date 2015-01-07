@@ -32,7 +32,7 @@ module.exports = (tugboat, groupname, servicenames) ->
       for g in groupstoprocess
         do (g) ->
           tasks.push (cb) ->
-            console.log "  Stopping #{g.name.blue}..."
+            console.log "  Culling #{g.name.blue}..."
             console.log()
             cb()
           
@@ -50,15 +50,9 @@ module.exports = (tugboat, groupname, servicenames) ->
           else
             servicestoprocess.push service for _, service of g.services
           
-          servicestoprocess = servicestoprocess
-            .filter (s) ->
-              s.containers
-                .filter (c) -> c.inspect.State.Running
-                .length isnt 0
-          
           if servicestoprocess.length is 0
             tasks.push (cb) ->
-              console.log "  No containers to stop".magenta
+              console.log "  No containers to cull".magenta
               cb()
           
           for s in servicestoprocess
@@ -66,17 +60,30 @@ module.exports = (tugboat, groupname, servicenames) ->
             outputname += ' ' while outputname.length < 36
             for c in s.containers
               do (outputname, s, c) ->
+                if c.inspect.State.Running
+                  tasks.push (cb) ->
+                    process.stdout.write "  #{outputname} Stopping #{c.container.Names[0].substr(1).cyan} "
+                    tugboat.ducke
+                      .container c.container.Id
+                      .stop (err) ->
+                        if err?
+                          console.error 'X'.red
+                          console.error err
+                        else
+                          console.log '√'.green
+                        cb()
                 tasks.push (cb) ->
-                  process.stdout.write "  #{outputname} Stopping #{c.container.Names[0].substr(1).cyan} "
+                  process.stdout.write "  #{outputname} Deleting #{c.container.Names[0].substr(1).cyan} "
                   tugboat.ducke
                     .container c.container.Id
-                    .stop (err) ->
+                    .rm (err) ->
                       if err?
                         console.error 'X'.red
                         console.error err
                       else
                         console.log '√'.green
                       cb()
+
           
           tasks.push (cb) ->
             console.log()

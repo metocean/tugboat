@@ -16,7 +16,9 @@ usage = """
   
   Management:
   
+    cull        Terminate, stop and remove services
     rm          Delete services
+    kill        Gracefully terminate services
     build       Build services
     rebuild     Build services from scratch
 
@@ -62,6 +64,13 @@ cmds =
   stop: -> cmds.down()
   down: ->
     return commands.down tugboat, args[0], args[1..]
+  
+  kill: ->
+    return commands.kill tugboat, args[0], args[1..]
+  
+  nuke: -> cmds.cull()
+  cull: ->
+    return commands.cull tugboat, args[0], args[1..]
   
   rm: ->
     return commands.rm tugboat, args[0], args[1..] if args.length > 0

@@ -77,8 +77,9 @@ servicediff = function(group, service, imagerepo) {
     k = keep[_i];
     if (!k.inspect.State.Running) {
       result.start.push(k);
+    } else {
+      result.keep.push(k);
     }
-    result.keep.push(k);
   }
   for (_j = 0, _len1 = discard.length; _j < _len1; _j++) {
     d = discard[_j];

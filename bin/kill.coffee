@@ -32,7 +32,7 @@ module.exports = (tugboat, groupname, servicenames) ->
       for g in groupstoprocess
         do (g) ->
           tasks.push (cb) ->
-            console.log "  Stopping #{g.name.blue}..."
+            console.log "  Killing #{g.name.blue}..."
             console.log()
             cb()
           
@@ -58,7 +58,7 @@ module.exports = (tugboat, groupname, servicenames) ->
           
           if servicestoprocess.length is 0
             tasks.push (cb) ->
-              console.log "  No containers to stop".magenta
+              console.log "  No containers to kill".magenta
               cb()
           
           for s in servicestoprocess
@@ -67,10 +67,10 @@ module.exports = (tugboat, groupname, servicenames) ->
             for c in s.containers
               do (outputname, s, c) ->
                 tasks.push (cb) ->
-                  process.stdout.write "  #{outputname} Stopping #{c.container.Names[0].substr(1).cyan} "
+                  process.stdout.write "  #{outputname} Gracefully terminating #{c.container.Names[0].substr(1).cyan} "
                   tugboat.ducke
                     .container c.container.Id
-                    .stop (err) ->
+                    .kill (err) ->
                       if err?
                         console.error 'X'.red
                         console.error err

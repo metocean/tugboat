@@ -15,6 +15,8 @@ module.exports = {
   down: require('./down'),
   ps: require('./ps'),
   pull: require('./pull'),
+  cull: require('./cull'),
+  kill: require('./kill'),
   build: function(tugboat, names) {
     return build(tugboat, names, true);
   },

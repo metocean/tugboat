@@ -7,7 +7,7 @@ commands = require('./commands');
 
 Tugboat = require('../src/tugboat');
 
-usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  \n    ps          List all running and available groups\n    up          Update and run services\n    down        Stop services\n    diff        Describe the changes needed to update\n  \n  Management:\n  \n    rm          Delete services\n    build       Build services\n    rebuild     Build services from scratch\n";
+usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  \n    ps          List all running and available groups\n    up          Update and run services\n    down        Stop services\n    diff        Describe the changes needed to update\n  \n  Management:\n  \n    cull        Terminate, stop and remove services\n    rm          Delete services\n    kill        Gracefully terminate services\n    build       Build services\n    rebuild     Build services from scratch\n";
 
 process.on('uncaughtException', function(err) {
   console.error('  Caught exception: '.red);
@@ -63,6 +63,15 @@ cmds = {
   },
   down: function() {
     return commands.down(tugboat, args[0], args.slice(1));
+  },
+  kill: function() {
+    return commands.kill(tugboat, args[0], args.slice(1));
+  },
+  nuke: function() {
+    return cmds.cull();
+  },
+  cull: function() {
+    return commands.cull(tugboat, args[0], args.slice(1));
   },
   rm: function() {
     if (args.length > 0) {

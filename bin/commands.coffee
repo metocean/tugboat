@@ -11,6 +11,8 @@ module.exports =
   down: require './down'
   ps: require './ps'
   pull: require './pull'
+  cull: require './cull'
+  kill: require './kill'
   
   # Different cache options for the same build function
   build: (tugboat, names) ->

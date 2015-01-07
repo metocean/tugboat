@@ -68,8 +68,10 @@ servicediff = (group, service, imagerepo) ->
   { messages, keep, discard, error, iserror } = identifyprimary service, imagerepo
   
   for k in keep
-    result.start.push k if !k.inspect.State.Running
-    result.keep.push k
+    if !k.inspect.State.Running
+      result.start.push k
+    else
+      result.keep.push k
   for d in discard
     result.stop.push d if d.inspect.State.Running
     result.rm.push d

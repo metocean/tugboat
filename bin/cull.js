@@ -42,7 +42,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       _fn = function(g) {
         var c, haderror, name, outputname, s, service, servicestoprocess, _fn1, _j, _k, _l, _len1, _len2, _len3, _ref, _ref1;
         tasks.push(function(cb) {
-          console.log("  Stopping " + g.name.blue + "...");
+          console.log("  Culling " + g.name.blue + "...");
           console.log();
           return cb();
         });
@@ -68,14 +68,9 @@ module.exports = function(tugboat, groupname, servicenames) {
             servicestoprocess.push(service);
           }
         }
-        servicestoprocess = servicestoprocess.filter(function(s) {
-          return s.containers.filter(function(c) {
-            return c.inspect.State.Running;
-          }).length !== 0;
-        });
         if (servicestoprocess.length === 0) {
           tasks.push(function(cb) {
-            console.log("  No containers to stop".magenta);
+            console.log("  No containers to cull".magenta);
             return cb();
           });
         }
@@ -87,9 +82,23 @@ module.exports = function(tugboat, groupname, servicenames) {
           }
           _ref1 = s.containers;
           _fn1 = function(outputname, s, c) {
+            if (c.inspect.State.Running) {
+              tasks.push(function(cb) {
+                process.stdout.write("  " + outputname + " Stopping " + (c.container.Names[0].substr(1).cyan) + " ");
+                return tugboat.ducke.container(c.container.Id).stop(function(err) {
+                  if (err != null) {
+                    console.error('X'.red);
+                    console.error(err);
+                  } else {
+                    console.log('√'.green);
+                  }
+                  return cb();
+                });
+              });
+            }
             return tasks.push(function(cb) {
-              process.stdout.write("  " + outputname + " Stopping " + (c.container.Names[0].substr(1).cyan) + " ");
-              return tugboat.ducke.container(c.container.Id).stop(function(err) {
+              process.stdout.write("  " + outputname + " Deleting " + (c.container.Names[0].substr(1).cyan) + " ");
+              return tugboat.ducke.container(c.container.Id).rm(function(err) {
                 if (err != null) {
                   console.error('X'.red);
                   console.error(err);
