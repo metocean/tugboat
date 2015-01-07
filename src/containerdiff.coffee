@@ -139,7 +139,7 @@ module.exports = (container, service, image) ->
       return "volumes different (#{source.HostConfig.Binds.length} items -> #{target.HostConfig.Binds.length} items)"
     
     for e in source.HostConfig.Binds
-      if target.HostConfig.Binds.indexOf e is -1
+      if target.HostConfig.Binds.indexOf(e) is -1
         return "volumes different (#{e} -> volume not bound)"
   
   # console.log 'Not checking Links'

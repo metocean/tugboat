@@ -65,6 +65,7 @@ module.exports = Tugboat = (function() {
   function Tugboat(options) {
     this.up = __bind(this.up, this);
     this.groupup = __bind(this.groupup, this);
+    this.groupcull = __bind(this.groupcull, this);
     this.diff = __bind(this.diff, this);
     this.ps = __bind(this.ps, this);
     this.build = __bind(this.build, this);
@@ -208,6 +209,56 @@ module.exports = Tugboat = (function() {
         });
       };
     })(this));
+  };
+
+  Tugboat.prototype.groupcull = function(groupdiff, callback) {
+    var c, containername, errors, messages, outputname, service, servicename, tasks, _fn, _i, _len, _ref, _ref1;
+    errors = [];
+    messages = [];
+    tasks = [];
+    _ref = groupdiff.services;
+    for (servicename in _ref) {
+      service = _ref[servicename];
+      outputname = servicename;
+      while (outputname.length < 26) {
+        outputname += ' ';
+      }
+      _ref1 = service.containers;
+      _fn = (function(_this) {
+        return function(containername, c, outputname, service) {
+          if (c.inspect.State.Running) {
+            tasks.push(function(cb) {
+              messages.push("" + outputname + " Stopping " + containername);
+              cb();
+              return _this.ducke.container(c.container.Id).stop(function(err, result) {
+                if (err != null) {
+                  errors.push(err);
+                }
+                return cb();
+              });
+            });
+          }
+          return tasks.push(function(cb) {
+            messages.push("" + outputname + " Deleting " + containername);
+            cb();
+            return _this.ducke.container(c.container.Id).rm(function(err, result) {
+              if (err != null) {
+                errors.push(err);
+              }
+              return cb();
+            });
+          });
+        };
+      })(this);
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        c = _ref1[_i];
+        containername = c.container.Names[0].substr('1');
+        _fn(containername, c, outputname, service);
+      }
+    }
+    return series(tasks, function() {
+      return callback(errors, messages);
+    });
   };
 
   Tugboat.prototype.groupup = function(groupdiff, callback) {

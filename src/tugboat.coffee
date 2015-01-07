@@ -111,6 +111,36 @@ module.exports = class Tugboat
           servicesdiffed = servicediff imagerepo, groupsgrouped
           callback null, servicesdiffed
   
+  groupcull: (groupdiff, callback) =>
+    errors = []
+    messages = []
+    tasks = []
+    for servicename, service of groupdiff.services
+      outputname = servicename
+      outputname += ' ' while outputname.length < 26
+      for c in service.containers
+        containername = c.container.Names[0].substr('1')
+        do (containername, c, outputname, service) =>
+          if c.inspect.State.Running
+            tasks.push (cb) =>
+              messages.push "#{outputname} Stopping #{containername}"
+              cb()
+              @ducke
+                .container c.container.Id
+                .stop (err, result) ->
+                  errors.push err if err?
+                  cb()
+          tasks.push (cb) =>
+            messages.push "#{outputname} Deleting #{containername}"
+            cb()
+            @ducke
+              .container c.container.Id
+              .rm (err, result) ->
+                errors.push err if err?
+                cb()
+    
+    series tasks, -> callback errors, messages
+  
   groupup: (groupdiff, callback) =>
     errors = []
     messages = []

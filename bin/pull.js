@@ -44,12 +44,12 @@ module.exports = function(tugboat, groupnames) {
       _fn1 = function(servicename, config) {
         var chunks, image, repo;
         image = config.params.Image;
-        if (image.indexOf('/' === -1)) {
+        if (image.indexOf('/') === -1) {
           return;
         }
         chunks = image.split('/');
         repo = chunks[0];
-        if (repo.indexOf('.' === -1)) {
+        if (repo.indexOf('.') === -1) {
           repo = 'asdasdasdasd';
         }
         return tasks.push(function(cb) {

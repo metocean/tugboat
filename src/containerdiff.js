@@ -160,7 +160,7 @@ module.exports = function(container, service, image) {
     _ref7 = source.HostConfig.Binds;
     for (_l = 0, _len3 = _ref7.length; _l < _len3; _l++) {
       e = _ref7[_l];
-      if (target.HostConfig.Binds.indexOf(e === -1)) {
+      if (target.HostConfig.Binds.indexOf(e) === -1) {
         return "volumes different (" + e + " -> volume not bound)";
       }
     }

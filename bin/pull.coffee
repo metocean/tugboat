@@ -40,11 +40,11 @@ module.exports = (tugboat, groupnames) ->
             # or user/image:tag
             # or image is local and not pulled even if it's something like 'ubuntu'
             image = config.params.Image
-            return if image.indexOf '/' is -1
+            return if image.indexOf('/') is -1
             
             chunks = image.split '/'
             repo = chunks[0]
-            if repo.indexOf '.' is -1
+            if repo.indexOf('.') is -1
               repo = 'asdasdasdasd'
             
             tasks.push (cb) ->
