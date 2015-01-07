@@ -1,3 +1,5 @@
+os = require 'os'
+
 # Replace template tags
 template = (content) ->
   type = typeof content
@@ -9,6 +11,8 @@ template = (content) ->
     content.replace /#\{([a-zA-Z0-9_]+?)\}/g, (match, token) ->
       if process.env[token]?
         process.env[token]
+      else if token in ['HOST', 'HOSTNAME']
+        os.hostname()
       else
         match
   else if type is 'array'
