@@ -5,6 +5,7 @@ path = require 'path'
 parse_configuration = require './configuration'
 groupdiff = require './groupdiff'
 servicediff = require './servicediff'
+series = require './series'
 
 # Copy all of the properties on source to target, recurse if an object
 copy = (source, target) ->
@@ -109,6 +110,71 @@ module.exports = class Tugboat
           groupsgrouped = groupdiff @_groups, containers
           servicesdiffed = servicediff imagerepo, groupsgrouped
           callback null, servicesdiffed
+  
+  groupup: (groupdiff, callback) =>
+    errors = []
+    messages = []
+    tasks = []
+    for servicename, service of groupdiff.services
+      outputname = servicename
+      outputname += ' ' while outputname.length < 26
+      do (outputname, service) =>
+        tasks.push (cb) =>
+          if service.diff.iserror
+            errors.push "#{outputname} #{m}" for m in service.diff.messages
+          else
+            messages.push "#{outputname} #{m}" for m in service.diff.messages
+          cb()
+        for c in service.diff.stop
+          containername = c.container.Names[0].substr('1')
+          do (containername, c) =>
+            tasks.push (cb) =>
+              messages.push "#{outputname} Stopping #{containername}"
+              cb()
+              # @ducke
+              #   .container c.container.Id
+              #   .stop (err, result) ->
+              #     errors.push err if err?
+              #     cb()
+        for c in service.diff.rm
+          containername = c.container.Names[0].substr('1')
+          do (containername, c) =>
+            tasks.push (cb) =>
+              messages.push "#{outputname} Deleting #{containername}"
+              cb()
+              # @ducke
+              #   .container c.container.Id
+              #   .stop (err, result) ->
+              #     errors.push err if err?
+              #     cb()
+        for c in service.diff.start
+          containername = c.container.Names[0].substr('1')
+          do (containername, c) =>
+            tasks.push (cb) =>
+              messages.push "#{outputname} Starting #{containername}"
+              cb()
+              # @ducke
+              #   .container c.container.Id
+              #   .stop (err, result) ->
+              #     errors.push err if err?
+              #     cb()
+        
+        if service.diff.create > 0
+            for i in [1..service.diff.create]
+              tasks.push (cb) =>
+                newname = "#{groupdiff.name}_#{service.name}"
+                newindex = 1
+                newindex++ while service.containers
+                  .filter (c) -> c.index is newindex.toString()
+                  .length isnt 0
+                newname += "_#{newindex}"
+                messages.push "#{outputname} Creating #{newname} (#{service.service.params.Image}) "
+                cb()
+                # @up service.service, newname, (err) ->
+                #   errors.push err if err?
+                #   cb()
+    
+    series tasks, -> callback errors, messages
   
   # Run a service
   up: (config, containername, callback) =>
