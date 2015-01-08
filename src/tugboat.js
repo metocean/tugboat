@@ -18,6 +18,8 @@ servicediff = require('./servicediff');
 
 series = require('./series');
 
+parallel = require('./parallel');
+
 copy = function(source, target) {
   var key, value, _results;
   _results = [];
@@ -33,32 +35,6 @@ copy = function(source, target) {
     }
   }
   return _results;
-};
-
-parallel = function(tasks, callback) {
-  var count, result;
-  count = tasks.length;
-  result = function(cb) {
-    var task, _i, _len, _results;
-    if (count === 0) {
-      return cb();
-    }
-    _results = [];
-    for (_i = 0, _len = tasks.length; _i < _len; _i++) {
-      task = tasks[_i];
-      _results.push(task(function() {
-        count--;
-        if (count === 0) {
-          return cb();
-        }
-      }));
-    }
-    return _results;
-  };
-  if (callback != null) {
-    result(callback);
-  }
-  return result;
 };
 
 module.exports = Tugboat = (function() {
