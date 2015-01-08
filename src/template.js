@@ -9,7 +9,10 @@ template = function(content) {
   if (type === 'object') {
     for (key in content) {
       value = content[key];
-      content[key] = template(value);
+      delete content[key];
+      key = template(key);
+      value = template(value);
+      content[key] = value;
     }
     return content;
   } else if (type === 'string') {

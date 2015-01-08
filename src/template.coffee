@@ -5,7 +5,10 @@ template = (content) ->
   type = typeof content
   if type is 'object'
     for key, value of content
-      content[key] = template value
+      delete content[key]
+      key = template key
+      value = template value
+      content[key] = value
     content
   else if type is 'string'
     content.replace /#\{([a-zA-Z0-9_]+?)\}/g, (match, token) ->
