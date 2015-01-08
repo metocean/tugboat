@@ -45,28 +45,22 @@ module.exports = (container, service, image) ->
   if sourceCmd isnt targetCmd
     return "command different (#{sourceCmd} -> #{targetCmd})"
   
+  targetenv = []
+  if target.Env?
+    targetenv = targetenv.concat target.Env
+  if image.inspect.ContainerConfig.Env?
+    targetenv = targetenv.concat image.inspect.ContainerConfig.Env
+  
   # console.log 'Checking Env'
   for item in source.Config.Env
-    found = no
-    if target.Env?
-      found = target.Env
-        .filter (e) -> e is item
-        .length isnt 0
-    if image.inspect.ContainerConfig.Env?
-      found = image.inspect.ContainerConfig.Env
-        .filter (e) -> e is item
-        .length isnt 0
-    if !found
-      return "environment different (#{item} -> no var provided)"
+    if targetenv.filter((e) -> e is item).length is 0
+      console.log source.Config.Env
+      console.log targetenv
+      return "environment different (#{item})"
   
-  output = []
-  if target.Env?
-    output = output.concat target.Env
-  if image.inspect.ContainerConfig.Env?
-    output = output.concat image.inspect.ContainerConfig.Env
-  if output.length isnt source.Config.Env.length
-    console.log output
-    return "environment different (#{source.Config.Env.join(', ')} -> #{output.join(', ')})"
+  if targetenv.length isnt source.Config.Env.length
+    console.log targetenv
+    return "environment different (#{source.Config.Env.join(', ')} -> #{targetenv.join(', ')})"
   
   # console.log 'Checking Dns'
   unless !source.HostConfig.Dns? and !target.HostConfig.Dns?
