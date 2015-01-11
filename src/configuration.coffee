@@ -42,6 +42,7 @@ validation =
   domainname: isstring
   mem_limit: isnumber
   privileged: isboolean
+  notes: isstring
 
 parse_port = (port) ->
   udp = '/udp'

@@ -80,7 +80,8 @@ validation = {
   hostname: isstring,
   domainname: isstring,
   mem_limit: isnumber,
-  privileged: isboolean
+  privileged: isboolean,
+  notes: isstring
 };
 
 parse_port = function(port) {
