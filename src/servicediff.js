@@ -15,7 +15,7 @@ identifyprimary = function(service, imagerepo) {
     };
   }
   tagname = service.service.params.Image;
-  if (tagname.indexOf(':' === -1)) {
+  if (tagname.indexOf(':') === -1) {
     tagname += ':latest';
   }
   if (imagerepo.tags[tagname] == null) {

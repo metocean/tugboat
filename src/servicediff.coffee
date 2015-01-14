@@ -12,7 +12,7 @@ identifyprimary = (service, imagerepo) ->
   
   # Locate the image we should be using
   tagname = service.service.params.Image
-  tagname += ':latest' if tagname.indexOf ':' is -1
+  tagname += ':latest' if tagname.indexOf(':') is -1
   if !imagerepo.tags[tagname]?
     return {
       messages: ["Image '#{service.service.params.Image}' not found"]
