@@ -55,7 +55,7 @@ importantping:
   command: ping google.com
 ```
 
-Running `tug up test` will create a container called `test_importantping_`
+Running `tug up test` will create a container called `test_importantping_1`
 . Any changes to the file will be compared to running continers. Additional `tug up test` commands will test differences and only restart the container if changes are detected.
 
 The yml format is identical to the [fig.yml format](http://www.fig.sh/yml.html).
