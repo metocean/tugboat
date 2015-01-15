@@ -22,6 +22,15 @@ isobjectofstringsornull = (s) ->
     continue if isstring i
     return no
   yes
+isrestartpolicy = (s) ->
+  return yes if typeof s is 'boolean'
+  return no if typeof s isnt 'string'
+  return yes if s is 'yes'
+  return yes if s is 'no'
+  chunks = s.split ':'
+  return no if chunks.length isnt 2
+  return no if chunks[0] isnt 'on-failure'
+  yes
 
 # The expecations
 validation =
@@ -43,6 +52,7 @@ validation =
   mem_limit: isnumber
   privileged: isboolean
   notes: isstring
+  restart: isrestartpolicy
 
 parse_port = (port) ->
   udp = '/udp'
@@ -75,6 +85,18 @@ module.exports = (groupname, services, path, cb) ->
     if typeof services isnt 'object' or services instanceof Array
       errors.push new TUGBOATFormatException "The value of #{name.cyan} is not an object of strings."
       continue
+    
+    if config.restart?
+      if config.restart is no or config.restart is 'no'
+        delete config.restart
+      else if config.restart is yes or config.restart is 'always'
+        config.restart =
+          Name: 'always'
+      else if config.restart.indexOf('on-failure') is 0
+        chunks = config.restart.split ':'
+        config.restart =
+          Name: chunks[0]
+          MaximumRetryCount: chunks[1]
     
     # Fig syntax allows a single value, let's convert that
     if config.dns? and typeof config.dns is 'string'
@@ -185,6 +207,7 @@ module.exports = (groupname, services, path, cb) ->
           NetworkMode: config.net ? ''
           Privileged: config.privileged ? no
           PortBindings: config.ports ? null
+          RestartPolicy: config.restart ? null
   
   return cb errors if errors.length isnt 0
   cb null, services
