@@ -54,12 +54,9 @@ module.exports = (container, service, image) ->
   # console.log 'Checking Env'
   for item in source.Config.Env
     if targetenv.filter((e) -> e is item).length is 0
-      console.log source.Config.Env
-      console.log targetenv
       return "environment different (#{item})"
   
   if targetenv.length isnt source.Config.Env.length
-    console.log targetenv
     return "environment different (#{source.Config.Env.join(', ')} -> #{targetenv.join(', ')})"
   
   # console.log 'Checking Dns'

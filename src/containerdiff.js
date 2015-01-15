@@ -62,13 +62,10 @@ module.exports = function(container, service, image) {
     if (targetenv.filter(function(e) {
       return e === item;
     }).length === 0) {
-      console.log(source.Config.Env);
-      console.log(targetenv);
       return "environment different (" + item + ")";
     }
   }
   if (targetenv.length !== source.Config.Env.length) {
-    console.log(targetenv);
     return "environment different (" + (source.Config.Env.join(', ')) + " -> " + (targetenv.join(', ')) + ")";
   }
   if (!((source.HostConfig.Dns == null) && (target.HostConfig.Dns == null))) {
