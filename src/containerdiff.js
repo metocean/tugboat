@@ -22,7 +22,7 @@ module.exports = function(container, service, image) {
     if (target.Domainname !== null) {
       return "domainname different (" + source.Config.Domainname + " -> " + target.domainname + ")";
     }
-  } else if (source.Config.Domainname !== target.Domainname) {
+  } else if ((target.Domainname != null) && source.Config.Domainname !== target.Domainname) {
     return "domainname different (" + source.Config.Domainname + " -> " + target.Domainname + ")";
   }
   if ((target.Hostname != null) && source.Config.Hostname !== target.Hostname) {
@@ -156,6 +156,17 @@ module.exports = function(container, service, image) {
       if (target.HostConfig.Binds.indexOf(e) === -1) {
         return "volumes different (" + e + " -> volume not bound)";
       }
+    }
+  }
+  if (!((source.HostConfig.RestartPolicy == null) && (target.HostConfig.RestartPolicy == null))) {
+    if ((source.HostConfig.RestartPolicy == null) || (target.HostConfig.RestartPolicy == null)) {
+      return "restart policy different (" + source.HostConfig.RestartPolicy + " -> " + target.HostConfig.RestartPolicy + ")";
+    }
+    if (source.HostConfig.RestartPolicy.Name !== target.HostConfig.RestartPolicy.Name) {
+      return "restart policy different (" + source.HostConfig.RestartPolicy.Name + " -> " + target.HostConfig.RestartPolicy.Name + ")";
+    }
+    if (source.HostConfig.RestartPolicy.Name === 'on-failure' && source.HostConfig.RestartPolicy.MaximumRetryCount !== target.HostConfig.RestartPolicy.MaximumRetryCount) {
+      return "restart policy different (" + source.HostConfig.RestartPolicy.Name + " -> " + target.HostConfig.RestartPolicy.Name + ")";
     }
   }
   return null;

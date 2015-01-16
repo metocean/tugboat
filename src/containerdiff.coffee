@@ -20,7 +20,7 @@ module.exports = (container, service, image) ->
   if source.Config.Domainname is 'false' or source.Config.Domainname is ''
     if target.Domainname isnt null
       return "domainname different (#{source.Config.Domainname} -> #{target.domainname})"
-  else if source.Config.Domainname isnt target.Domainname
+  else if target.Domainname? and source.Config.Domainname isnt target.Domainname
     return "domainname different (#{source.Config.Domainname} -> #{target.Domainname})"
   
   # console.log 'Checking Hostname'
@@ -134,6 +134,16 @@ module.exports = (container, service, image) ->
     for e in source.HostConfig.Binds
       if target.HostConfig.Binds.indexOf(e) is -1
         return "volumes different (#{e} -> volume not bound)"
+  
+  unless !source.HostConfig.RestartPolicy? and !target.HostConfig.RestartPolicy?
+    if !source.HostConfig.RestartPolicy? or !target.HostConfig.RestartPolicy?
+      return "restart policy different (#{source.HostConfig.RestartPolicy} -> #{target.HostConfig.RestartPolicy})"
+    
+    if source.HostConfig.RestartPolicy.Name != target.HostConfig.RestartPolicy.Name
+      return "restart policy different (#{source.HostConfig.RestartPolicy.Name} -> #{target.HostConfig.RestartPolicy.Name})"
+    
+    if source.HostConfig.RestartPolicy.Name is 'on-failure' and source.HostConfig.RestartPolicy.MaximumRetryCount != target.HostConfig.RestartPolicy.MaximumRetryCount
+      return "restart policy different (#{source.HostConfig.RestartPolicy.Name} -> #{target.HostConfig.RestartPolicy.Name})"
   
   # console.log 'Not checking Links'
   # console.log 'Not checking VolumesFrom'
