@@ -290,7 +290,9 @@ module.exports = function(groupname, services, path, cb) {
           NetworkMode: (_ref16 = config.net) != null ? _ref16 : '',
           Privileged: (_ref17 = config.privileged) != null ? _ref17 : false,
           PortBindings: (_ref18 = config.ports) != null ? _ref18 : null,
-          RestartPolicy: (_ref19 = config.restart) != null ? _ref19 : null
+          RestartPolicy: (_ref19 = config.restart) != null ? _ref19 : {
+            Name: ''
+          }
         }
       }
     };

@@ -207,7 +207,7 @@ module.exports = (groupname, services, path, cb) ->
           NetworkMode: config.net ? ''
           Privileged: config.privileged ? no
           PortBindings: config.ports ? null
-          RestartPolicy: config.restart ? null
+          RestartPolicy: config.restart ? Name: ''
   
   return cb errors if errors.length isnt 0
   cb null, services
