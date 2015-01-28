@@ -9,6 +9,8 @@ module.exports = (tugboat, groupname, servicenames) ->
         else console.error err
         return
       
+      groupname = groupname.replace '.yml', ''
+      
       console.log()
       console.log "  Diff of #{groupname.blue}:"
       console.log()

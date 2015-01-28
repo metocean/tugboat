@@ -25,6 +25,9 @@ module.exports = function(tugboat, names) {
         console.log();
         return;
       }
+      names = names.map(function(g) {
+        return g.replace('.yml', '');
+      });
       if (names.length === 0) {
         console.log();
         for (_ in groups) {

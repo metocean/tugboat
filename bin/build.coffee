@@ -15,6 +15,8 @@ module.exports = (tugboat, groupnames, usecache) ->
     if groupnames.length is 0
       groupnames = Object.keys tugboat._groups
     
+    groupnames = groupnames.map (g) -> g.replace '.yml', ''
+    
     haderror = no
     for name in groupnames
       if !tugboat._groups[name]?

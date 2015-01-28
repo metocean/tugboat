@@ -20,6 +20,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         }
         return;
       }
+      groupname = groupname.replace('.yml', '');
       tasks = [];
       console.log();
       console.log("  Updating " + groupname.blue + "...");

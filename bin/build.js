@@ -20,6 +20,9 @@ module.exports = function(tugboat, groupnames, usecache) {
     if (groupnames.length === 0) {
       groupnames = Object.keys(tugboat._groups);
     }
+    groupnames = groupnames.map(function(g) {
+      return g.replace('.yml', '');
+    });
     haderror = false;
     for (_i = 0, _len = groupnames.length; _i < _len; _i++) {
       name = groupnames[_i];

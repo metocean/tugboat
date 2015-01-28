@@ -20,6 +20,7 @@ module.exports = (tugboat, groupname, servicenames) ->
       
       groupstoprocess = []
       if groupname
+        groupname = groupname.replace '.yml', ''
         if !groups[groupname]?
           console.error "  The group '#{groupname}' is not available in this directory".red
           console.error()

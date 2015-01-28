@@ -18,6 +18,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         }
         return;
       }
+      groupname = groupname.replace('.yml', '');
       console.log();
       console.log("  Diff of " + groupname.blue + ":");
       console.log();

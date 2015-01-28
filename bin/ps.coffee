@@ -19,6 +19,7 @@ module.exports = (tugboat, names) ->
         console.log()
         return
       
+      names = names.map (g) -> g.replace '.yml', ''
       if names.length is 0
         console.log()
         for _, group of groups

@@ -10,6 +10,8 @@ module.exports = (tugboat, groupname, servicenames) ->
         else console.error err
         return
       
+      groupname = groupname.replace '.yml', ''
+      
       tasks = []
       
       console.log()
