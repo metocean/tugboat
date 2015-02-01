@@ -7,6 +7,7 @@ groupdiff = require './groupdiff'
 servicediff = require './servicediff'
 series = require './series'
 parallel = require './parallel'
+seq = require './seq'
 require_raw = require './require_raw'
 
 # Copy all of the properties on source to target, recurse if an object
@@ -191,33 +192,41 @@ module.exports = class Tugboat
   
   # Run a service
   create: (group, service, callback) =>
-    create = "#{__dirname}/../scripts/create.js"
-    return require_raw(create) @, @ducke, group, service, callback
+    create = service.service.scripts?.create
+    create = "#{__dirname}/../scripts/create.js" if !create?
+    return require_raw(create) @, @ducke, seq, group, service, callback
   
   stop: (group, service, container, callback) =>
-    stop = "#{__dirname}/../scripts/stop.js"
-    return require_raw(stop) @, @ducke, group, service, container, callback
+    stop = service.service.scripts?.stop
+    stop = "#{__dirname}/../scripts/stop.js" if !stop?
+    return require_raw(stop) @, @ducke, seq, group, service, container, callback
   
   rm: (group, service, container, callback) =>
-    rm = "#{__dirname}/../scripts/rm.js"
-    return require_raw(rm) @, @ducke, group, service, container, callback
+    rm = service.service.scripts?.rm
+    rm = "#{__dirname}/../scripts/rm.js" if !rm?
+    return require_raw(rm) @, @ducke, seq, group, service, container, callback
   
   start: (group, service, container, callback) =>
-    start = "#{__dirname}/../scripts/start.js"
-    return require_raw(start) @, @ducke, group, service, container, callback
+    start = service.service.scripts?.start
+    start = "#{__dirname}/../scripts/start.js" if !start?
+    return require_raw(start) @, @ducke, seq, group, service, container, callback
   
   kill: (group, service, container, callback) =>
-    kill = "#{__dirname}/../scripts/kill.js"
-    return require_raw(kill) @, @ducke, group, service, container, callback
+    kill = service.service.scripts?.kill
+    kill = "#{__dirname}/../scripts/kill.js" if !kill?
+    return require_raw(kill) @, @ducke, seq, group, service, container, callback
   
   cull: (group, service, container, callback) =>
-    cull = "#{__dirname}/../scripts/cull.js"
-    return require_raw(cull) @, @ducke, group, service, container, callback
+    cull = service.service.scripts?.cull
+    cull = "#{__dirname}/../scripts/cull.js" if !cull?
+    return require_raw(cull) @, @ducke, seq, group, service, container, callback
   
   migrate: (group, service, container, callback) =>
-    migrate = "#{__dirname}/../scripts/migrate.js"
-    return require_raw(migrate) @, @ducke, group, service, container, callback
+    migrate = service.service.scripts?.migrate
+    migrate = "#{__dirname}/../scripts/migrate.js" if !migrate?
+    return require_raw(migrate) @, @ducke, seq, group, service, container, callback
   
   keep: (group, service, container, callback) =>
-    keep = "#{__dirname}/../scripts/keep.js"
-    return require_raw(keep) @, @ducke, group, service, container, callback
+    keep = service.service.scripts?.keep
+    keep = "#{__dirname}/../scripts/keep.js" if !keep?
+    return require_raw(keep) @, @ducke, seq, group, service, container, callback

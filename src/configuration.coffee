@@ -31,6 +31,13 @@ isrestartpolicy = (s) ->
   return no if chunks.length isnt 2
   return no if chunks[0] isnt 'on-failure'
   yes
+isscripts = (s) ->
+  return no if typeof s isnt 'object'
+  allowed = ['create', 'cull', 'keep', 'kill', 'migrate', 'rm', 'start', 'stop']
+  for k, v of s
+    return no if k not in allowed
+    return no if not isstring v
+  yes
 
 # The expecations
 validation =
@@ -53,6 +60,7 @@ validation =
   privileged: isboolean
   notes: isstring
   restart: isrestartpolicy
+  scripts: isscripts
 
 parse_port = (port) ->
   udp = '/udp'
@@ -135,6 +143,10 @@ module.exports = (groupname, services, path, cb) ->
         chunks[0] = resolve path, chunks[0]
         chunks.join ':'
     
+    if config.scripts?
+      for trigger, filename of config.scripts
+        config.scripts[trigger] = resolve path, filename
+    
     # Fig - copy current environment variables into empty values
     if config.environment? and isobjectofstringsornull config.environment
       results = []
@@ -189,6 +201,7 @@ module.exports = (groupname, services, path, cb) ->
     services[name] =
       name: config.name
       build: config.build ? null
+      scripts: config.scripts ? null
       params:
         Image: config.image
         Cmd: config.command ? null

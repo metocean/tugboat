@@ -40,38 +40,21 @@ identifyprimary = (service, imagerepo) ->
   result
 
 servicediff = (group, service, imagerepo) ->
-  result =
-    messages: []
-    error: []
-    iserror: no
-    keep: []
-    migrate: []
-    cull: []
-    create: 0
-  
   if !service.isknown
-    result.messages.push 'Unknown service.'
-    return result
+    return {
+      messages: ['Unknown service.']
+      error: []
+      iserror: no
+      keep: []
+      migrate: []
+      cull: []
+      create: 0
+    }
   
-  { messages, error, iserror, keep, migrate, cull } = identifyprimary service, imagerepo
-  
-  for m in messages
-    result.messages.push m
-  for e in error
-    result.error.push e
-  result.iserror = iserror
-  for k in keep
-    if !k.inspect.State.Running
-      result.start.push k
-    else
-      result.keep.push k
-  for m in migrate
-    result.migrate.push m
-  for d in cull
-    result.cull.push d
+  result = identifyprimary service, imagerepo
   
   if !result.iserror
-    result.create++ while result.create + keep.length + migrate.length < 1
+    result.create++ while result.create + result.keep.length + result.migrate.length < 1
   result
 
 module.exports = (imagerepo, groups) ->

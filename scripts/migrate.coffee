@@ -1,4 +1,4 @@
-module.exports = (tugboat, ducke, group, service, container, callback) ->
+module.exports = (tugboat, ducke, seq, group, service, container, callback) ->
   if not container.inspect.State.Running
     return tugboat.rm group, service, container, (err) ->
       return callback err if err?

@@ -1,3 +1,5 @@
 test:
   image: ubuntu
   command: ping google.com
+  scripts:
+    keep: keep.js

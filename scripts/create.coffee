@@ -1,4 +1,4 @@
-module.exports = (tugboat, ducke, group, service, callback) ->
+module.exports = (tugboat, ducke, seq, group, service, callback) ->
   newname = "#{group.name}_#{service.name}_1"
   ducke.createContainer newname, service.service.params, (err, container) ->
     return callback err if err?

@@ -47,48 +47,21 @@ identifyprimary = function(service, imagerepo) {
 };
 
 servicediff = function(group, service, imagerepo) {
-  var cull, d, e, error, iserror, k, keep, m, messages, migrate, result, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref;
-  result = {
-    messages: [],
-    error: [],
-    iserror: false,
-    keep: [],
-    migrate: [],
-    cull: [],
-    create: 0
-  };
+  var result;
   if (!service.isknown) {
-    result.messages.push('Unknown service.');
-    return result;
+    return {
+      messages: ['Unknown service.'],
+      error: [],
+      iserror: false,
+      keep: [],
+      migrate: [],
+      cull: [],
+      create: 0
+    };
   }
-  _ref = identifyprimary(service, imagerepo), messages = _ref.messages, error = _ref.error, iserror = _ref.iserror, keep = _ref.keep, migrate = _ref.migrate, cull = _ref.cull;
-  for (_i = 0, _len = messages.length; _i < _len; _i++) {
-    m = messages[_i];
-    result.messages.push(m);
-  }
-  for (_j = 0, _len1 = error.length; _j < _len1; _j++) {
-    e = error[_j];
-    result.error.push(e);
-  }
-  result.iserror = iserror;
-  for (_k = 0, _len2 = keep.length; _k < _len2; _k++) {
-    k = keep[_k];
-    if (!k.inspect.State.Running) {
-      result.start.push(k);
-    } else {
-      result.keep.push(k);
-    }
-  }
-  for (_l = 0, _len3 = migrate.length; _l < _len3; _l++) {
-    m = migrate[_l];
-    result.migrate.push(m);
-  }
-  for (_m = 0, _len4 = cull.length; _m < _len4; _m++) {
-    d = cull[_m];
-    result.cull.push(d);
-  }
+  result = identifyprimary(service, imagerepo);
   if (!result.iserror) {
-    while (result.create + keep.length + migrate.length < 1) {
+    while (result.create + result.keep.length + result.migrate.length < 1) {
       result.create++;
     }
   }
