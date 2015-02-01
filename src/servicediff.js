@@ -5,15 +5,6 @@ containerdiff = require('./containerdiff');
 
 identifyprimary = function(service, imagerepo) {
   var c, difference, image, result, tagname, _i, _len, _ref;
-  if (!service.isknown) {
-    return {
-      messages: ["Unknown service " + service.name + ", restart everything"],
-      keep: [],
-      discard: service.containers,
-      error: [],
-      iserror: true
-    };
-  }
   tagname = service.service.params.Image;
   if (tagname.indexOf(':') === -1) {
     tagname += ':latest';
@@ -21,25 +12,27 @@ identifyprimary = function(service, imagerepo) {
   if (imagerepo.tags[tagname] == null) {
     return {
       messages: ["Image '" + service.service.params.Image + "' not found"],
-      keep: [],
-      discard: [],
       error: service.containers,
-      iserror: true
+      iserror: true,
+      keep: [],
+      migrate: [],
+      cull: []
     };
   }
   image = imagerepo.tags[tagname];
   result = {
     messages: [],
-    keep: [],
-    discard: [],
     error: [],
-    iserror: false
+    iserror: false,
+    keep: [],
+    migrate: [],
+    cull: []
   };
   _ref = service.containers;
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     c = _ref[_i];
     if (result.keep.length !== 0) {
-      result.discard.push(c);
+      result.cull.push(c);
       continue;
     }
     difference = containerdiff(c, service, image);
@@ -47,58 +40,55 @@ identifyprimary = function(service, imagerepo) {
       result.keep.push(c);
     } else {
       result.messages.push(difference);
-      result.discard.push(c);
+      result.migrate.push(c);
     }
   }
   return result;
 };
 
 servicediff = function(group, service, imagerepo) {
-  var d, discard, e, error, iserror, k, keep, m, messages, result, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref;
+  var cull, d, e, error, iserror, k, keep, m, messages, migrate, result, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref;
   result = {
     messages: [],
-    stop: [],
-    rm: [],
-    start: [],
-    keep: [],
     error: [],
-    create: 0,
-    iserror: false
+    iserror: false,
+    keep: [],
+    migrate: [],
+    cull: [],
+    create: 0
   };
   if (!service.isknown) {
-    result.messages.push('Unknown service, starting anything that is stopped.');
-    result.start = service.containers.filter(function(c) {
-      return !c.inspect.State.Running;
-    });
+    result.messages.push('Unknown service.');
     return result;
   }
-  _ref = identifyprimary(service, imagerepo), messages = _ref.messages, keep = _ref.keep, discard = _ref.discard, error = _ref.error, iserror = _ref.iserror;
-  for (_i = 0, _len = keep.length; _i < _len; _i++) {
-    k = keep[_i];
+  _ref = identifyprimary(service, imagerepo), messages = _ref.messages, error = _ref.error, iserror = _ref.iserror, keep = _ref.keep, migrate = _ref.migrate, cull = _ref.cull;
+  for (_i = 0, _len = messages.length; _i < _len; _i++) {
+    m = messages[_i];
+    result.messages.push(m);
+  }
+  for (_j = 0, _len1 = error.length; _j < _len1; _j++) {
+    e = error[_j];
+    result.error.push(e);
+  }
+  result.iserror = iserror;
+  for (_k = 0, _len2 = keep.length; _k < _len2; _k++) {
+    k = keep[_k];
     if (!k.inspect.State.Running) {
       result.start.push(k);
     } else {
       result.keep.push(k);
     }
   }
-  for (_j = 0, _len1 = discard.length; _j < _len1; _j++) {
-    d = discard[_j];
-    if (d.inspect.State.Running) {
-      result.stop.push(d);
-    }
-    result.rm.push(d);
+  for (_l = 0, _len3 = migrate.length; _l < _len3; _l++) {
+    m = migrate[_l];
+    result.migrate.push(m);
   }
-  for (_k = 0, _len2 = error.length; _k < _len2; _k++) {
-    e = error[_k];
-    result.error.push(e);
+  for (_m = 0, _len4 = cull.length; _m < _len4; _m++) {
+    d = cull[_m];
+    result.cull.push(d);
   }
-  for (_l = 0, _len3 = messages.length; _l < _len3; _l++) {
-    m = messages[_l];
-    result.messages.push(m);
-  }
-  result.iserror = iserror;
   if (!result.iserror) {
-    while (result.create + keep.length < 1) {
+    while (result.create + keep.length + migrate.length < 1) {
       result.create++;
     }
   }

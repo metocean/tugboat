@@ -1,6 +1,8 @@
 seq = require '../src/seq'
 init_errors = require './errors'
 
+cname = (c) -> c.container.Names[0].substr '1'
+
 module.exports = (tugboat, groupname, servicenames) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
@@ -22,46 +24,37 @@ module.exports = (tugboat, groupname, servicenames) ->
         outputname = service.name.cyan
         outputname += ' ' while outputname.length < 36
         do (outputname, service) ->
-          seq "#{outputname} Diffing", (cb) ->
+          seq (cb) ->
             if service.diff.iserror
               return cb service.diff.messages
             for m in service.diff.messages
               console.log "  #{m.magenta}"
             cb()
           
-          for c in service.diff.stop
+          for c in service.diff.cull
             do (c) ->
-              seq "#{outputname} Stopping #{c.container.Names[0].substr('1').cyan}", (cb) ->
-                tugboat.stop group, service, c, (err, result) ->
+              seq "#{outputname} Culling #{cname(c).cyan}", (cb) ->
+                tugboat.cull group, service, c, (err, result) ->
                   return cb err if err?
                   cb()
-          for c in service.diff.rm
+          for c in service.diff.migrate
             do (c) ->
-              seq "#{outputname} Deleting #{c.container.Names[0].substr('1').cyan}", (cb) ->
-                tugboat.rm group, service, c, (err, result) ->
-                  return cb err if err?
-                  cb()
-          for c in service.diff.start
-            do (c) ->
-              seq "#{outputname} Starting #{c.container.Names[0].substr('1').cyan}", (cb) ->
-                tugboat.start group, service, c, (err, result) ->
+              seq "#{outputname} Migrating #{cname(c).cyan}", (cb) ->
+                tugboat.migrate group, service, c, (err, result) ->
                   return cb err if err?
                   cb()
           for c in service.diff.keep
             do (c) ->
-              seq "#{outputname} Keeping #{c.container.Names[0].substr('1').cyan}", (cb) -> cb()
-          
+              seq "#{outputname} Keeping #{cname(c).cyan}", (cb) ->
+                tugboat.keep group, service, c, (err, result) ->
+                  return cb err if err?
+                  cb()
           if service.diff.create > 0
             for i in [1..service.diff.create]
-              newname = "#{groupname}_#{service.name}"
-              newindex = 1
-              newindex++ while service.containers
-                .filter (c) -> c.index is newindex.toString()
-                .length isnt 0
-              newname += "_#{newindex}"
-              seq "#{outputname} Creating #{newname.cyan} (#{service.service.params.Image})", (cb) ->
-                tugboat.up group, service, newname, (err) ->
+              seq "#{outputname} Creating new container from #{service.service.params.Image}", (cb) ->
+                tugboat.create group, service, (err, container) ->
                   return cb err if err?
+                  console.log "  Container #{container.Names[0].substr('1').cyan} created"
                   cb()
       
       seq (cb) ->

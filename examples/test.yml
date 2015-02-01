@@ -1,4 +1,3 @@
 test:
   image: ubuntu
   command: ping google.com
-  

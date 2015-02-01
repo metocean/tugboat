@@ -7,6 +7,7 @@ groupdiff = require './groupdiff'
 servicediff = require './servicediff'
 series = require './series'
 parallel = require './parallel'
+require_raw = require './require_raw'
 
 # Copy all of the properties on source to target, recurse if an object
 copy = (source, target) ->
@@ -173,47 +174,50 @@ module.exports = class Tugboat
                   cb()
         
         if service.diff.create > 0
-            for i in [1..service.diff.create]
-              tasks.push (cb) =>
-                newname = "#{groupdiff.name}_#{service.name}"
-                newindex = 1
-                newindex++ while service.containers
-                  .filter (c) -> c.index is newindex.toString()
-                  .length isnt 0
-                newname += "_#{newindex}"
-                messages.push "#{outputname} Creating #{newname} (#{service.service.params.Image}) "
-                @up service.service, newname, (err) ->
-                  errors.push err if err?
-                  cb()
+          for i in [1..service.diff.create]
+            tasks.push (cb) =>
+              newname = "#{groupdiff.name}_#{service.name}"
+              newindex = 1
+              newindex++ while service.containers
+                .filter (c) -> c.index is newindex.toString()
+                .length isnt 0
+              newname += "_#{newindex}"
+              messages.push "#{outputname} Creating #{newname} (#{service.service.params.Image}) "
+              @create groupdiff, service.service, newname, (err) ->
+                errors.push err if err?
+                cb()
     
     series tasks, -> callback errors, messages
   
   # Run a service
-  up: (group, service, containername, callback) =>
-    @ducke.createContainer containername, service.service.params, (err, container) =>
-      return callback err if err?
-      id = container.Id
-      container = @ducke.container id
-      container.start (err) =>
-        return callback err if err?
-        callback null, id
+  create: (group, service, callback) =>
+    create = "#{__dirname}/../scripts/create.js"
+    return require_raw(create) @, @ducke, group, service, callback
   
   stop: (group, service, container, callback) =>
-    @ducke
-      .container container.container.Id
-      .stop callback
+    stop = "#{__dirname}/../scripts/stop.js"
+    return require_raw(stop) @, @ducke, group, service, container, callback
   
   rm: (group, service, container, callback) =>
-    @ducke
-      .container container.container.Id
-      .rm callback
+    rm = "#{__dirname}/../scripts/rm.js"
+    return require_raw(rm) @, @ducke, group, service, container, callback
   
   start: (group, service, container, callback) =>
-    @ducke
-      .container container.container.Id
-      .start callback
+    start = "#{__dirname}/../scripts/start.js"
+    return require_raw(start) @, @ducke, group, service, container, callback
   
   kill: (group, service, container, callback) =>
-    @ducke
-      .container container.container.Id
-      .kill callback
+    kill = "#{__dirname}/../scripts/kill.js"
+    return require_raw(kill) @, @ducke, group, service, container, callback
+  
+  cull: (group, service, container, callback) =>
+    cull = "#{__dirname}/../scripts/cull.js"
+    return require_raw(cull) @, @ducke, group, service, container, callback
+  
+  migrate: (group, service, container, callback) =>
+    migrate = "#{__dirname}/../scripts/migrate.js"
+    return require_raw(migrate) @, @ducke, group, service, container, callback
+  
+  keep: (group, service, container, callback) =>
+    keep = "#{__dirname}/../scripts/keep.js"
+    return require_raw(keep) @, @ducke, group, service, container, callback
