@@ -55,7 +55,7 @@ servicediff = function(group, service, imagerepo) {
       iserror: false,
       keep: [],
       migrate: [],
-      cull: [],
+      cull: service.containers,
       create: 0
     };
   }

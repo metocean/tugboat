@@ -16,8 +16,12 @@ module.exports = (tugboat, groupname, servicenames) ->
       console.log()
       
       for _, service of results[groupname].services
-        outputname = service.name.cyan
-        outputname += ' ' while outputname.length < 36
+        outputname = service.name
+        outputname += ' ' while outputname.length < 32
+        outputname = outputname.cyan
+        
+        if service.service?
+          outputname = service.service.pname.cyan
         
         if service.diff.iserror
           console.error "  #{outputname} #{'Error:'.red}"
@@ -27,16 +31,15 @@ module.exports = (tugboat, groupname, servicenames) ->
         for m in service.diff.messages
           console.log "  #{outputname} #{m.magenta}"
         
-        for c in service.diff.stop
-          console.log "  #{outputname} Stopping #{c.container.Names[0].substr('1').cyan}"
-        for c in service.diff.rm
-          console.log "  #{outputname} Deleting #{c.container.Names[0].substr('1').cyan}"
-        for c in service.diff.start
-          console.log "  #{outputname} Starting #{c.container.Names[0].substr('1').cyan}"
+        cname = (c) -> c.container.Names[0].substr('1').cyan
+        for c in service.diff.cull
+          console.log "  #{outputname} Culling #{cname(c)}"
+        for c in service.diff.migrate
+          console.log "  #{outputname} Migrating #{cname(c)}"
         for c in service.diff.keep
-          console.log "  #{outputname} Keeping #{c.container.Names[0].substr('1').cyan}"
+          console.log "  #{outputname} Keeping #{cname(c)}"
         if service.diff.create is 1
-          console.log "  #{outputname} Creating a new container"
+          console.log "  #{outputname} Creating a new container from #{service.service.params.Image}"
         else if service.diff.create > 1
           console.log "  #{outputname} Creating #{service.diff.create.toString().green} new containers"
       

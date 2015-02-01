@@ -32,7 +32,14 @@ module.exports = function(tugboat, groupname, servicenames) {
       _ref = group.services;
       _fn = function(service) {
         var c, i, outputname, _fn1, _fn2, _fn3, _i, _j, _k, _l, _len, _len1, _len2, _ref1, _ref2, _ref3, _ref4, _results;
-        outputname = service.service.pname.cyan;
+        outputname = service.name;
+        while (outputname.length < 32) {
+          outputname += ' ';
+        }
+        outputname = outputname.cyan;
+        if (service.service != null) {
+          outputname = service.service.pname.cyan;
+        }
         seq(function(cb) {
           var m, _i, _len, _ref1;
           if (service.diff.iserror) {
@@ -41,7 +48,7 @@ module.exports = function(tugboat, groupname, servicenames) {
           _ref1 = service.diff.messages;
           for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
             m = _ref1[_i];
-            console.log("  " + m.magenta);
+            console.log("  " + outputname + " " + m.magenta);
           }
           return cb();
         });

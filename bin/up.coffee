@@ -22,12 +22,18 @@ module.exports = (tugboat, groupname, servicenames) ->
       
       for _, service of group.services
         do (service) ->
-          outputname = service.service.pname.cyan
+          outputname = service.name
+          outputname += ' ' while outputname.length < 32
+          outputname = outputname.cyan
+          
+          if service.service?
+            outputname = service.service.pname.cyan
+          
           seq (cb) ->
             if service.diff.iserror
               return cb service.diff.messages
             for m in service.diff.messages
-              console.log "  #{m.magenta}"
+              console.log "  #{outputname} #{m.magenta}"
             cb()
           
           for c in service.diff.cull

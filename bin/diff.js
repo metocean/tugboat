@@ -9,7 +9,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       return init_errors(errors);
     }
     return tugboat.diff(function(err, results) {
-      var c, m, outputname, service, _, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
+      var c, cname, m, outputname, service, _, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
       if (err != null) {
         if (err.stack) {
           console.error(err.stack);
@@ -25,9 +25,13 @@ module.exports = function(tugboat, groupname, servicenames) {
       _ref = results[groupname].services;
       for (_ in _ref) {
         service = _ref[_];
-        outputname = service.name.cyan;
-        while (outputname.length < 36) {
+        outputname = service.name;
+        while (outputname.length < 32) {
           outputname += ' ';
+        }
+        outputname = outputname.cyan;
+        if (service.service != null) {
+          outputname = service.service.pname.cyan;
         }
         if (service.diff.iserror) {
           console.error("  " + outputname + " " + 'Error:'.red);
@@ -43,28 +47,26 @@ module.exports = function(tugboat, groupname, servicenames) {
           m = _ref2[_j];
           console.log("  " + outputname + " " + m.magenta);
         }
-        _ref3 = service.diff.stop;
+        cname = function(c) {
+          return c.container.Names[0].substr('1').cyan;
+        };
+        _ref3 = service.diff.cull;
         for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
           c = _ref3[_k];
-          console.log("  " + outputname + " Stopping " + (c.container.Names[0].substr('1').cyan));
+          console.log("  " + outputname + " Culling " + (cname(c)));
         }
-        _ref4 = service.diff.rm;
+        _ref4 = service.diff.migrate;
         for (_l = 0, _len3 = _ref4.length; _l < _len3; _l++) {
           c = _ref4[_l];
-          console.log("  " + outputname + " Deleting " + (c.container.Names[0].substr('1').cyan));
+          console.log("  " + outputname + " Migrating " + (cname(c)));
         }
-        _ref5 = service.diff.start;
+        _ref5 = service.diff.keep;
         for (_m = 0, _len4 = _ref5.length; _m < _len4; _m++) {
           c = _ref5[_m];
-          console.log("  " + outputname + " Starting " + (c.container.Names[0].substr('1').cyan));
-        }
-        _ref6 = service.diff.keep;
-        for (_n = 0, _len5 = _ref6.length; _n < _len5; _n++) {
-          c = _ref6[_n];
-          console.log("  " + outputname + " Keeping " + (c.container.Names[0].substr('1').cyan));
+          console.log("  " + outputname + " Keeping " + (cname(c)));
         }
         if (service.diff.create === 1) {
-          console.log("  " + outputname + " Creating a new container");
+          console.log("  " + outputname + " Creating a new container from " + service.service.params.Image);
         } else if (service.diff.create > 1) {
           console.log("  " + outputname + " Creating " + (service.diff.create.toString().green) + " new containers");
         }

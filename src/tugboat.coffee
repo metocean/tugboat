@@ -192,41 +192,41 @@ module.exports = class Tugboat
   
   # Run a service
   create: (group, service, callback) =>
-    create = service.service.scripts?.create
+    create = service.service?.scripts?.create
     create = "#{__dirname}/../scripts/create.js" if !create?
     return require_raw(create) @, @ducke, seq, group, service, callback
   
   stop: (group, service, container, callback) =>
-    stop = service.service.scripts?.stop
+    stop = service.service?.scripts?.stop
     stop = "#{__dirname}/../scripts/stop.js" if !stop?
     return require_raw(stop) @, @ducke, seq, group, service, container, callback
   
   rm: (group, service, container, callback) =>
-    rm = service.service.scripts?.rm
+    rm = service.service?.scripts?.rm
     rm = "#{__dirname}/../scripts/rm.js" if !rm?
     return require_raw(rm) @, @ducke, seq, group, service, container, callback
   
   start: (group, service, container, callback) =>
-    start = service.service.scripts?.start
+    start = service.service?.scripts?.start
     start = "#{__dirname}/../scripts/start.js" if !start?
     return require_raw(start) @, @ducke, seq, group, service, container, callback
   
   kill: (group, service, container, callback) =>
-    kill = service.service.scripts?.kill
+    kill = service.service?.scripts?.kill
     kill = "#{__dirname}/../scripts/kill.js" if !kill?
     return require_raw(kill) @, @ducke, seq, group, service, container, callback
   
   cull: (group, service, container, callback) =>
-    cull = service.service.scripts?.cull
+    cull = service.service?.scripts?.cull
     cull = "#{__dirname}/../scripts/cull.js" if !cull?
     return require_raw(cull) @, @ducke, seq, group, service, container, callback
   
   migrate: (group, service, container, callback) =>
-    migrate = service.service.scripts?.migrate
+    migrate = service.service?.scripts?.migrate
     migrate = "#{__dirname}/../scripts/migrate.js" if !migrate?
     return require_raw(migrate) @, @ducke, seq, group, service, container, callback
   
   keep: (group, service, container, callback) =>
-    keep = service.service.scripts?.keep
+    keep = service.service?.scripts?.keep
     keep = "#{__dirname}/../scripts/keep.js" if !keep?
     return require_raw(keep) @, @ducke, seq, group, service, container, callback

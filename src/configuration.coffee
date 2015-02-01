@@ -62,6 +62,21 @@ validation =
   restart: isrestartpolicy
   scripts: isscripts
 
+globalvalidation =
+  volumes: isstringarray
+  dns: isstringarray
+  ports: isstringarray
+  environment: isobjectofstringsornull
+  restart: isrestartpolicy
+  scripts: isscripts
+  expose: isstringarray
+  user: isstring
+  domainname: isstring
+  net: isstring
+  privileged: isboolean
+  notes: isstring
+  links: isstringarray
+
 parse_port = (port) ->
   udp = '/udp'
   tcp = '/tcp'
@@ -69,6 +84,33 @@ parse_port = (port) ->
   if port.substr(port.length - udp.length) isnt udp and port.substr(port.length - tcp.length) isnt tcp
     port = "#{port}/tcp"
   port
+
+preprocess = (config) ->
+  if config.restart?
+    if config.restart is no or config.restart is 'no'
+      delete config.restart
+    else if config.restart is yes or config.restart is 'always'
+      config.restart =
+        Name: 'always'
+    else if config.restart.indexOf('on-failure') is 0
+      chunks = config.restart.split ':'
+      config.restart =
+        Name: chunks[0]
+        MaximumRetryCount: chunks[1]
+  
+  # Fig syntax allows a single value, let's convert that
+  if config.dns? and typeof config.dns is 'string'
+    config.dns = [config.dns]
+  
+  # Fig syntax allows strings of x=y let's convert that
+  if config.environment? and config.environment instanceof Array
+    result = {}
+    for env in config.environment
+      chunks = env.split '='
+      key = chunks[0]
+      value = chunks[1..].join '='
+      result[key] = value
+    config.environment = result
 
 module.exports = (groupname, services, path, cb) ->
   if typeof services isnt 'object'
@@ -87,6 +129,17 @@ module.exports = (groupname, services, path, cb) ->
   # replace templates
   services = template services
   
+  preprocess services
+  globals = {}
+  
+  for key, value of globalvalidation
+    if services[key]?
+      if !validation[key] services[key]
+        errors.push new TUGBOATFormatException "In the global configuration the value of #{key.cyan} was an unexpected format."
+        continue
+      globals[key] = services[key]
+      delete services[key]
+  
   for name, config of services
     if !name.match /^[a-zA-Z0-9-]+$/
       errors.push new TUGBOATFormatException "#{name.cyan} is not a valid service name."
@@ -94,31 +147,54 @@ module.exports = (groupname, services, path, cb) ->
       errors.push new TUGBOATFormatException "The value of #{name.cyan} is not an object of strings."
       continue
     
-    if config.restart?
-      if config.restart is no or config.restart is 'no'
-        delete config.restart
-      else if config.restart is yes or config.restart is 'always'
-        config.restart =
-          Name: 'always'
-      else if config.restart.indexOf('on-failure') is 0
-        chunks = config.restart.split ':'
-        config.restart =
-          Name: chunks[0]
-          MaximumRetryCount: chunks[1]
+    preprocess config
     
-    # Fig syntax allows a single value, let's convert that
-    if config.dns? and typeof config.dns is 'string'
-      config.dns = [config.dns]
+    if globals.volumes?
+      config.volumes = [] if !config.volumes?
+      config.volumes = globals.volumes.concat config.volumes
     
-    # Fig syntax allows strings of x=y let's convert that
-    if config.environment? and config.environment instanceof Array
-      result = {}
-      for env in config.environment
-        chunks = env.split '='
-        key = chunks[0]
-        value = chunks[1..].join '='
-        result[key] = value
-      config.environment = result
+    if globals.dns?
+      config.dns = [] if !config.dns?
+      config.dns = globals.dns.concat config.dns
+    
+    if globals.ports?
+      config.ports = [] if !config.ports?
+      config.ports = globals.ports.concat config.ports
+    
+    if globals.expose?
+      config.expose = [] if !config.expose?
+      config.expose = globals.expose.concat config.expose
+    
+    if globals.links?
+      config.links = [] if !config.links?
+      config.links = globals.links.concat config.links
+    
+    if globals.environment?
+      config.environment = {} if !config.environment?
+      for key, value of globals.environment
+        continue if config.environment[key]?
+        config.environment[key] = value
+    
+    if globals.scripts?
+      config.scripts = {} if !config.scripts?
+      for key, value of globals.scripts
+        continue if config.scripts[key]?
+        config.scripts[key] = value
+    
+    if globals.restart? and !config.restart?
+      config.restart = globals.restart
+    
+    if globals.user? and !config.user?
+      config.user = globals.user
+    
+    if globals.domainname? and !config.domainname?
+      config.domainname = globals.domainname
+    
+    if globals.net? and !config.net?
+      config.net = globals.net
+    
+    if globals.privileged? and !config.privileged?
+      config.privileged = globals.privileged
     
     # Either build or image, not both but at least one
     count = 0

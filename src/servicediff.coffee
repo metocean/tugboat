@@ -47,7 +47,7 @@ servicediff = (group, service, imagerepo) ->
       iserror: no
       keep: []
       migrate: []
-      cull: []
+      cull: service.containers
       create: 0
     }
   

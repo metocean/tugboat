@@ -361,8 +361,8 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.create = function(group, service, callback) {
-    var create, _ref;
-    create = (_ref = service.service.scripts) != null ? _ref.create : void 0;
+    var create, _ref, _ref1;
+    create = (_ref = service.service) != null ? (_ref1 = _ref.scripts) != null ? _ref1.create : void 0 : void 0;
     if (create == null) {
       create = "" + __dirname + "/../scripts/create.js";
     }
@@ -370,8 +370,8 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.stop = function(group, service, container, callback) {
-    var stop, _ref;
-    stop = (_ref = service.service.scripts) != null ? _ref.stop : void 0;
+    var stop, _ref, _ref1;
+    stop = (_ref = service.service) != null ? (_ref1 = _ref.scripts) != null ? _ref1.stop : void 0 : void 0;
     if (stop == null) {
       stop = "" + __dirname + "/../scripts/stop.js";
     }
@@ -379,8 +379,8 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.rm = function(group, service, container, callback) {
-    var rm, _ref;
-    rm = (_ref = service.service.scripts) != null ? _ref.rm : void 0;
+    var rm, _ref, _ref1;
+    rm = (_ref = service.service) != null ? (_ref1 = _ref.scripts) != null ? _ref1.rm : void 0 : void 0;
     if (rm == null) {
       rm = "" + __dirname + "/../scripts/rm.js";
     }
@@ -388,8 +388,8 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.start = function(group, service, container, callback) {
-    var start, _ref;
-    start = (_ref = service.service.scripts) != null ? _ref.start : void 0;
+    var start, _ref, _ref1;
+    start = (_ref = service.service) != null ? (_ref1 = _ref.scripts) != null ? _ref1.start : void 0 : void 0;
     if (start == null) {
       start = "" + __dirname + "/../scripts/start.js";
     }
@@ -397,8 +397,8 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.kill = function(group, service, container, callback) {
-    var kill, _ref;
-    kill = (_ref = service.service.scripts) != null ? _ref.kill : void 0;
+    var kill, _ref, _ref1;
+    kill = (_ref = service.service) != null ? (_ref1 = _ref.scripts) != null ? _ref1.kill : void 0 : void 0;
     if (kill == null) {
       kill = "" + __dirname + "/../scripts/kill.js";
     }
@@ -406,8 +406,8 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.cull = function(group, service, container, callback) {
-    var cull, _ref;
-    cull = (_ref = service.service.scripts) != null ? _ref.cull : void 0;
+    var cull, _ref, _ref1;
+    cull = (_ref = service.service) != null ? (_ref1 = _ref.scripts) != null ? _ref1.cull : void 0 : void 0;
     if (cull == null) {
       cull = "" + __dirname + "/../scripts/cull.js";
     }
@@ -415,8 +415,8 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.migrate = function(group, service, container, callback) {
-    var migrate, _ref;
-    migrate = (_ref = service.service.scripts) != null ? _ref.migrate : void 0;
+    var migrate, _ref, _ref1;
+    migrate = (_ref = service.service) != null ? (_ref1 = _ref.scripts) != null ? _ref1.migrate : void 0 : void 0;
     if (migrate == null) {
       migrate = "" + __dirname + "/../scripts/migrate.js";
     }
@@ -424,8 +424,8 @@ module.exports = Tugboat = (function() {
   };
 
   Tugboat.prototype.keep = function(group, service, container, callback) {
-    var keep, _ref;
-    keep = (_ref = service.service.scripts) != null ? _ref.keep : void 0;
+    var keep, _ref, _ref1;
+    keep = (_ref = service.service) != null ? (_ref1 = _ref.scripts) != null ? _ref1.keep : void 0 : void 0;
     if (keep == null) {
       keep = "" + __dirname + "/../scripts/keep.js";
     }

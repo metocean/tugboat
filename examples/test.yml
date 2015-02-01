@@ -1,5 +1,12 @@
-test:
+scripts:
+  keep: keep.js
+
+dns: '4.4.4.4'
+
+test1:
   image: ubuntu
   command: ping google.com
-  scripts:
-    keep: keep.js
+
+test2:
+  image: ubuntu
+  command: ping google.com
