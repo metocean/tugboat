@@ -78,11 +78,13 @@ module.exports = function(tugboat, groupname, servicenames) {
             });
           }
           _fn = function(outputname, s) {
-            var c, newname, _fn1, _l, _len3, _ref1;
+            var c, _fn1, _l, _len3, _ref1;
             _ref1 = s.containers;
             _fn1 = function(c) {
+              var containername;
+              containername = c.container.Names[0].substr(1).cyan;
               if (c.inspect.State.Running) {
-                seq("" + outputname + " Stopping " + (c.container.Names[0].substr(1).cyan), function(cb) {
+                seq("" + outputname + " Stopping " + containername, function(cb) {
                   return tugboat.stop(g, s, c, function(err) {
                     if (err != null) {
                       return cb(err);
@@ -91,7 +93,7 @@ module.exports = function(tugboat, groupname, servicenames) {
                   });
                 });
               }
-              return seq("" + outputname + " Deleting " + (c.container.Names[0].substr(1).cyan), function(cb) {
+              return seq("" + outputname + " Deleting " + containername, function(cb) {
                 return tugboat.rm(g, s, c, function(err) {
                   if (err != null) {
                     return cb(err);
@@ -104,19 +106,19 @@ module.exports = function(tugboat, groupname, servicenames) {
               c = _ref1[_l];
               _fn1(c);
             }
-            newname = "" + g.name + "_" + s.name + "_1";
-            return seq("" + outputname + " Creating " + newname.cyan + " (" + s.service.params.Image + ")", function(cb) {
-              return tugboat.up(g, s, newname, function(err) {
+            return seq(function(cb) {
+              return tugboat.create(g, s, function(err, newname) {
                 if (err != null) {
                   return cb(err);
                 }
+                console.log("  " + outputname + " Container " + newname.cyan + " created from " + service.service.params.Image);
                 return cb();
               });
             });
           };
           for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
             s = servicestoprocess[_k];
-            outputname = s.pname.cyan;
+            outputname = s.service.pname.cyan;
             _fn(outputname, s);
           }
           return seq(function(cb) {

@@ -56,23 +56,24 @@ module.exports = (tugboat, groupname, servicenames) ->
               cb()
           
           for s in servicestoprocess
-            outputname = s.pname.cyan
+            outputname = s.service.pname.cyan
             do (outputname, s) ->
               for c in s.containers
                 do (c) ->
+                  containername = c.container.Names[0].substr(1).cyan
                   if c.inspect.State.Running
-                    seq "#{outputname} Stopping #{c.container.Names[0].substr(1).cyan}", (cb) ->
+                    seq "#{outputname} Stopping #{containername}", (cb) ->
                       tugboat.stop g, s, c, (err) ->
                         return cb err if err?
                         cb()
-                  seq "#{outputname} Deleting #{c.container.Names[0].substr(1).cyan}", (cb) ->
+                  seq "#{outputname} Deleting #{containername}", (cb) ->
                     tugboat.rm g, s, c, (err) ->
                       return cb err if err?
                       cb()
-              newname = "#{g.name}_#{s.name}_1"
-              seq "#{outputname} Creating #{newname.cyan} (#{s.service.params.Image})", (cb) ->
-                tugboat.up g, s, newname, (err) ->
+              seq (cb) ->
+                tugboat.create g, s, (err, newname) ->
                   return cb err if err?
+                  console.log "  #{outputname} Container #{newname.cyan} created from #{service.service.params.Image}"
                   cb()
           
           seq (cb) ->
