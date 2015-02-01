@@ -82,10 +82,7 @@ module.exports = function(tugboat, groupname, servicenames) {
           }
           for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
             s = servicestoprocess[_k];
-            outputname = s.name.cyan;
-            while (outputname.length < 36) {
-              outputname += ' ';
-            }
+            outputname = s.service.pname.cyan;
             _ref1 = s.containers;
             _fn = function(outputname, s, c) {
               if (c.inspect.State.Running) {

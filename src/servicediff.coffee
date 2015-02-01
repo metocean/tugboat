@@ -52,6 +52,7 @@ servicediff = (group, service, imagerepo) ->
     }
   
   result = identifyprimary service, imagerepo
+  result.create = 0
   
   if !result.iserror
     result.create++ while result.create + result.keep.length + result.migrate.length < 1

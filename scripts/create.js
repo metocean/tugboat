@@ -10,7 +10,7 @@ module.exports = function(tugboat, ducke, seq, group, service, callback) {
       if (err != null) {
         return callback(err);
       }
-      return callback(null, container);
+      return callback(null, newname);
     });
   });
 };

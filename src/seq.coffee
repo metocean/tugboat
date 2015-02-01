@@ -1,4 +1,4 @@
-delay = (f) -> setTimeout f, 0
+delay = (f) -> setTimeout f, 1
 
 class Seq
   constructor: ->

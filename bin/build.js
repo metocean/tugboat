@@ -49,15 +49,10 @@ module.exports = function(tugboat, groupnames, usecache) {
           });
           _ref = group.services;
           _fn = function(servicename, config) {
-            var output;
             if (config.build == null) {
               return;
             }
-            output = servicename.cyan;
-            while (output.length < 36) {
-              output += ' ';
-            }
-            return seq(output, function(cb) {
+            return seq("" + config.pname.cyan, function(cb) {
               var results, run;
               results = '';
               run = function(message) {

@@ -62,11 +62,9 @@ module.exports = (tugboat, groupname, servicenames) ->
               cb()
           
           for s in servicestoprocess
-            outputname = s.name.cyan
-            outputname += ' ' while outputname.length < 36
             for c in s.containers
-              do (outputname, s, c) ->
-                seq "#{outputname} deleting #{c.container.Names[0].substr(1).cyan}", (cb) ->
+              do (s, c) ->
+                seq "#{s.service.pname.cyan} deleting #{c.container.Names[0].substr(1).cyan}", (cb) ->
                   tugboat.rm g, s, c, (err) ->
                     return cb err if err?
                     cb()

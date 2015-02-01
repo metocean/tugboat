@@ -6,4 +6,4 @@ module.exports = (tugboat, ducke, seq, group, service, callback) ->
       .container container.Id
       .start (err) ->
         return callback err if err?
-        callback null, container
+        callback null, newname

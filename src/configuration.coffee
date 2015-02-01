@@ -198,8 +198,11 @@ module.exports = (groupname, services, path, cb) ->
   
   # Convert configuration into docker format
   for name, config of services
+    pname = name
+    pname += ' ' while pname.length < 32
     services[name] =
       name: config.name
+      pname: pname
       build: config.build ? null
       scripts: config.scripts ? null
       params:

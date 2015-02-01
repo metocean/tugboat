@@ -11,7 +11,7 @@ module.exports = function(tugboat, names) {
       return init_errors(errors);
     }
     return tugboat.ps(function(err, groups) {
-      var created, group, i, name, output, postfix, r, running, service, servicename, status, total, _, _i, _j, _len, _len1, _ref, _ref1, _ref2, _results;
+      var created, group, name, output, postfix, r, running, service, servicename, status, total, _, _i, _len, _ref, _ref1, _results;
       if (err != null) {
         console.error();
         console.error('  docker is down'.red);
@@ -108,15 +108,7 @@ module.exports = function(tugboat, names) {
         _ref1 = group.services;
         for (_ in _ref1) {
           service = _ref1[_];
-          servicename = service.name.cyan;
-          _ref2 = service.containers;
-          for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-            i = _ref2[_j];
-            servicename += " " + i.index;
-          }
-          while (servicename.length < 36) {
-            servicename += ' ';
-          }
+          servicename = service.pname.cyan;
           status = '-'.magenta;
           if (service.containers.length > 0) {
             r = service.containers.filter(function(d) {

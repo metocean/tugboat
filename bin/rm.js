@@ -43,7 +43,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       for (_i = 0, _len = groupstoprocess.length; _i < _len; _i++) {
         g = groupstoprocess[_i];
         _results.push((function(g) {
-          var c, haderror, name, outputname, s, service, servicestoprocess, _fn, _j, _k, _l, _len1, _len2, _len3, _ref, _ref1;
+          var c, haderror, name, s, service, servicestoprocess, _fn, _j, _k, _l, _len1, _len2, _len3, _ref, _ref1;
           seq(function(cb) {
             console.log("  Deleting " + g.name.blue + "...");
             console.log();
@@ -84,13 +84,9 @@ module.exports = function(tugboat, groupname, servicenames) {
           }
           for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
             s = servicestoprocess[_k];
-            outputname = s.name.cyan;
-            while (outputname.length < 36) {
-              outputname += ' ';
-            }
             _ref1 = s.containers;
-            _fn = function(outputname, s, c) {
-              return seq("" + outputname + " deleting " + (c.container.Names[0].substr(1).cyan), function(cb) {
+            _fn = function(s, c) {
+              return seq("" + s.service.pname.cyan + " deleting " + (c.container.Names[0].substr(1).cyan), function(cb) {
                 return tugboat.rm(g, s, c, function(err) {
                   if (err != null) {
                     return cb(err);
@@ -101,7 +97,7 @@ module.exports = function(tugboat, groupname, servicenames) {
             };
             for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
               c = _ref1[_l];
-              _fn(outputname, s, c);
+              _fn(s, c);
             }
           }
           return seq(function(cb) {

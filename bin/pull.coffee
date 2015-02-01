@@ -50,8 +50,7 @@ module.exports = (tugboat, groupnames) ->
               repo = 'asdasdasdasd'
             
             tasks.push (cb) ->
-              output = servicename.cyan
-              output += ' ' while output.length < 36
+              output = config.pname.cyan
               console.log "  #{output} Pulling #{config.params.Image.green}"
               cb()
         

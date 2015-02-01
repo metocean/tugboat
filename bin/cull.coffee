@@ -58,8 +58,7 @@ module.exports = (tugboat, groupname, servicenames) ->
               cb()
           
           for s in servicestoprocess
-            outputname = s.name.cyan
-            outputname += ' ' while outputname.length < 36
+            outputname = s.service.pname.cyan
             for c in s.containers
               do (outputname, s, c) ->
                 if c.inspect.State.Running

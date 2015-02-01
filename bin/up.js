@@ -15,7 +15,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       return init_errors(errors);
     }
     return tugboat.diff(function(err, results) {
-      var group, outputname, service, _, _fn, _ref;
+      var group, service, _, _fn, _ref;
       if (err != null) {
         if (err.stack) {
           console.error(err.stack);
@@ -30,8 +30,9 @@ module.exports = function(tugboat, groupname, servicenames) {
       console.log();
       group = results[groupname];
       _ref = group.services;
-      _fn = function(outputname, service) {
-        var c, i, _fn1, _fn2, _fn3, _i, _j, _k, _l, _len, _len1, _len2, _ref1, _ref2, _ref3, _ref4, _results;
+      _fn = function(service) {
+        var c, i, outputname, _fn1, _fn2, _fn3, _i, _j, _k, _l, _len, _len1, _len2, _ref1, _ref2, _ref3, _ref4, _results;
+        outputname = service.service.pname.cyan;
         seq(function(cb) {
           var m, _i, _len, _ref1;
           if (service.diff.iserror) {
@@ -92,12 +93,12 @@ module.exports = function(tugboat, groupname, servicenames) {
         if (service.diff.create > 0) {
           _results = [];
           for (i = _l = 1, _ref4 = service.diff.create; 1 <= _ref4 ? _l <= _ref4 : _l >= _ref4; i = 1 <= _ref4 ? ++_l : --_l) {
-            _results.push(seq("" + outputname + " Creating new container from " + service.service.params.Image, function(cb) {
-              return tugboat.create(group, service, function(err, container) {
+            _results.push(seq(function(cb) {
+              return tugboat.create(group, service, function(err, name) {
                 if (err != null) {
                   return cb(err);
                 }
-                console.log("  Container " + (container.Names[0].substr('1').cyan) + " created");
+                console.log("  " + outputname + " Container " + name.cyan + " created from " + service.service.params.Image);
                 return cb();
               });
             }));
@@ -107,11 +108,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       };
       for (_ in _ref) {
         service = _ref[_];
-        outputname = service.name.cyan;
-        while (outputname.length < 36) {
-          outputname += ' ';
-        }
-        _fn(outputname, service);
+        _fn(service);
       }
       return seq(function(cb) {
         console.log();

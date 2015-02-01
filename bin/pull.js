@@ -57,10 +57,7 @@ module.exports = function(tugboat, groupnames) {
         }
         return tasks.push(function(cb) {
           var output;
-          output = servicename.cyan;
-          while (output.length < 36) {
-            output += ' ';
-          }
+          output = config.pname.cyan;
           console.log("  " + output + " Pulling " + config.params.Image.green);
           return cb();
         });

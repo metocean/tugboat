@@ -3,7 +3,7 @@ var Seq, delay,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 delay = function(f) {
-  return setTimeout(f, 0);
+  return setTimeout(f, 1);
 };
 
 Seq = (function() {

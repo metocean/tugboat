@@ -38,10 +38,8 @@ module.exports = (tugboat, groupnames, usecache) ->
           for servicename, config of group.services
             do (servicename, config) ->
               return if !config.build?
-              output = servicename.cyan
-              output += ' ' while output.length < 36
               # Build each group, build each service
-              seq output, (cb) ->
+              seq "#{config.pname.cyan}", (cb) ->
                 # Record results incase of error
                 results = ''
                 run = (message) ->

@@ -116,10 +116,7 @@ module.exports = function(tugboat, groupname, servicenames) {
           };
           for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
             s = servicestoprocess[_k];
-            outputname = s.name.cyan;
-            while (outputname.length < 36) {
-              outputname += ' ';
-            }
+            outputname = s.pname.cyan;
             _fn(outputname, s);
           }
           return seq(function(cb) {

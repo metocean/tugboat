@@ -140,7 +140,7 @@ parse_port = function(port) {
 };
 
 module.exports = function(groupname, services, path, cb) {
-  var chunks, config, count, env, errors, filename, key, name, p, port, result, results, trigger, value, _, _i, _j, _len, _len1, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref18, _ref19, _ref2, _ref20, _ref21, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+  var chunks, config, count, env, errors, filename, key, name, p, pname, port, result, results, trigger, value, _, _i, _j, _len, _len1, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref18, _ref19, _ref2, _ref20, _ref21, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
   if (typeof services !== 'object') {
     return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of services.')]);
   }
@@ -296,8 +296,13 @@ module.exports = function(groupname, services, path, cb) {
   }
   for (name in services) {
     config = services[name];
+    pname = name;
+    while (pname.length < 32) {
+      pname += ' ';
+    }
     services[name] = {
       name: config.name,
+      pname: pname,
       build: (_ref5 = config.build) != null ? _ref5 : null,
       scripts: (_ref6 = config.scripts) != null ? _ref6 : null,
       params: {

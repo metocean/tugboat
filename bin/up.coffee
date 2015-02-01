@@ -21,9 +21,8 @@ module.exports = (tugboat, groupname, servicenames) ->
       group = results[groupname]
       
       for _, service of group.services
-        outputname = service.name.cyan
-        outputname += ' ' while outputname.length < 36
-        do (outputname, service) ->
+        do (service) ->
+          outputname = service.service.pname.cyan
           seq (cb) ->
             if service.diff.iserror
               return cb service.diff.messages
@@ -51,10 +50,10 @@ module.exports = (tugboat, groupname, servicenames) ->
                   cb()
           if service.diff.create > 0
             for i in [1..service.diff.create]
-              seq "#{outputname} Creating new container from #{service.service.params.Image}", (cb) ->
-                tugboat.create group, service, (err, container) ->
+              seq (cb) ->
+                tugboat.create group, service, (err, name) ->
                   return cb err if err?
-                  console.log "  Container #{container.Names[0].substr('1').cyan} created"
+                  console.log "  #{outputname} Container #{name.cyan} created from #{service.service.params.Image}"
                   cb()
       
       seq (cb) ->
