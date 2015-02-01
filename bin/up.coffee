@@ -1,4 +1,4 @@
-series = require '../src/series'
+seq = require '../src/seq'
 init_errors = require './errors'
 
 module.exports = (tugboat, groupname, servicenames) ->
@@ -12,8 +12,6 @@ module.exports = (tugboat, groupname, servicenames) ->
       
       groupname = groupname.replace '.yml', ''
       
-      tasks = []
-      
       console.log()
       console.log "  Updating #{groupname.blue}..."
       console.log()
@@ -24,78 +22,48 @@ module.exports = (tugboat, groupname, servicenames) ->
         outputname = service.name.cyan
         outputname += ' ' while outputname.length < 36
         do (outputname, service) ->
-          tasks.push (cb) ->
+          seq "#{outputname} Diffing", (cb) ->
             if service.diff.iserror
-              console.error "  #{outputname} #{'Error:'.red}"
-              for m in service.diff.messages
-                console.log "  #{outputname} #{m.red}"
-              return cb()
+              return cb service.diff.messages
             for m in service.diff.messages
-              console.log "  #{outputname} #{m.magenta}"
-            
+              console.log "  #{m.magenta}"
             cb()
           
           for c in service.diff.stop
             do (c) ->
-              tasks.push (cb) ->
-                process.stdout.write "  #{outputname} Stopping #{c.container.Names[0].substr('1').cyan} "
+              seq "#{outputname} Stopping #{c.container.Names[0].substr('1').cyan}", (cb) ->
                 tugboat.stop group, service, c, (err, result) ->
-                  if err?
-                    console.error 'X'.red
-                    if err.stack then console.error err.stack
-                    else console.error err
-                    return
-                  console.error '√'.green
+                  return cb err if err?
                   cb()
           for c in service.diff.rm
             do (c) ->
-              tasks.push (cb) ->
-                process.stdout.write "  #{outputname} Deleting #{c.container.Names[0].substr('1').cyan} "
+              seq "#{outputname} Deleting #{c.container.Names[0].substr('1').cyan}", (cb) ->
                 tugboat.rm group, service, c, (err, result) ->
-                  if err?
-                    console.error 'X'.red
-                    if err.stack then console.error err.stack
-                    else console.error err
-                    return
-                  console.error '√'.green
+                  return cb err if err?
                   cb()
           for c in service.diff.start
             do (c) ->
-              tasks.push (cb) ->
-                process.stdout.write "  #{outputname} Starting #{c.container.Names[0].substr('1').cyan} "
+              seq "#{outputname} Starting #{c.container.Names[0].substr('1').cyan}", (cb) ->
                 tugboat.start group, service, c, (err, result) ->
-                  if err?
-                    console.error 'X'.red
-                    if err.stack then console.error err.stack
-                    else console.error err
-                    return
-                  console.error '√'.green
+                  return cb err if err?
                   cb()
           for c in service.diff.keep
             do (c) ->
-              tasks.push (cb) ->
-                console.log "  #{outputname} Keeping #{c.container.Names[0].substr('1').cyan}"
-                cb()
+              seq "#{outputname} Keeping #{c.container.Names[0].substr('1').cyan}", (cb) -> cb()
           
           if service.diff.create > 0
             for i in [1..service.diff.create]
-              tasks.push (cb) ->
-                newname = "#{groupname}_#{service.name}"
-                newindex = 1
-                newindex++ while service.containers
-                  .filter (c) -> c.index is newindex.toString()
-                  .length isnt 0
-                newname += "_#{newindex}"
-                process.stdout.write "  #{outputname} Creating #{newname.cyan} (#{service.service.params.Image}) "
-                
+              newname = "#{groupname}_#{service.name}"
+              newindex = 1
+              newindex++ while service.containers
+                .filter (c) -> c.index is newindex.toString()
+                .length isnt 0
+              newname += "_#{newindex}"
+              seq "#{outputname} Creating #{newname.cyan} (#{service.service.params.Image})", (cb) ->
                 tugboat.up group, service, newname, (err) ->
-                  if err?
-                    console.error 'X'.red
-                    if err.stack then console.error err.stack
-                    else console.error err
-                  else
-                    console.error '√'.green
+                  return cb err if err?
                   cb()
       
-      series tasks, ->
+      seq (cb) ->
         console.log()
+        cb()

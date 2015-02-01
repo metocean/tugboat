@@ -1,4 +1,4 @@
-series = require '../src/series'
+seq = require '../src/seq'
 init_errors = require './errors'
 
 module.exports = (tugboat, groupnames, usecache) ->
@@ -26,29 +26,22 @@ module.exports = (tugboat, groupnames, usecache) ->
     if haderror
       process.exit 1
     
-    tasks = []
-    
     for name in groupnames
       group = tugboat._groups[name]
       # Capture variables
       do (name, group) ->
-        tasks.push (cb) ->
-          grouptasks = []
-          console.log "  Building #{name.blue}..."
-          console.log()
+        seq (cb) ->
+          seq (cb) ->
+            console.log "  Building #{name.blue}..."
+            console.log()
+            cb()
           for servicename, config of group.services
             do (servicename, config) ->
+              return if !config.build?
               output = servicename.cyan
+              output += ' ' while output.length < 36
               # Build each group, build each service
-              grouptasks.push (cb) ->
-                output += ' ' while output.length < 36
-                process.stdout.write "  #{output} "
-                
-                # Skip services that are based on images
-                if !config.build?
-                  console.log '-'.magenta
-                  return cb()
-                
+              seq output, (cb) ->
                 # Record results incase of error
                 results = ''
                 run = (message) ->
@@ -57,16 +50,12 @@ module.exports = (tugboat, groupnames, usecache) ->
                 
                 tugboat.build group, config, usecache, run, (err) ->
                   if err?
-                    console.error 'X'.red
-                    console.error err
                     console.error results if results.length isnt 0
-                    console.error()
-                    return cb()
-                  console.log '√'.green
+                    return cb err
                   cb()
           
-          series grouptasks, ->
+          seq (cb) ->
             console.log()
             cb()
-    
-    series tasks, ->
+          
+          cb()

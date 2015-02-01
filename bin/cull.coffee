@@ -1,4 +1,4 @@
-series = require '../src/series'
+seq = require '../src/seq'
 init_errors = require './errors'
 
 module.exports = (tugboat, groupname, servicenames) ->
@@ -29,10 +29,9 @@ module.exports = (tugboat, groupname, servicenames) ->
       else
         groupstoprocess.push g for _, g of groups
       
-      tasks = []
       for g in groupstoprocess
         do (g) ->
-          tasks.push (cb) ->
+          seq (cb) ->
             console.log "  Culling #{g.name.blue}..."
             console.log()
             cb()
@@ -45,14 +44,16 @@ module.exports = (tugboat, groupname, servicenames) ->
                 console.error "  The service '#{name}' is not available in the group '#{g.name}'".red
                 haderror = yes
               else
-                servicestoprocess.push g.services[name]
+                service = g.services[name]
+                if service.containers.length isnt 0
+                  servicestoprocess.push service
             if haderror
               process.exit 1
           else
             servicestoprocess.push service for _, service of g.services
           
           if servicestoprocess.length is 0
-            tasks.push (cb) ->
+            seq (cb) ->
               console.log "  No containers to cull".magenta
               cb()
           
@@ -62,28 +63,16 @@ module.exports = (tugboat, groupname, servicenames) ->
             for c in s.containers
               do (outputname, s, c) ->
                 if c.inspect.State.Running
-                  tasks.push (cb) ->
-                    process.stdout.write "  #{outputname} Stopping #{c.container.Names[0].substr(1).cyan} "
+                  seq "#{outputname} Stopping #{c.container.Names[0].substr(1).cyan}", (cb) ->
                     tugboat.stop g, s, c, (err) ->
-                      if err?
-                        console.error 'X'.red
-                        console.error err
-                      else
-                        console.log '√'.green
+                      return cb err if err?
                       cb()
-                tasks.push (cb) ->
-                  process.stdout.write "  #{outputname} Deleting #{c.container.Names[0].substr(1).cyan} "
+                seq "#{outputname} Deleting #{c.container.Names[0].substr(1).cyan}", (cb) ->
                   tugboat.rm g, s, c, (err) ->
-                    if err?
-                      console.error 'X'.red
-                      console.error err
-                    else
-                      console.log '√'.green
-                    cb()
+                      return cb err if err?
+                      cb()
 
           
-          tasks.push (cb) ->
+          seq (cb) ->
             console.log()
             cb()
-        
-      series tasks, ->

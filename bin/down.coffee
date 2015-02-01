@@ -1,4 +1,4 @@
-series = require '../src/series'
+seq = require '../src/seq'
 init_errors = require './errors'
 
 module.exports = (tugboat, groupname, servicenames) ->
@@ -29,10 +29,9 @@ module.exports = (tugboat, groupname, servicenames) ->
       else
         groupstoprocess.push g for _, g of groups
       
-      tasks = []
       for g in groupstoprocess
         do (g) ->
-          tasks.push (cb) ->
+          seq (cb) ->
             console.log "  Stopping #{g.name.blue}..."
             console.log()
             cb()
@@ -58,27 +57,18 @@ module.exports = (tugboat, groupname, servicenames) ->
                 .length isnt 0
           
           if servicestoprocess.length is 0
-            tasks.push (cb) ->
-              console.log "  No containers to stop".magenta
-              cb()
+            seq "No containers to stop", (cb) -> cb()
           
           for s in servicestoprocess
             outputname = s.name.cyan
             outputname += ' ' while outputname.length < 36
             for c in s.containers
               do (outputname, s, c) ->
-                tasks.push (cb) ->
-                  process.stdout.write "  #{outputname} Stopping #{c.container.Names[0].substr(1).cyan} "
+                seq "#{outputname} Stopping #{c.container.Names[0].substr(1).cyan}", (cb) ->
                   tugboat.stop g, s, c, (err) ->
-                    if err?
-                      console.error 'X'.red
-                      console.error err
-                    else
-                      console.log '√'.green
+                    return cb err if err?
                     cb()
           
-          tasks.push (cb) ->
+          seq (cb) ->
             console.log()
             cb()
-        
-      series tasks, ->

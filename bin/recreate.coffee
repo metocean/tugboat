@@ -1,4 +1,4 @@
-series = require '../src/series'
+seq = require '../src/seq'
 init_errors = require './errors'
 
 module.exports = (tugboat, groupname, servicenames) ->
@@ -29,10 +29,9 @@ module.exports = (tugboat, groupname, servicenames) ->
       else
         groupstoprocess.push g for _, g of groups
       
-      tasks = []
       for g in groupstoprocess
         do (g) ->
-          tasks.push (cb) ->
+          seq (cb) ->
             console.log "  Recreating #{g.name.blue}..."
             console.log()
             cb()
@@ -52,52 +51,31 @@ module.exports = (tugboat, groupname, servicenames) ->
             servicestoprocess.push service for _, service of g.services
           
           if servicestoprocess.length is 0
-            tasks.push (cb) ->
+            seq (cb) ->
               console.log "  No containers to recreate".magenta
               cb()
           
           for s in servicestoprocess
             outputname = s.name.cyan
             outputname += ' ' while outputname.length < 36
-            for c in s.containers
-              do (outputname, s, c) ->
-                if c.inspect.State.Running
-                  tasks.push (cb) ->
-                    process.stdout.write "  #{outputname} Stopping #{c.container.Names[0].substr(1).cyan} "
-                    tugboat.stop g, s, c, (err) ->
-                      if err?
-                        console.error 'X'.red
-                        if err.stack then console.error err.stack
-                        else console.error err
-                      else
-                        console.log '√'.green
+            do (outputname, s) ->
+              for c in s.containers
+                do (c) ->
+                  if c.inspect.State.Running
+                    seq "#{outputname} Stopping #{c.container.Names[0].substr(1).cyan}", (cb) ->
+                      tugboat.stop g, s, c, (err) ->
+                        return cb err if err?
+                        cb()
+                  seq "#{outputname} Deleting #{c.container.Names[0].substr(1).cyan}", (cb) ->
+                    tugboat.rm g, s, c, (err) ->
+                      return cb err if err?
                       cb()
-                tasks.push (cb) ->
-                  process.stdout.write "  #{outputname} Deleting #{c.container.Names[0].substr(1).cyan} "
-                  tugboat.rm g, s, c, (err) ->
-                    if err?
-                      console.error 'X'.red
-                      if err.stack then console.error err.stack
-                      else console.error err
-                    else
-                      console.log '√'.green
-                    cb()
-                tasks.push (cb) ->
-                  newname = "#{g.name}_#{s.name}_1"
-                  process.stdout.write "  #{outputname} Creating #{newname.cyan} (#{s.service.params.Image}) "
-                  
-                  tugboat.up s.service, newname, (err) ->
-                    if err?
-                      console.error 'X'.red
-                      if err.stack then console.error err.stack
-                      else console.error err
-                    else
-                      console.error '√'.green
-                    cb()
-
+              newname = "#{g.name}_#{s.name}_1"
+              seq "#{outputname} Creating #{newname.cyan} (#{s.service.params.Image})", (cb) ->
+                tugboat.up g, s, newname, (err) ->
+                  return cb err if err?
+                  cb()
           
-          tasks.push (cb) ->
+          seq (cb) ->
             console.log()
             cb()
-        
-      series tasks, ->
