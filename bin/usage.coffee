@@ -1,5 +1,4 @@
 require 'colors'
-commands = require './commands'
 Tugboat = require '../src/tugboat'
 
 usage = """
@@ -17,12 +16,28 @@ usage = """
   Management:
   
     cull        Terminate, stop and remove services
+    recreate    Terminate, stop, remove and recreate services
     rm          Delete services
     kill        Gracefully terminate services
     build       Build services
     rebuild     Build services from scratch
 
 """
+build = require './build'
+commands =
+  status: require './status'
+  diff: require './diff'
+  up: require './up'
+  rm: require './rm'
+  down: require './down'
+  ps: require './ps'
+  pull: require './pull'
+  cull: require './cull'
+  kill: require './kill'
+  recreate: require './recreate'
+  # Different cache options for the same build function
+  build: (tugboat, names) -> build tugboat, names, yes
+  rebuild: (tugboat, names) -> build tugboat, names, no
 
 process.on 'uncaughtException', (err) ->
   console.error '  Caught exception: '.red
@@ -71,6 +86,10 @@ cmds =
   nuke: -> cmds.cull()
   cull: ->
     return commands.cull tugboat, args[0], args[1..]
+  
+  restart: -> cmds.recreate()
+  recreate: ->
+    return commands.recreate tugboat, args[0], args[1..]
   
   rm: ->
     return commands.rm tugboat, args[0], args[1..] if args.length > 0

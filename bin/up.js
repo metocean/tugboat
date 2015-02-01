@@ -148,9 +148,9 @@ module.exports = function(tugboat, groupname, servicenames) {
                   } else {
                     console.error(err);
                   }
-                  return;
+                } else {
+                  console.error('√'.green);
                 }
-                console.error('√'.green);
                 return cb();
               });
             }));

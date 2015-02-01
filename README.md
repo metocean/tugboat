@@ -36,6 +36,7 @@ npm install tugboat
   Management:
 
     cull        Terminate, stop and remove services
+    recreate    Terminate, stop, remove and recreate services
     rm          Delete services
     kill        Gracefully terminate services
     build       Build services

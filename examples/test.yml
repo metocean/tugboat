@@ -1,3 +1,4 @@
 test:
-  build: '.'
-  command: awesome this is really good
+  image: ubuntu
+  command: ping google.com
+  

@@ -97,8 +97,8 @@ module.exports = (tugboat, groupname, servicenames) ->
                     console.error 'X'.red
                     if err.stack then console.error err.stack
                     else console.error err
-                    return
-                  console.error '√'.green
+                  else
+                    console.error '√'.green
                   cb()
       
       series tasks, ->
