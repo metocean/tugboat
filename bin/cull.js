@@ -86,7 +86,7 @@ module.exports = function(tugboat, groupname, servicenames) {
             if (c.inspect.State.Running) {
               tasks.push(function(cb) {
                 process.stdout.write("  " + outputname + " Stopping " + (c.container.Names[0].substr(1).cyan) + " ");
-                return tugboat.ducke.container(c.container.Id).stop(function(err) {
+                return tugboat.stop(g, s, c, function(err) {
                   if (err != null) {
                     console.error('X'.red);
                     console.error(err);
@@ -99,7 +99,7 @@ module.exports = function(tugboat, groupname, servicenames) {
             }
             return tasks.push(function(cb) {
               process.stdout.write("  " + outputname + " Deleting " + (c.container.Names[0].substr(1).cyan) + " ");
-              return tugboat.ducke.container(c.container.Id).rm(function(err) {
+              return tugboat.rm(g, s, c, function(err) {
                 if (err != null) {
                   console.error('X'.red);
                   console.error(err);

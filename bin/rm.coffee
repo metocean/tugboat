@@ -69,16 +69,14 @@ module.exports = (tugboat, groupname, servicenames) ->
               do (outputname, s, c) ->
                 tasks.push (cb) ->
                   process.stdout.write "  #{outputname} deleting #{c.container.Names[0].substr(1).cyan} "
-                  tugboat.ducke
-                    .container c.container.Id
-                    .rm (err) ->
-                      if err?
-                        console.error 'X'.red
-                        console.error err
-                        console.error()
-                      else
-                        console.log '√'.green
-                      cb()
+                  tugboat.rm g, s, c, (err) ->
+                    if err?
+                      console.error 'X'.red
+                      console.error err
+                      console.error()
+                    else
+                      console.log '√'.green
+                    cb()
           
           tasks.push (cb) ->
             console.log()

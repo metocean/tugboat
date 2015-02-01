@@ -61,7 +61,7 @@ module.exports = function(tugboat, groupnames, usecache) {
               results += message;
               return results += '\n';
             };
-            return tugboat.build(group, servicename, usecache, run, function(err) {
+            return tugboat.build(group, config, usecache, run, function(err) {
               if (err != null) {
                 console.error('X'.red);
                 console.error(err);

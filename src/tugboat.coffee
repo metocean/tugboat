@@ -74,9 +74,8 @@ module.exports = class Tugboat
       callback null
   
   # Build an individual service within a group
-  build: (group, servicename, usecache, run, callback) =>
-    config = group.services[servicename]
-    @ducke.build_image config.name, config.build, usecache, run, callback
+  build: (group, service, usecache, run, callback) =>
+    @ducke.build_image service.name, service.build, usecache, run, callback
   
   # Merge known groups with running containers
   ps: (callback) =>
@@ -190,11 +189,31 @@ module.exports = class Tugboat
     series tasks, -> callback errors, messages
   
   # Run a service
-  up: (config, containername, callback) =>
-    @ducke.createContainer containername, config.params, (err, container) =>
+  up: (group, service, containername, callback) =>
+    @ducke.createContainer containername, service.service.params, (err, container) =>
       return callback err if err?
       id = container.Id
       container = @ducke.container id
       container.start (err) =>
         return callback err if err?
         callback null, id
+  
+  stop: (group, service, container, callback) =>
+    @ducke
+      .container container.container.Id
+      .stop callback
+  
+  rm: (group, service, container, callback) =>
+    @ducke
+      .container container.container.Id
+      .rm callback
+  
+  start: (group, service, container, callback) =>
+    @ducke
+      .container container.container.Id
+      .start callback
+  
+  kill: (group, service, container, callback) =>
+    @ducke
+      .container container.container.Id
+      .kill callback

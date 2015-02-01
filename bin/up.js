@@ -11,7 +11,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       return init_errors(errors);
     }
     return tugboat.diff(function(err, results) {
-      var outputname, service, tasks, _, _fn, _ref;
+      var group, outputname, service, tasks, _, _fn, _ref;
       if (err != null) {
         if (err.stack) {
           console.error(err.stack);
@@ -25,7 +25,8 @@ module.exports = function(tugboat, groupname, servicenames) {
       console.log();
       console.log("  Updating " + groupname.blue + "...");
       console.log();
-      _ref = results[groupname].services;
+      group = results[groupname];
+      _ref = group.services;
       _fn = function(outputname, service) {
         var c, i, _fn1, _fn2, _fn3, _fn4, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref1, _ref2, _ref3, _ref4, _ref5, _results;
         tasks.push(function(cb) {
@@ -50,7 +51,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         _fn1 = function(c) {
           return tasks.push(function(cb) {
             process.stdout.write("  " + outputname + " Stopping " + (c.container.Names[0].substr('1').cyan) + " ");
-            return tugboat.ducke.container(c.container.Id).stop(function(err, result) {
+            return tugboat.stop(group, service, c, function(err, result) {
               if (err != null) {
                 console.error('X'.red);
                 if (err.stack) {
@@ -73,7 +74,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         _fn2 = function(c) {
           return tasks.push(function(cb) {
             process.stdout.write("  " + outputname + " Deleting " + (c.container.Names[0].substr('1').cyan) + " ");
-            return tugboat.ducke.container(c.container.Id).rm(function(err, result) {
+            return tugboat.rm(group, service, c, function(err, result) {
               if (err != null) {
                 console.error('X'.red);
                 if (err.stack) {
@@ -96,7 +97,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         _fn3 = function(c) {
           return tasks.push(function(cb) {
             process.stdout.write("  " + outputname + " Starting " + (c.container.Names[0].substr('1').cyan) + " ");
-            return tugboat.ducke.container(c.container.Id).start(function(err, result) {
+            return tugboat.start(group, service, c, function(err, result) {
               if (err != null) {
                 console.error('X'.red);
                 if (err.stack) {
@@ -140,7 +141,7 @@ module.exports = function(tugboat, groupname, servicenames) {
               }
               newname += "_" + newindex;
               process.stdout.write("  " + outputname + " Creating " + newname.cyan + " (" + service.service.params.Image + ") ");
-              return tugboat.up(service.service, newname, function(err) {
+              return tugboat.up(group, service, newname, function(err) {
                 if (err != null) {
                   console.error('X'.red);
                   if (err.stack) {

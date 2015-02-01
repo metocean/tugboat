@@ -55,7 +55,7 @@ module.exports = (tugboat, groupnames, usecache) ->
                   results += message
                   results += '\n'
                 
-                tugboat.build group, servicename, usecache, run, (err) ->
+                tugboat.build group, config, usecache, run, (err) ->
                   if err?
                     console.error 'X'.red
                     console.error err

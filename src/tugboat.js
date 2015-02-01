@@ -39,6 +39,10 @@ copy = function(source, target) {
 
 module.exports = Tugboat = (function() {
   function Tugboat(options) {
+    this.kill = __bind(this.kill, this);
+    this.start = __bind(this.start, this);
+    this.rm = __bind(this.rm, this);
+    this.stop = __bind(this.stop, this);
     this.up = __bind(this.up, this);
     this.groupup = __bind(this.groupup, this);
     this.groupcull = __bind(this.groupcull, this);
@@ -138,10 +142,8 @@ module.exports = Tugboat = (function() {
     });
   };
 
-  Tugboat.prototype.build = function(group, servicename, usecache, run, callback) {
-    var config;
-    config = group.services[servicename];
-    return this.ducke.build_image(config.name, config.build, usecache, run, callback);
+  Tugboat.prototype.build = function(group, service, usecache, run, callback) {
+    return this.ducke.build_image(service.name, service.build, usecache, run, callback);
   };
 
   Tugboat.prototype.ps = function(callback) {
@@ -351,8 +353,8 @@ module.exports = Tugboat = (function() {
     });
   };
 
-  Tugboat.prototype.up = function(config, containername, callback) {
-    return this.ducke.createContainer(containername, config.params, (function(_this) {
+  Tugboat.prototype.up = function(group, service, containername, callback) {
+    return this.ducke.createContainer(containername, service.service.params, (function(_this) {
       return function(err, container) {
         var id;
         if (err != null) {
@@ -368,6 +370,22 @@ module.exports = Tugboat = (function() {
         });
       };
     })(this));
+  };
+
+  Tugboat.prototype.stop = function(group, service, container, callback) {
+    return this.ducke.container(container.container.Id).stop(callback);
+  };
+
+  Tugboat.prototype.rm = function(group, service, container, callback) {
+    return this.ducke.container(container.container.Id).rm(callback);
+  };
+
+  Tugboat.prototype.start = function(group, service, container, callback) {
+    return this.ducke.container(container.container.Id).start(callback);
+  };
+
+  Tugboat.prototype.kill = function(group, service, container, callback) {
+    return this.ducke.container(container.container.Id).kill(callback);
   };
 
   return Tugboat;

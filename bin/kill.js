@@ -90,7 +90,7 @@ module.exports = function(tugboat, groupname, servicenames) {
           _fn1 = function(outputname, s, c) {
             return tasks.push(function(cb) {
               process.stdout.write("  " + outputname + " Gracefully terminating " + (c.container.Names[0].substr(1).cyan) + " ");
-              return tugboat.ducke.container(c.container.Id).kill(function(err) {
+              return tugboat.kill(g, s, c(function(err) {
                 if (err != null) {
                   console.error('X'.red);
                   console.error(err);
@@ -98,7 +98,7 @@ module.exports = function(tugboat, groupname, servicenames) {
                   console.log('√'.green);
                 }
                 return cb();
-              });
+              }));
             });
           };
           for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {

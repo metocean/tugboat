@@ -64,21 +64,7 @@ module.exports = (tugboat, groupname, servicenames) ->
                 if c.inspect.State.Running
                   tasks.push (cb) ->
                     process.stdout.write "  #{outputname} Stopping #{c.container.Names[0].substr(1).cyan} "
-                    tugboat.ducke
-                      .container c.container.Id
-                      .stop (err) ->
-                        if err?
-                          console.error 'X'.red
-                          if err.stack then console.error err.stack
-                          else console.error err
-                        else
-                          console.log '√'.green
-                        cb()
-                tasks.push (cb) ->
-                  process.stdout.write "  #{outputname} Deleting #{c.container.Names[0].substr(1).cyan} "
-                  tugboat.ducke
-                    .container c.container.Id
-                    .rm (err) ->
+                    tugboat.stop g, s, c, (err) ->
                       if err?
                         console.error 'X'.red
                         if err.stack then console.error err.stack
@@ -86,6 +72,16 @@ module.exports = (tugboat, groupname, servicenames) ->
                       else
                         console.log '√'.green
                       cb()
+                tasks.push (cb) ->
+                  process.stdout.write "  #{outputname} Deleting #{c.container.Names[0].substr(1).cyan} "
+                  tugboat.rm g, s, c, (err) ->
+                    if err?
+                      console.error 'X'.red
+                      if err.stack then console.error err.stack
+                      else console.error err
+                    else
+                      console.log '√'.green
+                    cb()
                 tasks.push (cb) ->
                   newname = "#{g.name}_#{s.name}_1"
                   process.stdout.write "  #{outputname} Creating #{newname.cyan} (#{s.service.params.Image}) "
