@@ -5,7 +5,7 @@ require('colors');
 
 Tugboat = require('../src/tugboat');
 
-usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  \n    ps          List all running and available groups\n    up          Update and run services\n    down        Stop services\n    diff        Describe the changes needed to update\n  \n  Management:\n  \n    cull        Terminate, stop and remove services\n    recreate    Terminate, stop, remove and recreate services\n    rm          Delete services\n    kill        Gracefully terminate services\n    build       Build services\n    rebuild     Build services from scratch\n    logs        Display group logs\n";
+usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  \n    ps          List all running and available groups\n    up          Update and run services\n    down        Stop services\n    diff        Describe the changes needed to update\n  \n  Management:\n  \n    cull        Terminate, stop and remove services\n    recreate    Terminate, stop, remove and recreate services\n    rm          Delete services\n    kill        Gracefully terminate services\n    build       Build services\n    rebuild     Build services from scratch\n    logs        Display group logs\n    exec        Run a command inside a service\n";
 
 build = require('./build');
 
@@ -21,6 +21,7 @@ commands = {
   kill: require('./kill'),
   recreate: require('./recreate'),
   logs: require('./logs'),
+  exec: require('./exec'),
   build: function(tugboat, names) {
     return build(tugboat, names, true);
   },
@@ -122,6 +123,12 @@ cmds = {
       return commands.logs(tugboat, args[0], args.slice(1));
     }
     return usage_error('tug logs requires a group name');
+  },
+  exec: function() {
+    if (args.length > 1) {
+      return commands.exec(tugboat, args[0], args[1], args.slice(2));
+    }
+    return usage_error('tug exec requires a group name and a service name');
   }
 };
 

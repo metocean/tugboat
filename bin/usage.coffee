@@ -22,6 +22,7 @@ usage = """
     build       Build services
     rebuild     Build services from scratch
     logs        Display group logs
+    exec        Run a command inside a service
 
 """
 build = require './build'
@@ -37,6 +38,7 @@ commands =
   kill: require './kill'
   recreate: require './recreate'
   logs: require './logs'
+  exec: require './exec'
   # Different cache options for the same build function
   build: (tugboat, names) -> build tugboat, names, yes
   rebuild: (tugboat, names) -> build tugboat, names, no
@@ -109,6 +111,10 @@ cmds =
   logs: ->
     return commands.logs tugboat, args[0], args[1..] if args.length > 0
     usage_error 'tug logs requires a group name'
+  
+  exec: ->
+    return commands.exec tugboat, args[0], args[1], args[2..] if args.length > 1
+    usage_error 'tug exec requires a group name and a service name'
 
 command = args[0]
 args.shift()
