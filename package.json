@@ -7,8 +7,8 @@
   },
   "dependencies": {
     "colors": "1.0.3",
-    "ducke": "2.1.2",
-    "js-yaml": "3.2.3"
+    "ducke": "2.3.2",
+    "js-yaml": "3.2.5"
   },
   "repository": {
     "type": "git",
