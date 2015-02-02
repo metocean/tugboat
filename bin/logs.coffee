@@ -1,5 +1,6 @@
 seq = require '../src/seq'
 init_errors = require './errors'
+modem = require 'ducke-modem'
 
 module.exports = (tugboat, groupname, servicenames) ->
   tugboat.init (errors) ->
@@ -55,4 +56,4 @@ module.exports = (tugboat, groupname, servicenames) ->
             .container c.container.Id
             .logs (err, stream) ->
               return console.error err if err?
-              stream.pipe process.stdout
+              modem.DemuxStream stream, process.stdout, process.stderr
