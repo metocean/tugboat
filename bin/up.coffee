@@ -1,6 +1,7 @@
 seq = require '../src/seq'
 init_errors = require './errors'
 output_error = require './output_error'
+logs = require './logs'
 
 cname = (c) -> c.container.Names[0].substr '1'
 
@@ -61,5 +62,5 @@ module.exports = (tugboat, groupname, servicenames) ->
                   cb()
       
       seq (cb) ->
-        console.log()
+        logs tugboat, groupname, servicenames
         cb()

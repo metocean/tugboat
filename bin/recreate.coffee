@@ -1,5 +1,6 @@
 seq = require '../src/seq'
 init_errors = require './errors'
+logs = require './logs'
 
 module.exports = (tugboat, groupname, servicenames) ->
   tugboat.init (errors) ->
@@ -77,5 +78,5 @@ module.exports = (tugboat, groupname, servicenames) ->
                   cb()
           
           seq (cb) ->
-            console.log()
+            logs tugboat, groupname, servicenames
             cb()
