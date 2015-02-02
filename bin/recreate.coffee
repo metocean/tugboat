@@ -73,7 +73,7 @@ module.exports = (tugboat, groupname, servicenames) ->
               seq (cb) ->
                 tugboat.create g, s, (err, newname) ->
                   return cb err if err?
-                  console.log "  #{outputname} Container #{newname.cyan} created from #{service.service.params.Image}"
+                  console.log "  #{outputname} Container #{newname.cyan} created from #{s.service.params.Image}"
                   cb()
           
           seq (cb) ->

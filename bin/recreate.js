@@ -111,7 +111,7 @@ module.exports = function(tugboat, groupname, servicenames) {
                 if (err != null) {
                   return cb(err);
                 }
-                console.log("  " + outputname + " Container " + newname.cyan + " created from " + service.service.params.Image);
+                console.log("  " + outputname + " Container " + newname.cyan + " created from " + s.service.params.Image);
                 return cb();
               });
             });
