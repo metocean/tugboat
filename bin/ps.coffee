@@ -94,7 +94,11 @@ module.exports = (tugboat, names) ->
         console.log()
         
         for _, service of group.services
-          servicename = service.pname.cyan
+          servicename = service.name
+          if service.pname?
+            servicename = service.pname
+          servicename += ' ' while servicename.length < 32
+          servicename = servicename.cyan
           
           # Calculate a status for each service
           status = '-'.magenta

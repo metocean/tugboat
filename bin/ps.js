@@ -108,7 +108,14 @@ module.exports = function(tugboat, names) {
         _ref1 = group.services;
         for (_ in _ref1) {
           service = _ref1[_];
-          servicename = service.pname.cyan;
+          servicename = service.name;
+          if (service.pname != null) {
+            servicename = service.pname;
+          }
+          while (servicename.length < 32) {
+            servicename += ' ';
+          }
+          servicename = servicename.cyan;
           status = '-'.magenta;
           if (service.containers.length > 0) {
             r = service.containers.filter(function(d) {

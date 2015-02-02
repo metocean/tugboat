@@ -5,7 +5,7 @@ require('colors');
 
 Tugboat = require('../src/tugboat');
 
-usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  \n    ps          List all running and available groups\n    up          Update and run services\n    down        Stop services\n    diff        Describe the changes needed to update\n  \n  Management:\n  \n    cull        Terminate, stop and remove services\n    recreate    Terminate, stop, remove and recreate services\n    rm          Delete services\n    kill        Gracefully terminate services\n    build       Build services\n    rebuild     Build services from scratch\n";
+usage = "👾\n\n  Usage: " + 'tug'.cyan + " command parameters\n\n  Common:\n  \n    ps          List all running and available groups\n    up          Update and run services\n    down        Stop services\n    diff        Describe the changes needed to update\n  \n  Management:\n  \n    cull        Terminate, stop and remove services\n    recreate    Terminate, stop, remove and recreate services\n    rm          Delete services\n    kill        Gracefully terminate services\n    build       Build services\n    rebuild     Build services from scratch\n    logs        Display group logs\n";
 
 build = require('./build');
 
@@ -20,6 +20,7 @@ commands = {
   cull: require('./cull'),
   kill: require('./kill'),
   recreate: require('./recreate'),
+  logs: require('./logs'),
   build: function(tugboat, names) {
     return build(tugboat, names, true);
   },
@@ -96,7 +97,10 @@ cmds = {
     return cmds.recreate();
   },
   recreate: function() {
-    return commands.recreate(tugboat, args[0], args.slice(1));
+    if (args.length > 0) {
+      return commands.recreate(tugboat, args[0], args.slice(1));
+    }
+    return usage_error('tug recreate requires a group name');
   },
   rm: function() {
     if (args.length > 0) {
@@ -112,6 +116,12 @@ cmds = {
   },
   pull: function() {
     return commands.pull(tugboat, args);
+  },
+  logs: function() {
+    if (args.length > 0) {
+      return commands.logs(tugboat, args[0], args.slice(1));
+    }
+    return usage_error('tug logs requires a group name');
   }
 };
 

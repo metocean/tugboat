@@ -21,6 +21,7 @@ usage = """
     kill        Gracefully terminate services
     build       Build services
     rebuild     Build services from scratch
+    logs        Display group logs
 
 """
 build = require './build'
@@ -35,6 +36,7 @@ commands =
   cull: require './cull'
   kill: require './kill'
   recreate: require './recreate'
+  logs: require './logs'
   # Different cache options for the same build function
   build: (tugboat, names) -> build tugboat, names, yes
   rebuild: (tugboat, names) -> build tugboat, names, no
@@ -89,7 +91,8 @@ cmds =
   
   restart: -> cmds.recreate()
   recreate: ->
-    return commands.recreate tugboat, args[0], args[1..]
+    return commands.recreate tugboat, args[0], args[1..] if args.length > 0
+    usage_error 'tug recreate requires a group name'
   
   rm: ->
     return commands.rm tugboat, args[0], args[1..] if args.length > 0
@@ -103,6 +106,10 @@ cmds =
   
   pull: ->
     commands.pull tugboat, args
+  
+  logs: ->
+    return commands.logs tugboat, args[0], args[1..] if args.length > 0
+    usage_error 'tug logs requires a group name'
 
 command = args[0]
 args.shift()
