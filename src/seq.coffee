@@ -24,8 +24,9 @@ class Seq
 
   _error: (err) =>
     if typeof err is 'Array'
-      for m in err
-        console.error m
+      @error m for m in err
+    else if err.content?
+      console.error "  #{err.content.red}"
     else if err.stack?
       console.error err.stack
     else

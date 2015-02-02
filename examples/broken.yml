@@ -1,0 +1,10 @@
+ports:
+- "8500:8500"
+
+daemon1:
+  image: ubuntu
+  command: ping google.com
+
+daemon2:
+  image: ubuntu
+  command: ping google.com

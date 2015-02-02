@@ -1,5 +1,6 @@
 seq = require '../src/seq'
 init_errors = require './errors'
+output_error = require './output_error'
 
 cname = (c) -> c.container.Names[0].substr '1'
 
@@ -7,10 +8,7 @@ module.exports = (tugboat, groupname, servicenames) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
     tugboat.diff (err, results) ->
-      if err?
-        if err.stack then console.error err.stack
-        else console.error err
-        return
+      return output_error err if err?
       
       groupname = groupname.replace '.yml', ''
       

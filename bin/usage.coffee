@@ -60,7 +60,6 @@ if args.length is 0
   console.error usage
   return commands.status tugboat
 
-
 cmds =
   status: ->
     return commands.status tugboat if args.length is 0

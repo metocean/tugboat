@@ -1,13 +1,13 @@
 {
   "name": "tugboat",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "description": "Manage groups of dockers",
   "bin": {
     "tug": "bin/tug.js"
   },
   "dependencies": {
     "colors": "1.0.3",
-    "ducke": "2.3.2",
+    "ducke": "2.3.4",
     "js-yaml": "3.2.5"
   },
   "repository": {

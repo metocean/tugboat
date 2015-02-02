@@ -53,9 +53,11 @@ Seq = (function() {
       _results = [];
       for (_i = 0, _len = err.length; _i < _len; _i++) {
         m = err[_i];
-        _results.push(console.error(m));
+        _results.push(this.error(m));
       }
       return _results;
+    } else if (err.content != null) {
+      return console.error("  " + err.content.red);
     } else if (err.stack != null) {
       return console.error(err.stack);
     } else {
