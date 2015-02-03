@@ -1,7 +1,7 @@
 seq = require '../src/seq'
 init_errors = require './errors'
 
-module.exports = (tugboat, groupname, servicenames) ->
+module.exports = (tugboat, groupname, servicenames, callback) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
     
@@ -57,7 +57,9 @@ module.exports = (tugboat, groupname, servicenames) ->
                 .length isnt 0
           
           if servicestoprocess.length is 0
-            seq "No containers to stop", (cb) -> cb()
+            seq (cb) ->
+              console.log "  No containers to stop".magenta
+              cb()
           
           for s in servicestoprocess
             outputname = s.service.pname.cyan
@@ -71,3 +73,4 @@ module.exports = (tugboat, groupname, servicenames) ->
           seq (cb) ->
             console.log()
             cb()
+            callback() if callback?

@@ -5,7 +5,7 @@ seq = require('../src/seq');
 
 init_errors = require('./errors');
 
-module.exports = function(tugboat, groupname, servicenames) {
+module.exports = function(tugboat, groupname, servicenames, callback) {
   return tugboat.init(function(errors) {
     if (errors != null) {
       return init_errors(errors);
@@ -102,7 +102,10 @@ module.exports = function(tugboat, groupname, servicenames) {
           }
           return seq(function(cb) {
             console.log();
-            return cb();
+            cb();
+            if (callback != null) {
+              return callback();
+            }
           });
         })(g));
       }

@@ -19,14 +19,17 @@ module.exports = (tugboat, groupname, servicenames) ->
       
       group = results[groupname]
       
+      sname = (s) ->
+        name = s.name
+        name += ' ' while name.length < 32
+        name = name.cyan
+        if s.service?
+          name = s.service.pname.cyan
+        name
+      
       for _, service of group.services
         do (service) ->
-          outputname = service.name
-          outputname += ' ' while outputname.length < 32
-          outputname = outputname.cyan
-          
-          if service.service?
-            outputname = service.service.pname.cyan
+          outputname = sname service
           
           seq (cb) ->
             if service.diff.iserror
@@ -41,6 +44,10 @@ module.exports = (tugboat, groupname, servicenames) ->
                 tugboat.cull group, service, c, (err, result) ->
                   return cb err if err?
                   cb()
+      
+      for _, service of group.services
+        do (service) ->
+          outputname = sname service
           for c in service.diff.migrate
             do (c) ->
               seq "#{outputname} Migrating #{cname(c).cyan}", (cb) ->

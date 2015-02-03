@@ -73,3 +73,7 @@ module.exports = (tugboat, groupname, servicenames) ->
           seq (cb) ->
             console.log()
             cb()
+            
+      seq (cb) ->
+        cb()
+        callback() if callback?

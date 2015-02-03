@@ -1,6 +1,6 @@
 init_errors = require './errors'
 
-module.exports = (tugboat, groupname, servicenames) ->
+module.exports = (tugboat, groupname, servicenames, callback) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
     tugboat.diff (err, results) ->
@@ -44,3 +44,4 @@ module.exports = (tugboat, groupname, servicenames) ->
           console.log "  #{outputname} Creating #{service.diff.create.toString().green} new containers"
       
       console.log()
+      callback() if callback?

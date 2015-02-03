@@ -3,7 +3,7 @@ var init_errors;
 
 init_errors = require('./errors');
 
-module.exports = function(tugboat, groupname, servicenames) {
+module.exports = function(tugboat, groupname, servicenames, callback) {
   return tugboat.init(function(errors) {
     if (errors != null) {
       return init_errors(errors);
@@ -71,7 +71,10 @@ module.exports = function(tugboat, groupname, servicenames) {
           console.log("  " + outputname + " Creating " + (service.diff.create.toString().green) + " new containers");
         }
       }
-      return console.log();
+      console.log();
+      if (callback != null) {
+        return callback();
+      }
     });
   });
 };

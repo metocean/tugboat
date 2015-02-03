@@ -1,7 +1,7 @@
 seq = require '../src/seq'
 init_errors = require './errors'
 
-module.exports = (tugboat, groupnames, usecache) ->
+module.exports = (tugboat, groupnames, usecache, callback) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
     
@@ -57,3 +57,7 @@ module.exports = (tugboat, groupnames, usecache) ->
             cb()
           
           cb()
+    
+    seq (cb) ->
+      cb()
+      callback if callback?

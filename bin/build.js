@@ -5,9 +5,9 @@ seq = require('../src/seq');
 
 init_errors = require('./errors');
 
-module.exports = function(tugboat, groupnames, usecache) {
+module.exports = function(tugboat, groupnames, usecache, callback) {
   return tugboat.init(function(errors) {
-    var group, haderror, name, _i, _j, _len, _len1, _results;
+    var group, haderror, name, _fn, _i, _j, _len, _len1;
     if (errors != null) {
       return init_errors(errors);
     }
@@ -35,53 +35,58 @@ module.exports = function(tugboat, groupnames, usecache) {
     if (haderror) {
       process.exit(1);
     }
-    _results = [];
+    _fn = function(name, group) {
+      return seq(function(cb) {
+        var config, servicename, _fn1, _ref;
+        seq(function(cb) {
+          console.log("  Building " + name.blue + "...");
+          console.log();
+          return cb();
+        });
+        _ref = group.services;
+        _fn1 = function(servicename, config) {
+          if (config.build == null) {
+            return;
+          }
+          return seq("" + config.pname.cyan, function(cb) {
+            var results, run;
+            results = '';
+            run = function(message) {
+              results += message;
+              return results += '\n';
+            };
+            return tugboat.build(group, config, usecache, run, function(err) {
+              if (err != null) {
+                if (results.length !== 0) {
+                  console.error(results);
+                }
+                return cb(err);
+              }
+              return cb();
+            });
+          });
+        };
+        for (servicename in _ref) {
+          config = _ref[servicename];
+          _fn1(servicename, config);
+        }
+        seq(function(cb) {
+          console.log();
+          return cb();
+        });
+        return cb();
+      });
+    };
     for (_j = 0, _len1 = groupnames.length; _j < _len1; _j++) {
       name = groupnames[_j];
       group = tugboat._groups[name];
-      _results.push((function(name, group) {
-        return seq(function(cb) {
-          var config, servicename, _fn, _ref;
-          seq(function(cb) {
-            console.log("  Building " + name.blue + "...");
-            console.log();
-            return cb();
-          });
-          _ref = group.services;
-          _fn = function(servicename, config) {
-            if (config.build == null) {
-              return;
-            }
-            return seq("" + config.pname.cyan, function(cb) {
-              var results, run;
-              results = '';
-              run = function(message) {
-                results += message;
-                return results += '\n';
-              };
-              return tugboat.build(group, config, usecache, run, function(err) {
-                if (err != null) {
-                  if (results.length !== 0) {
-                    console.error(results);
-                  }
-                  return cb(err);
-                }
-                return cb();
-              });
-            });
-          };
-          for (servicename in _ref) {
-            config = _ref[servicename];
-            _fn(servicename, config);
-          }
-          seq(function(cb) {
-            console.log();
-            return cb();
-          });
-          return cb();
-        });
-      })(name, group));
+      _fn(name, group);
     }
-    return _results;
+    return seq(function(cb) {
+      cb();
+      if (callback != null) {
+        return callback;
+      }
+    });
   });
 };
