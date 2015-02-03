@@ -4,19 +4,14 @@ init_errors = require './errors'
 module.exports = (tugboat, groupname, servicenames, callback) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
-    
-    console.log()
-    if Object.keys(tugboat._groups).length is 0
-      console.error '  There are no groups defined in this directory'.red
-      console.error()
-      process.exit 1
-    
-    tugboat.ps (err, groups) ->
+    tugboat.diff (err, groups) ->
       if err?
         console.error()
         console.error '  docker is down'.red
         console.error()
         process.exit 1
+      
+      console.log()
       
       groupstoprocess = []
       if groupname
@@ -32,7 +27,7 @@ module.exports = (tugboat, groupname, servicenames, callback) ->
       for g in groupstoprocess
         do (g) ->
           seq (cb) ->
-            console.log "  Deleting #{g.name.blue}..."
+            console.log "  Stopping #{g.name.blue}..."
             console.log()
             cb()
           
@@ -53,18 +48,27 @@ module.exports = (tugboat, groupname, servicenames, callback) ->
           servicestoprocess = servicestoprocess
             .filter (s) ->
               s.containers
-                .filter (c) -> !c.inspect.State.Running
+                .filter (c) -> not c.inspect.State.Running
                 .length isnt 0
           
           if servicestoprocess.length is 0
             seq (cb) ->
               console.log "  No stopped containers to remove".magenta
               cb()
+            
+          sname = (s) ->
+            name = s.name
+            name += ' ' while name.length < 32
+            name = name.cyan
+            if s.service?
+              name = s.service.pname.cyan
+            name
           
           for s in servicestoprocess
+            outputname = sname s
             for c in s.containers
-              do (s, c) ->
-                seq "#{s.service.pname.cyan} deleting #{c.container.Names[0].substr(1).cyan}", (cb) ->
+              do (outputname, s, c) ->
+                seq "#{outputname} Removing #{c.container.Names[0].substr(1).cyan}", (cb) ->
                   tugboat.rm g, s, c, (err) ->
                     return cb err if err?
                     cb()

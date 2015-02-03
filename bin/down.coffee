@@ -4,19 +4,14 @@ init_errors = require './errors'
 module.exports = (tugboat, groupname, servicenames, callback) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
-    
-    console.log()
-    if Object.keys(tugboat._groups).length is 0
-      console.error '  There are no groups defined in this directory'.red
-      console.error()
-      process.exit 1
-    
-    tugboat.ps (err, groups) ->
+    tugboat.diff (err, groups) ->
       if err?
         console.error()
         console.error '  docker is down'.red
         console.error()
         process.exit 1
+      
+      console.log()
       
       groupstoprocess = []
       if groupname
@@ -60,9 +55,17 @@ module.exports = (tugboat, groupname, servicenames, callback) ->
             seq (cb) ->
               console.log "  No containers to stop".magenta
               cb()
+            
+          sname = (s) ->
+            name = s.name
+            name += ' ' while name.length < 32
+            name = name.cyan
+            if s.service?
+              name = s.service.pname.cyan
+            name
           
           for s in servicestoprocess
-            outputname = s.service.pname.cyan
+            outputname = sname s
             for c in s.containers
               do (outputname, s, c) ->
                 seq "#{outputname} Stopping #{c.container.Names[0].substr(1).cyan}", (cb) ->
