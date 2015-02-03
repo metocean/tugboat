@@ -11,7 +11,7 @@ module.exports = function(tugboat, groupname, servicenames, callback) {
       return init_errors(errors);
     }
     return tugboat.diff(function(err, groups) {
-      var g, groupstoprocess, _, _i, _len, _results;
+      var g, groupstoprocess, _, _fn, _i, _len;
       if (err != null) {
         console.error();
         console.error('  docker is down'.red);
@@ -34,89 +34,91 @@ module.exports = function(tugboat, groupname, servicenames, callback) {
           groupstoprocess.push(g);
         }
       }
-      _results = [];
-      for (_i = 0, _len = groupstoprocess.length; _i < _len; _i++) {
-        g = groupstoprocess[_i];
-        _results.push((function(g) {
-          var c, haderror, name, outputname, s, service, servicestoprocess, sname, _fn, _j, _k, _l, _len1, _len2, _len3, _ref, _ref1;
+      _fn = function(g) {
+        var c, haderror, name, outputname, s, service, servicestoprocess, sname, _fn1, _j, _k, _l, _len1, _len2, _len3, _ref, _ref1;
+        seq(function(cb) {
+          console.log("  Stopping " + g.name.blue + "...");
+          console.log();
+          return cb();
+        });
+        servicestoprocess = [];
+        if (servicenames.length !== 0) {
+          haderror = false;
+          for (_j = 0, _len1 = servicenames.length; _j < _len1; _j++) {
+            name = servicenames[_j];
+            if (g.services[name] == null) {
+              console.error(("  The service '" + name + "' is not available in the group '" + g.name + "'").red);
+              haderror = true;
+            } else {
+              servicestoprocess.push(g.services[name]);
+            }
+          }
+          if (haderror) {
+            process.exit(1);
+          }
+        } else {
+          _ref = g.services;
+          for (_ in _ref) {
+            service = _ref[_];
+            servicestoprocess.push(service);
+          }
+        }
+        servicestoprocess = servicestoprocess.filter(function(s) {
+          return s.containers.filter(function(c) {
+            return c.inspect.State.Running;
+          }).length !== 0;
+        });
+        if (servicestoprocess.length === 0) {
           seq(function(cb) {
-            console.log("  Stopping " + g.name.blue + "...");
-            console.log();
+            console.log("  No containers to stop".magenta);
             return cb();
           });
-          servicestoprocess = [];
-          if (servicenames.length !== 0) {
-            haderror = false;
-            for (_j = 0, _len1 = servicenames.length; _j < _len1; _j++) {
-              name = servicenames[_j];
-              if (g.services[name] == null) {
-                console.error(("  The service '" + name + "' is not available in the group '" + g.name + "'").red);
-                haderror = true;
-              } else {
-                servicestoprocess.push(g.services[name]);
-              }
-            }
-            if (haderror) {
-              process.exit(1);
-            }
-          } else {
-            _ref = g.services;
-            for (_ in _ref) {
-              service = _ref[_];
-              servicestoprocess.push(service);
-            }
+        }
+        sname = function(s) {
+          name = s.name;
+          while (name.length < 32) {
+            name += ' ';
           }
-          servicestoprocess = servicestoprocess.filter(function(s) {
-            return s.containers.filter(function(c) {
-              return c.inspect.State.Running;
-            }).length !== 0;
-          });
-          if (servicestoprocess.length === 0) {
-            seq(function(cb) {
-              console.log("  No containers to stop".magenta);
-              return cb();
-            });
+          name = name.cyan;
+          if (s.service != null) {
+            name = s.service.pname.cyan;
           }
-          sname = function(s) {
-            name = s.name;
-            while (name.length < 32) {
-              name += ' ';
-            }
-            name = name.cyan;
-            if (s.service != null) {
-              name = s.service.pname.cyan;
-            }
-            return name;
-          };
-          for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
-            s = servicestoprocess[_k];
-            outputname = sname(s);
-            _ref1 = s.containers;
-            _fn = function(outputname, s, c) {
-              return seq("" + outputname + " Stopping " + (c.container.Names[0].substr(1).cyan), function(cb) {
-                return tugboat.stop(g, s, c, function(err) {
-                  if (err != null) {
-                    return cb(err);
-                  }
-                  return cb();
-                });
+          return name;
+        };
+        for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
+          s = servicestoprocess[_k];
+          outputname = sname(s);
+          _ref1 = s.containers;
+          _fn1 = function(outputname, s, c) {
+            return seq("" + outputname + " Stopping " + (c.container.Names[0].substr(1).cyan), function(cb) {
+              return tugboat.stop(g, s, c, function(err) {
+                if (err != null) {
+                  return cb(err);
+                }
+                return cb();
               });
-            };
-            for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
-              c = _ref1[_l];
-              _fn(outputname, s, c);
-            }
+            });
+          };
+          for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+            c = _ref1[_l];
+            _fn1(outputname, s, c);
           }
-          return seq(function(cb) {
-            console.log();
-            cb();
-            if (callback != null) {
-              return callback();
-            }
-          });
-        })(g));
+        }
+        return seq(function(cb) {
+          console.log();
+          return cb();
+        });
+      };
+      for (_i = 0, _len = groupstoprocess.length; _i < _len; _i++) {
+        g = groupstoprocess[_i];
+        _fn(g);
       }
-      return _results;
+      return seq(function(cb) {
+        cb();
+        if (callback != null) {
+          return callback();
+        }
+      });
     });
   });
 };

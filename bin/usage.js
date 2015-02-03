@@ -98,10 +98,7 @@ cmds = {
     return cmds.recreate();
   },
   recreate: function() {
-    if (args.length > 0) {
-      return commands.recreate(tugboat, args[0], args.slice(1));
-    }
-    return usage_error('tug recreate requires a group name');
+    return commands.recreate(tugboat, args[0], args.slice(1));
   },
   rm: function() {
     if (args.length > 0) {

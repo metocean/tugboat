@@ -92,8 +92,7 @@ cmds =
   
   restart: -> cmds.recreate()
   recreate: ->
-    return commands.recreate tugboat, args[0], args[1..] if args.length > 0
-    usage_error 'tug recreate requires a group name'
+    return commands.recreate tugboat, args[0], args[1..]
   
   rm: ->
     return commands.rm tugboat, args[0], args[1..] if args.length > 0
