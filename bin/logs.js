@@ -12,13 +12,7 @@ module.exports = function(tugboat, groupname, servicenames) {
     if (errors != null) {
       return init_errors(errors);
     }
-    console.log();
-    if (Object.keys(tugboat._groups).length === 0) {
-      console.error('  There are no groups defined in this directory'.red);
-      console.error();
-      process.exit(1);
-    }
-    return tugboat.ps(function(err, groups) {
+    return tugboat.diff(function(err, groups) {
       var c, g, haderror, name, s, service, servicestoprocess, _, _i, _j, _len, _len1, _ref, _results;
       if (err != null) {
         console.error();
@@ -26,6 +20,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         console.error();
         process.exit(1);
       }
+      console.log();
       groupname = groupname.replace('.yml', '');
       if (groups[groupname] == null) {
         console.error(("  The group '" + groupname + "' is not available in this directory").red);

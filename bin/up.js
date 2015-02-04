@@ -19,7 +19,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       return init_errors(errors);
     }
     return tugboat.diff(function(err, results) {
-      var group, service, sname, _, _fn, _fn1, _ref, _ref1;
+      var group, haderror, name, service, servicestoprocess, sname, _, _fn, _fn1, _i, _j, _k, _len, _len1, _len2, _ref;
       if (err != null) {
         return output_error(err);
       }
@@ -40,26 +40,53 @@ module.exports = function(tugboat, groupname, servicenames) {
         }
         return name;
       };
-      _ref = group.services;
+      servicestoprocess = [];
+      if (servicenames.length !== 0) {
+        haderror = false;
+        for (_i = 0, _len = servicenames.length; _i < _len; _i++) {
+          name = servicenames[_i];
+          if (group.services[name] == null) {
+            console.error(("  The service '" + name + "' is not available in the group '" + group.name + "'").red);
+            haderror = true;
+          } else {
+            servicestoprocess.push(group.services[name]);
+          }
+        }
+        if (haderror) {
+          process.exit(1);
+        }
+      } else {
+        _ref = group.services;
+        for (_ in _ref) {
+          service = _ref[_];
+          servicestoprocess.push(service);
+        }
+      }
+      if (servicestoprocess.length === 0) {
+        seq(function(cb) {
+          console.log("  No services to process".magenta);
+          return cb();
+        });
+      }
       _fn = function(service) {
-        var c, outputname, _i, _len, _ref1, _results;
+        var c, outputname, _k, _len2, _ref1, _results;
         outputname = sname(service);
         seq(function(cb) {
-          var m, _i, _len, _ref1;
+          var m, _k, _len2, _ref1;
           if (service.diff.iserror) {
             return cb(service.diff.messages);
           }
           _ref1 = service.diff.messages;
-          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-            m = _ref1[_i];
+          for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+            m = _ref1[_k];
             console.log("  " + outputname + " " + m.magenta);
           }
           return cb();
         });
         _ref1 = service.diff.cull;
         _results = [];
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          c = _ref1[_i];
+        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+          c = _ref1[_k];
           _results.push((function(c) {
             return seq("" + outputname + " Culling " + (cname(c).cyan), function(cb) {
               return tugboat.cull(group, service, c, function(err, result) {
@@ -73,15 +100,14 @@ module.exports = function(tugboat, groupname, servicenames) {
         }
         return _results;
       };
-      for (_ in _ref) {
-        service = _ref[_];
+      for (_j = 0, _len1 = servicestoprocess.length; _j < _len1; _j++) {
+        service = servicestoprocess[_j];
         _fn(service);
       }
-      _ref1 = group.services;
       _fn1 = function(service) {
-        var c, i, outputname, _fn2, _fn3, _i, _j, _k, _len, _len1, _ref2, _ref3, _ref4, _results;
+        var c, i, outputname, _fn2, _fn3, _l, _len3, _len4, _m, _n, _ref1, _ref2, _ref3, _results;
         outputname = sname(service);
-        _ref2 = service.diff.migrate;
+        _ref1 = service.diff.migrate;
         _fn2 = function(c) {
           return seq("" + outputname + " Migrating " + (cname(c).cyan), function(cb) {
             return tugboat.migrate(group, service, c, function(err, result) {
@@ -92,11 +118,11 @@ module.exports = function(tugboat, groupname, servicenames) {
             });
           });
         };
-        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-          c = _ref2[_i];
+        for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+          c = _ref1[_l];
           _fn2(c);
         }
-        _ref3 = service.diff.keep;
+        _ref2 = service.diff.keep;
         _fn3 = function(c) {
           return seq("" + outputname + " Keeping " + (cname(c).cyan), function(cb) {
             return tugboat.keep(group, service, c, function(err, result) {
@@ -107,13 +133,13 @@ module.exports = function(tugboat, groupname, servicenames) {
             });
           });
         };
-        for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
-          c = _ref3[_j];
+        for (_m = 0, _len4 = _ref2.length; _m < _len4; _m++) {
+          c = _ref2[_m];
           _fn3(c);
         }
         if (service.diff.create > 0) {
           _results = [];
-          for (i = _k = 1, _ref4 = service.diff.create; 1 <= _ref4 ? _k <= _ref4 : _k >= _ref4; i = 1 <= _ref4 ? ++_k : --_k) {
+          for (i = _n = 1, _ref3 = service.diff.create; 1 <= _ref3 ? _n <= _ref3 : _n >= _ref3; i = 1 <= _ref3 ? ++_n : --_n) {
             _results.push(seq(function(cb) {
               return tugboat.create(group, service, function(err, name) {
                 if (err != null) {
@@ -127,8 +153,8 @@ module.exports = function(tugboat, groupname, servicenames) {
           return _results;
         }
       };
-      for (_ in _ref1) {
-        service = _ref1[_];
+      for (_k = 0, _len2 = servicestoprocess.length; _k < _len2; _k++) {
+        service = servicestoprocess[_k];
         _fn1(service);
       }
       return seq(function(cb) {

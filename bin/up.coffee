@@ -27,7 +27,26 @@ module.exports = (tugboat, groupname, servicenames) ->
           name = s.service.pname.cyan
         name
       
-      for _, service of group.services
+      servicestoprocess = []
+      if servicenames.length isnt 0
+        haderror = no
+        for name in servicenames
+          if !group.services[name]?
+            console.error "  The service '#{name}' is not available in the group '#{group.name}'".red
+            haderror = yes
+          else
+            servicestoprocess.push group.services[name]
+        if haderror
+          process.exit 1
+      else
+        servicestoprocess.push service for _, service of group.services
+      
+      if servicestoprocess.length is 0
+        seq (cb) ->
+          console.log "  No services to process".magenta
+          cb()
+      
+      for service in servicestoprocess
         do (service) ->
           outputname = sname service
           
@@ -45,7 +64,7 @@ module.exports = (tugboat, groupname, servicenames) ->
                   return cb err if err?
                   cb()
       
-      for _, service of group.services
+      for service in servicestoprocess
         do (service) ->
           outputname = sname service
           for c in service.diff.migrate
