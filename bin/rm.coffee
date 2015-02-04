@@ -27,7 +27,7 @@ module.exports = (tugboat, groupname, servicenames, callback) ->
       for g in groupstoprocess
         do (g) ->
           seq (cb) ->
-            console.log "  Stopping #{g.name.blue}..."
+            console.log "  Removing #{g.name.blue}..."
             console.log()
             cb()
           

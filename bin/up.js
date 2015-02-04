@@ -132,6 +132,7 @@ module.exports = function(tugboat, groupname, servicenames) {
         _fn1(service);
       }
       return seq(function(cb) {
+        console.log();
         return cb();
       });
     });

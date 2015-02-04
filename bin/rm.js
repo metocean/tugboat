@@ -40,7 +40,7 @@ module.exports = function(tugboat, groupname, servicenames, callback) {
         _results.push((function(g) {
           var c, haderror, name, outputname, s, service, servicestoprocess, sname, _fn, _j, _k, _l, _len1, _len2, _len3, _ref, _ref1;
           seq(function(cb) {
-            console.log("  Stopping " + g.name.blue + "...");
+            console.log("  Removing " + g.name.blue + "...");
             console.log();
             return cb();
           });

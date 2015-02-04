@@ -4,20 +4,14 @@ init_errors = require './errors'
 module.exports = (tugboat, groupname, servicename, cmd) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
-    
-    console.log()
-    if Object.keys(tugboat._groups).length is 0
-      console.error '  There are no groups defined in this directory'.red
-      console.error()
-      process.exit 1
-    
-    tugboat.ps (err, groups) ->
+    tugboat.diff (err, groups) ->
       if err?
         console.error()
         console.error '  docker is down'.red
         console.error()
         process.exit 1
       
+      console.log()
       groupname = groupname.replace '.yml', ''
       if !groups[groupname]?
         console.error "  The group '#{groupname}' is not available in this directory".red
