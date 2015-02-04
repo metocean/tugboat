@@ -69,5 +69,5 @@ module.exports = (tugboat, groupname, servicenames) ->
                   cb()
       
       seq (cb) ->
-        logs tugboat, groupname, servicenames
+        # logs tugboat, groupname, servicenames
         cb()
