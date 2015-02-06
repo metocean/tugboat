@@ -13,11 +13,23 @@ module.exports = (tugboat, groupname, servicenames) ->
       
       groupname = groupname.replace '.yml', ''
       
+      if !results[groupname]?
+        console.error()
+        console.error "  Cannot up #{groupname.red}, #{groupname}.yml not found in this directory"
+        console.error()
+        process.exit 1
+      
+      group = results[groupname]
+      
+      if !group.isknown
+        console.error()
+        console.error "  Cannot up #{groupname.red}, #{groupname}.yml not found in this directory"
+        console.error()
+        process.exit 1
+      
       console.log()
       console.log "  Updating #{groupname.blue}..."
       console.log()
-      
-      group = results[groupname]
       
       sname = (s) ->
         name = s.name

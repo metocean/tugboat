@@ -24,10 +24,22 @@ module.exports = function(tugboat, groupname, servicenames) {
         return output_error(err);
       }
       groupname = groupname.replace('.yml', '');
+      if (results[groupname] == null) {
+        console.error();
+        console.error("  Cannot up " + groupname.red + ", " + groupname + ".yml not found in this directory");
+        console.error();
+        process.exit(1);
+      }
+      group = results[groupname];
+      if (!group.isknown) {
+        console.error();
+        console.error("  Cannot up " + groupname.red + ", " + groupname + ".yml not found in this directory");
+        console.error();
+        process.exit(1);
+      }
       console.log();
       console.log("  Updating " + groupname.blue + "...");
       console.log();
-      group = results[groupname];
       sname = function(s) {
         var name;
         name = s.name;

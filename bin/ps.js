@@ -20,8 +20,7 @@ module.exports = function(tugboat, names) {
       }
       if (Object.keys(groups).length === 0) {
         console.log();
-        console.log('  There are no groups defined in this directory'.magenta);
-        console.log('  or running containers that match'.magenta);
+        console.log('  There are no groups defined in this directory or running containers that match'.magenta);
         console.log();
         return;
       }
