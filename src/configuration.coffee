@@ -1,5 +1,7 @@
 resolve = require('path').resolve
 template = require './template'
+fs = require 'fs'
+yaml = require 'js-yaml'
 
 class TUGBOATFormatException extends Error
   constructor: (message) ->
@@ -49,6 +51,7 @@ validation =
   expose: isstringarray
   volumes: isstringarray
   environment: isobjectofstringsornull
+  env_file: isstringarray
   net: isstring
   dns: isstringarray
   working_dir: isstring
@@ -67,6 +70,7 @@ globalvalidation =
   dns: isstringarray
   ports: isstringarray
   environment: isobjectofstringsornull
+  env_file: isstringarray
   restart: isrestartpolicy
   scripts: isscripts
   expose: isstringarray
@@ -85,7 +89,7 @@ parse_port = (port) ->
     port = "#{port}/tcp"
   port
 
-preprocess = (config) ->
+preprocess = (config, path) ->
   if config.restart?
     if config.restart is no or config.restart is 'no'
       delete config.restart
@@ -112,6 +116,32 @@ preprocess = (config) ->
       result[key] = value
     config.environment = result
 
+    # Add env from external files
+    if config.env_file?
+      if not config.environment?
+        config.environment = {}
+
+      for filename in config.env_file
+        filepath = "#{path}/#{filename}"
+        
+        try
+          content = fs.readFileSync filepath
+        catch e
+          if e.code is 'ENOENT'
+            console.error "Could not read env_file #{filepath.cyan}"
+            process.exit 1
+          else
+            throw e
+        
+        content = yaml.safeLoad content
+        if not isobjectofstringsornull content
+          console.error "Invalid format for env_file #{filepath.cyan}"
+          process.exit 1
+
+        for key, value of content
+          config.environment[key] = value
+
+
 module.exports = (groupname, services, path, cb) ->
   if typeof services isnt 'object'
     return cb [
@@ -129,7 +159,7 @@ module.exports = (groupname, services, path, cb) ->
   # replace templates
   services = template services
   
-  preprocess services
+  preprocess services, path
   globals = {}
   
   for key, value of globalvalidation
@@ -147,7 +177,7 @@ module.exports = (groupname, services, path, cb) ->
       errors.push new TUGBOATFormatException "The value of #{name.cyan} is not an object of strings."
       continue
     
-    preprocess config
+    preprocess config, path
     
     if globals.volumes?
       config.volumes = [] if !config.volumes?
