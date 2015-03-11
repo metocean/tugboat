@@ -277,6 +277,7 @@ module.exports = (groupname, services, path, cb) ->
   servicenames = Object.keys(services)
   for name, config of services
     if config.links?
+      config.oldlinks = config.links
       for link, index in config.links
         [oldname, alias] = link.split(':', 1)
 
