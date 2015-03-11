@@ -116,6 +116,7 @@ validation = {
   command: isstring,
   links: isstringarray,
   ports: isstringarray,
+  add_hosts: isstringarray,
   expose: isstringarray,
   volumes: isstringarray,
   environment: isobjectofstringsornull,
@@ -142,6 +143,7 @@ globalvalidation = {
   cap_add: isstringarray,
   cap_drop: isstringarray,
   ports: isstringarray,
+  add_hosts: isstringarray,
   environment: isobjectofstringsornull,
   env_file: isstringarray,
   restart: isrestartpolicy,
@@ -237,7 +239,7 @@ preprocess = function(config, path) {
 };
 
 module.exports = function(groupname, services, path, cb) {
-  var _, chunks, config, count, errors, filename, globals, j, key, len, name, p, pname, port, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref17, ref18, ref19, ref2, ref20, ref21, ref22, ref23, ref24, ref3, ref4, ref5, ref6, ref7, ref8, ref9, results, trigger, value;
+  var _, chunks, config, count, errors, filename, globals, j, key, len, name, p, pname, port, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref17, ref18, ref19, ref2, ref20, ref21, ref22, ref23, ref24, ref25, ref3, ref4, ref5, ref6, ref7, ref8, ref9, results, trigger, value;
   if (typeof services !== 'object') {
     return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of services.')]);
   }
@@ -298,6 +300,12 @@ module.exports = function(groupname, services, path, cb) {
         config.ports = [];
       }
       config.ports = globals.ports.concat(config.ports);
+    }
+    if (globals.add_hosts != null) {
+      if (config.add_hosts == null) {
+        config.add_hosts = [];
+      }
+      config.add_hosts = globals.add_hosts.concat(config.add_hosts);
     }
     if (globals.expose != null) {
       if (config.expose == null) {
@@ -490,7 +498,8 @@ module.exports = function(groupname, services, path, cb) {
           NetworkMode: (ref21 = config.net) != null ? ref21 : '',
           Privileged: (ref22 = config.privileged) != null ? ref22 : false,
           PortBindings: (ref23 = config.ports) != null ? ref23 : null,
-          RestartPolicy: (ref24 = config.restart) != null ? ref24 : {
+          ExtraHosts: (ref24 = config.add_hosts) != null ? ref24 : null,
+          RestartPolicy: (ref25 = config.restart) != null ? ref25 : {
             Name: ''
           }
         }

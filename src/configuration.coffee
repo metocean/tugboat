@@ -48,6 +48,7 @@ validation =
   command: isstring
   links: isstringarray
   ports: isstringarray
+  add_hosts: isstringarray
   expose: isstringarray
   volumes: isstringarray
   environment: isobjectofstringsornull
@@ -73,6 +74,7 @@ globalvalidation =
   cap_add: isstringarray
   cap_drop: isstringarray
   ports: isstringarray
+  add_hosts: isstringarray
   environment: isobjectofstringsornull
   env_file: isstringarray
   restart: isrestartpolicy
@@ -202,6 +204,10 @@ module.exports = (groupname, services, path, cb) ->
     if globals.ports?
       config.ports = [] if !config.ports?
       config.ports = globals.ports.concat config.ports
+
+    if globals.add_hosts?
+      config.add_hosts = [] if !config.add_hosts?
+      config.add_hosts = globals.add_hosts.concat config.add_hosts
     
     if globals.expose?
       config.expose = [] if !config.expose?
@@ -343,6 +349,7 @@ module.exports = (groupname, services, path, cb) ->
           NetworkMode: config.net ? ''
           Privileged: config.privileged ? no
           PortBindings: config.ports ? null
+          ExtraHosts: config.add_hosts ? null
           RestartPolicy: config.restart ? Name: ''
   
   return cb errors if errors.length isnt 0
