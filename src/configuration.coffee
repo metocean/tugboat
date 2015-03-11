@@ -54,6 +54,8 @@ validation =
   env_file: isstringarray
   net: isstring
   dns: isstringarray
+  cap_add: isstringarray
+  cap_drop: isstringarray
   working_dir: isstring
   entrypoint: isstring
   user: isstring
@@ -68,6 +70,8 @@ validation =
 globalvalidation =
   volumes: isstringarray
   dns: isstringarray
+  cap_add: isstringarray
+  cap_drop: isstringarray
   ports: isstringarray
   environment: isobjectofstringsornull
   env_file: isstringarray
@@ -186,6 +190,14 @@ module.exports = (groupname, services, path, cb) ->
     if globals.dns?
       config.dns = [] if !config.dns?
       config.dns = globals.dns.concat config.dns
+
+    if globals.cap_add?
+      config.cap_add = [] if !config.cap_add?
+      config.cap_add = globals.cap_add.concat config.cap_add
+    
+    if globals.cap_drop?
+      config.cap_drop = [] if !config.cap_drop?
+      config.cap_drop = globals.cap_drop.concat config.cap_drop
     
     if globals.ports?
       config.ports = [] if !config.ports?
@@ -326,6 +338,8 @@ module.exports = (groupname, services, path, cb) ->
           Binds: config.volumes ? null
           Links: config.links ? null
           Dns: config.dns ? null
+          CapAdd: config.cap_add ? null
+          CapDrop: config.cap_drop ? null
           NetworkMode: config.net ? ''
           Privileged: config.privileged ? no
           PortBindings: config.ports ? null

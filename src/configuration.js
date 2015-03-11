@@ -122,6 +122,8 @@ validation = {
   env_file: isstringarray,
   net: isstring,
   dns: isstringarray,
+  cap_add: isstringarray,
+  cap_drop: isstringarray,
   working_dir: isstring,
   entrypoint: isstring,
   user: isstring,
@@ -137,6 +139,8 @@ validation = {
 globalvalidation = {
   volumes: isstringarray,
   dns: isstringarray,
+  cap_add: isstringarray,
+  cap_drop: isstringarray,
   ports: isstringarray,
   environment: isobjectofstringsornull,
   env_file: isstringarray,
@@ -233,7 +237,7 @@ preprocess = function(config, path) {
 };
 
 module.exports = function(groupname, services, path, cb) {
-  var _, chunks, config, count, errors, filename, globals, j, key, len, name, p, pname, port, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref17, ref18, ref19, ref2, ref20, ref21, ref22, ref3, ref4, ref5, ref6, ref7, ref8, ref9, results, trigger, value;
+  var _, chunks, config, count, errors, filename, globals, j, key, len, name, p, pname, port, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref17, ref18, ref19, ref2, ref20, ref21, ref22, ref23, ref24, ref3, ref4, ref5, ref6, ref7, ref8, ref9, results, trigger, value;
   if (typeof services !== 'object') {
     return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of services.')]);
   }
@@ -276,6 +280,18 @@ module.exports = function(groupname, services, path, cb) {
         config.dns = [];
       }
       config.dns = globals.dns.concat(config.dns);
+    }
+    if (globals.cap_add != null) {
+      if (config.cap_add == null) {
+        config.cap_add = [];
+      }
+      config.cap_add = globals.cap_add.concat(config.cap_add);
+    }
+    if (globals.cap_drop != null) {
+      if (config.cap_drop == null) {
+        config.cap_drop = [];
+      }
+      config.cap_drop = globals.cap_drop.concat(config.cap_drop);
     }
     if (globals.ports != null) {
       if (config.ports == null) {
@@ -469,10 +485,12 @@ module.exports = function(groupname, services, path, cb) {
           Binds: (ref16 = config.volumes) != null ? ref16 : null,
           Links: (ref17 = config.links) != null ? ref17 : null,
           Dns: (ref18 = config.dns) != null ? ref18 : null,
-          NetworkMode: (ref19 = config.net) != null ? ref19 : '',
-          Privileged: (ref20 = config.privileged) != null ? ref20 : false,
-          PortBindings: (ref21 = config.ports) != null ? ref21 : null,
-          RestartPolicy: (ref22 = config.restart) != null ? ref22 : {
+          CapAdd: (ref19 = config.cap_add) != null ? ref19 : null,
+          CapDrop: (ref20 = config.cap_drop) != null ? ref20 : null,
+          NetworkMode: (ref21 = config.net) != null ? ref21 : '',
+          Privileged: (ref22 = config.privileged) != null ? ref22 : false,
+          PortBindings: (ref23 = config.ports) != null ? ref23 : null,
+          RestartPolicy: (ref24 = config.restart) != null ? ref24 : {
             Name: ''
           }
         }
