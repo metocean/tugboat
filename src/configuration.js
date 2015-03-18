@@ -404,7 +404,6 @@ module.exports = function(groupname, services, path, cb) {
   for (name in services) {
     config = services[name];
     if (config.links != null) {
-      config.oldlinks = config.links;
       ref6 = config.links;
       for (index = l = 0, len1 = ref6.length; l < len1; index = ++l) {
         link = ref6[index];

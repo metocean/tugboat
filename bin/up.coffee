@@ -6,18 +6,27 @@ toposort = require 'toposort'
 
 cname = (c) -> c.container.Names[0].substr '1'
 
+# Converts a container name (#{groupname}_#{service_name}_1) to just
+# the service name
+containter_name_to_service_name = (container_name, groupname) ->
+  re = RegExp '^' + groupname + '_'
+  service_name = container_name.replace(re, '')
+  service_name = service_name.replace(/_1$/, '')
+  return service_name
+
 # Returns an array of services sorted by dependency
-get_sorted_services = (services, servicenames) ->
+get_sorted_services = (services, servicenames, groupname) ->
   if servicenames?
     servicenames = Object.keys(services)
 
   # Build list of links
   edges = []
   for name, service of services
-    if name in servicenames and service.oldlinks?
-      for link in service.links
-        link_name = link.split(':')[0]
-        edge = [name, link_name]
+    if name in servicenames and service.service.params.HostConfig.Links?
+      for link in service.service.params.HostConfig.Links
+        container_name = link.split(':')[0]
+        service_name = containter_name_to_service_name container_name, groupname
+        edge = [name, service_name]
         edges.push edge
 
   # Reverse toposort to order by dependency. Any edges that 
@@ -82,7 +91,7 @@ module.exports = (tugboat, groupname, servicenames) ->
       else
         servicenames = name for name, _ of group.services
 
-      servicestoprocess = get_sorted_services group.services, servicenames
+      servicestoprocess = get_sorted_services group.services, servicenames, groupname
       
       if servicestoprocess.length is 0
         seq (cb) ->
