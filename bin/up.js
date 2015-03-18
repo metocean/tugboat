@@ -26,7 +26,7 @@ containter_name_to_service_name = function(container_name, groupname) {
 
 get_sorted_services = function(services, servicenames, groupname) {
   var container_name, edge, edges, error, j, k, len, len1, link, name, ref, service, service_name, sortednames, sortedservices;
-  if (servicenames != null) {
+  if (servicenames == null) {
     servicenames = Object.keys(services);
   }
   edges = [];

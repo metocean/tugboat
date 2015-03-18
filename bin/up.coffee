@@ -16,7 +16,7 @@ containter_name_to_service_name = (container_name, groupname) ->
 
 # Returns an array of services sorted by dependency
 get_sorted_services = (services, servicenames, groupname) ->
-  if servicenames?
+  if not servicenames?
     servicenames = Object.keys(services)
 
   # Build list of links
