@@ -26,8 +26,9 @@ get_sorted_services = (services, servicenames, groupname) ->
       for link in service.service.params.HostConfig.Links
         container_name = link.split(':')[0]
         service_name = containter_name_to_service_name container_name, groupname
-        edge = [name, service_name]
-        edges.push edge
+        if service_name in servicenames
+          edge = [name, service_name]
+          edges.push edge
 
   # Reverse toposort to order by dependency. Any edges that 
   # aren't in the nodes array will be ignored for sorting.
@@ -89,7 +90,7 @@ module.exports = (tugboat, groupname, servicenames) ->
         if haderror
           process.exit 1
       else
-        servicenames = name for name, _ of group.services
+        servicenames = (name for name, _ of group.services)
 
       servicestoprocess = get_sorted_services group.services, servicenames, groupname
       

@@ -38,8 +38,10 @@ get_sorted_services = function(services, servicenames, groupname) {
         link = ref[j];
         container_name = link.split(':')[0];
         service_name = containter_name_to_service_name(container_name, groupname);
-        edge = [name, service_name];
-        edges.push(edge);
+        if (indexOf.call(servicenames, service_name) >= 0) {
+          edge = [name, service_name];
+          edges.push(edge);
+        }
       }
     }
   }
@@ -64,7 +66,7 @@ module.exports = function(tugboat, groupname, servicenames) {
       return init_errors(errors);
     }
     return tugboat.diff(function(err, results) {
-      var _, fn, fn1, group, haderror, j, k, l, len, len1, len2, name, ref, service, servicestoprocess, sname;
+      var _, fn, fn1, group, haderror, j, k, l, len, len1, len2, name, service, servicestoprocess, sname;
       if (err != null) {
         return output_error(err);
       }
@@ -110,11 +112,16 @@ module.exports = function(tugboat, groupname, servicenames) {
           process.exit(1);
         }
       } else {
-        ref = group.services;
-        for (name in ref) {
-          _ = ref[name];
-          servicenames = name;
-        }
+        servicenames = (function() {
+          var ref, results1;
+          ref = group.services;
+          results1 = [];
+          for (name in ref) {
+            _ = ref[name];
+            results1.push(name);
+          }
+          return results1;
+        })();
       }
       servicestoprocess = get_sorted_services(group.services, servicenames, groupname);
       if (servicestoprocess.length === 0) {
@@ -124,24 +131,24 @@ module.exports = function(tugboat, groupname, servicenames) {
         });
       }
       fn = function(service) {
-        var c, l, len2, outputname, ref1, results1;
+        var c, l, len2, outputname, ref, results1;
         outputname = sname(service);
         seq(function(cb) {
-          var l, len2, m, ref1;
+          var l, len2, m, ref;
           if (service.diff.iserror) {
             return cb(service.diff.messages);
           }
-          ref1 = service.diff.messages;
-          for (l = 0, len2 = ref1.length; l < len2; l++) {
-            m = ref1[l];
+          ref = service.diff.messages;
+          for (l = 0, len2 = ref.length; l < len2; l++) {
+            m = ref[l];
             console.log("  " + outputname + " " + m.magenta);
           }
           return cb();
         });
-        ref1 = service.diff.cull;
+        ref = service.diff.cull;
         results1 = [];
-        for (l = 0, len2 = ref1.length; l < len2; l++) {
-          c = ref1[l];
+        for (l = 0, len2 = ref.length; l < len2; l++) {
+          c = ref[l];
           results1.push((function(c) {
             return seq(outputname + " Culling " + (cname(c).cyan), function(cb) {
               return tugboat.cull(group, service, c, function(err, result) {
@@ -160,9 +167,9 @@ module.exports = function(tugboat, groupname, servicenames) {
         fn(service);
       }
       fn1 = function(service) {
-        var c, fn2, fn3, i, len3, len4, n, o, outputname, p, ref1, ref2, ref3, results1;
+        var c, fn2, fn3, i, len3, len4, n, o, outputname, p, ref, ref1, ref2, results1;
         outputname = sname(service);
-        ref1 = service.diff.migrate;
+        ref = service.diff.migrate;
         fn2 = function(c) {
           return seq(outputname + " Migrating " + (cname(c).cyan), function(cb) {
             return tugboat.migrate(group, service, c, function(err, result) {
@@ -173,11 +180,11 @@ module.exports = function(tugboat, groupname, servicenames) {
             });
           });
         };
-        for (n = 0, len3 = ref1.length; n < len3; n++) {
-          c = ref1[n];
+        for (n = 0, len3 = ref.length; n < len3; n++) {
+          c = ref[n];
           fn2(c);
         }
-        ref2 = service.diff.keep;
+        ref1 = service.diff.keep;
         fn3 = function(c) {
           return seq(outputname + " Keeping " + (cname(c).cyan), function(cb) {
             return tugboat.keep(group, service, c, function(err, result) {
@@ -188,13 +195,13 @@ module.exports = function(tugboat, groupname, servicenames) {
             });
           });
         };
-        for (o = 0, len4 = ref2.length; o < len4; o++) {
-          c = ref2[o];
+        for (o = 0, len4 = ref1.length; o < len4; o++) {
+          c = ref1[o];
           fn3(c);
         }
         if (service.diff.create > 0) {
           results1 = [];
-          for (i = p = 1, ref3 = service.diff.create; 1 <= ref3 ? p <= ref3 : p >= ref3; i = 1 <= ref3 ? ++p : --p) {
+          for (i = p = 1, ref2 = service.diff.create; 1 <= ref2 ? p <= ref2 : p >= ref2; i = 1 <= ref2 ? ++p : --p) {
             results1.push(seq(function(cb) {
               return tugboat.create(group, service, function(err, name) {
                 if (err != null) {
