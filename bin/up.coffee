@@ -2,8 +2,49 @@ seq = require '../src/seq'
 init_errors = require './errors'
 output_error = require './output_error'
 logs = require './logs'
+toposort = require 'toposort'
 
 cname = (c) -> c.container.Names[0].substr '1'
+
+# Converts a container name (#{groupname}_#{service_name}_1) to just
+# the service name
+containter_name_to_service_name = (container_name, groupname) ->
+  re = RegExp '^' + groupname + '_'
+  service_name = container_name.replace(re, '')
+  service_name = service_name.replace(/_1$/, '')
+  return service_name
+
+# Returns an array of services sorted by dependency
+get_sorted_services = (services, servicenames, groupname) ->
+  if not servicenames?
+    servicenames = Object.keys(services)
+
+  # Build list of links
+  edges = []
+  for name, service of services
+    if name in servicenames and service.service.params.HostConfig.Links?
+      for link in service.service.params.HostConfig.Links
+        container_name = link.split(':')[0]
+        service_name = containter_name_to_service_name container_name, groupname
+        if service_name in servicenames
+          edge = [name, service_name]
+          edges.push edge
+
+  # Reverse toposort to order by dependency. Any edges that 
+  # aren't in the nodes array will be ignored for sorting.
+  try
+    sortednames = toposort.array(servicenames, edges).reverse()
+  catch error
+    console.error "Service link dependency could not be resolved (#{error})"
+    process.exit 1
+
+  # Sort the services.
+  sortedservices = []
+  for name in sortednames
+    sortedservices.push services[name]
+
+  return sortedservices
+
 
 module.exports = (tugboat, groupname, servicenames) ->
   tugboat.init (errors) ->
@@ -39,19 +80,19 @@ module.exports = (tugboat, groupname, servicenames) ->
           name = s.service.pname.cyan
         name
       
-      servicestoprocess = []
+      # Build valid list of service names
       if servicenames.length isnt 0
         haderror = no
         for name in servicenames
           if !group.services[name]?
             console.error "  The service '#{name}' is not available in the group '#{group.name}'".red
             haderror = yes
-          else
-            servicestoprocess.push group.services[name]
         if haderror
           process.exit 1
       else
-        servicestoprocess.push service for _, service of group.services
+        servicenames = (name for name, _ of group.services)
+
+      servicestoprocess = get_sorted_services group.services, servicenames, groupname
       
       if servicestoprocess.length is 0
         seq (cb) ->

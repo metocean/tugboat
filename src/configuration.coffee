@@ -1,5 +1,7 @@
 resolve = require('path').resolve
 template = require './template'
+fs = require 'fs'
+yaml = require 'js-yaml'
 
 class TUGBOATFormatException extends Error
   constructor: (message) ->
@@ -46,11 +48,15 @@ validation =
   command: isstring
   links: isstringarray
   ports: isstringarray
+  add_hosts: isstringarray
   expose: isstringarray
   volumes: isstringarray
   environment: isobjectofstringsornull
+  env_file: isstringarray
   net: isstring
   dns: isstringarray
+  cap_add: isstringarray
+  cap_drop: isstringarray
   working_dir: isstring
   entrypoint: isstring
   user: isstring
@@ -65,8 +71,12 @@ validation =
 globalvalidation =
   volumes: isstringarray
   dns: isstringarray
+  cap_add: isstringarray
+  cap_drop: isstringarray
   ports: isstringarray
+  add_hosts: isstringarray
   environment: isobjectofstringsornull
+  env_file: isstringarray
   restart: isrestartpolicy
   scripts: isscripts
   expose: isstringarray
@@ -85,7 +95,7 @@ parse_port = (port) ->
     port = "#{port}/tcp"
   port
 
-preprocess = (config) ->
+preprocess = (config, path) ->
   if config.restart?
     if config.restart is no or config.restart is 'no'
       delete config.restart
@@ -112,6 +122,32 @@ preprocess = (config) ->
       result[key] = value
     config.environment = result
 
+    # Add env from external files
+    if config.env_file?
+      if not config.environment?
+        config.environment = {}
+
+      for filename in config.env_file
+        filepath = "#{path}/#{filename}"
+        
+        try
+          content = fs.readFileSync filepath
+        catch e
+          if e.code is 'ENOENT'
+            console.error "Could not read env_file #{filepath.cyan}"
+            process.exit 1
+          else
+            throw e
+        
+        content = yaml.safeLoad content
+        if not isobjectofstringsornull content
+          console.error "Invalid format for env_file #{filepath.cyan}"
+          process.exit 1
+
+        for key, value of content
+          config.environment[key] = value
+
+
 module.exports = (groupname, services, path, cb) ->
   if typeof services isnt 'object'
     return cb [
@@ -129,7 +165,7 @@ module.exports = (groupname, services, path, cb) ->
   # replace templates
   services = template services
   
-  preprocess services
+  preprocess services, path
   globals = {}
   
   for key, value of globalvalidation
@@ -147,7 +183,7 @@ module.exports = (groupname, services, path, cb) ->
       errors.push new TUGBOATFormatException "The value of #{name.cyan} is not an object of strings."
       continue
     
-    preprocess config
+    preprocess config, path
     
     if globals.volumes?
       config.volumes = [] if !config.volumes?
@@ -156,10 +192,22 @@ module.exports = (groupname, services, path, cb) ->
     if globals.dns?
       config.dns = [] if !config.dns?
       config.dns = globals.dns.concat config.dns
+
+    if globals.cap_add?
+      config.cap_add = [] if !config.cap_add?
+      config.cap_add = globals.cap_add.concat config.cap_add
+    
+    if globals.cap_drop?
+      config.cap_drop = [] if !config.cap_drop?
+      config.cap_drop = globals.cap_drop.concat config.cap_drop
     
     if globals.ports?
       config.ports = [] if !config.ports?
       config.ports = globals.ports.concat config.ports
+
+    if globals.add_hosts?
+      config.add_hosts = [] if !config.add_hosts?
+      config.add_hosts = globals.add_hosts.concat config.add_hosts
     
     if globals.expose?
       config.expose = [] if !config.expose?
@@ -272,6 +320,24 @@ module.exports = (groupname, services, path, cb) ->
     config.command = config.command.split ' ' if config.command?
     config.image = config.name if !config.image?
   
+  # Automatically assign a link alias if not provided,
+  # then replace link name with container name.
+  servicenames = Object.keys(services)
+  for name, config of services
+    if config.links?
+      for link, index in config.links
+        [oldname, alias] = link.split(':', 1)
+
+        if not alias?
+          alias = oldname
+
+        if oldname not in servicenames
+          errors.push new TUGBOATFormatException "Could not resolve link. Service #{name.cyan} is linking to nonexistent service #{oldname.cyan}."
+          continue
+        newname = "#{groupname}_#{oldname}_1"
+
+        config.links[index] = newname + ':' + alias
+
   # Convert configuration into docker format
   for name, config of services
     pname = name
@@ -296,9 +362,12 @@ module.exports = (groupname, services, path, cb) ->
           Binds: config.volumes ? null
           Links: config.links ? null
           Dns: config.dns ? null
+          CapAdd: config.cap_add ? null
+          CapDrop: config.cap_drop ? null
           NetworkMode: config.net ? ''
           Privileged: config.privileged ? no
           PortBindings: config.ports ? null
+          ExtraHosts: config.add_hosts ? null
           RestartPolicy: config.restart ? Name: ''
   
   return cb errors if errors.length isnt 0
