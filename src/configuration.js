@@ -239,7 +239,7 @@ preprocess = function(config, path) {
 };
 
 module.exports = function(groupname, services, path, cb) {
-  var _, chunks, config, count, errors, filename, globals, j, key, len, name, p, pname, port, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref17, ref18, ref19, ref2, ref20, ref21, ref22, ref23, ref24, ref25, ref3, ref4, ref5, ref6, ref7, ref8, ref9, results, trigger, value;
+  var _, alias, chunks, config, count, errors, filename, globals, index, j, key, l, len, len1, link, name, newname, oldname, p, pname, port, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref17, ref18, ref19, ref2, ref20, ref21, ref22, ref23, ref24, ref25, ref26, ref27, ref3, ref4, ref5, ref6, ref7, ref8, ref9, results, servicenames, trigger, value;
   if (typeof services !== 'object') {
     return cb([new TUGBOATFormatException('This YAML file is in the wrong format. Tugboat expects names and definitions of services.')]);
   }
@@ -467,6 +467,26 @@ module.exports = function(groupname, services, path, cb) {
       config.image = config.name;
     }
   }
+  servicenames = Object.keys(services);
+  for (name in services) {
+    config = services[name];
+    if (config.links != null) {
+      ref6 = config.links;
+      for (index = l = 0, len1 = ref6.length; l < len1; index = ++l) {
+        link = ref6[index];
+        ref7 = link.split(':', 1), oldname = ref7[0], alias = ref7[1];
+        if (alias == null) {
+          alias = oldname;
+        }
+        if (indexOf.call(servicenames, oldname) < 0) {
+          errors.push(new TUGBOATFormatException("Could not resolve link. Service " + name.cyan + " is linking to nonexistent service " + oldname.cyan + "."));
+          continue;
+        }
+        newname = groupname + "_" + oldname + "_1";
+        config.links[index] = newname + ':' + alias;
+      }
+    }
+  }
   for (name in services) {
     config = services[name];
     pname = name;
@@ -476,30 +496,30 @@ module.exports = function(groupname, services, path, cb) {
     services[name] = {
       name: config.name,
       pname: pname,
-      build: (ref6 = config.build) != null ? ref6 : null,
-      scripts: (ref7 = config.scripts) != null ? ref7 : null,
+      build: (ref8 = config.build) != null ? ref8 : null,
+      scripts: (ref9 = config.scripts) != null ? ref9 : null,
       params: {
         Image: config.image,
-        Cmd: (ref8 = config.command) != null ? ref8 : null,
-        User: (ref9 = config.user) != null ? ref9 : '',
-        Memory: (ref10 = config.mem_limit) != null ? ref10 : 0,
-        Hostname: (ref11 = config.hostname) != null ? ref11 : null,
-        Domainname: (ref12 = config.domainname) != null ? ref12 : null,
-        Entrypoint: (ref13 = config.entrypoint) != null ? ref13 : null,
-        WorkingDir: (ref14 = config.working_dir) != null ? ref14 : '',
+        Cmd: (ref10 = config.command) != null ? ref10 : null,
+        User: (ref11 = config.user) != null ? ref11 : '',
+        Memory: (ref12 = config.mem_limit) != null ? ref12 : 0,
+        Hostname: (ref13 = config.hostname) != null ? ref13 : null,
+        Domainname: (ref14 = config.domainname) != null ? ref14 : null,
+        Entrypoint: (ref15 = config.entrypoint) != null ? ref15 : null,
+        WorkingDir: (ref16 = config.working_dir) != null ? ref16 : '',
         Env: config.environment,
-        ExposedPorts: (ref15 = config.expose) != null ? ref15 : null,
+        ExposedPorts: (ref17 = config.expose) != null ? ref17 : null,
         HostConfig: {
-          Binds: (ref16 = config.volumes) != null ? ref16 : null,
-          Links: (ref17 = config.links) != null ? ref17 : null,
-          Dns: (ref18 = config.dns) != null ? ref18 : null,
-          CapAdd: (ref19 = config.cap_add) != null ? ref19 : null,
-          CapDrop: (ref20 = config.cap_drop) != null ? ref20 : null,
-          NetworkMode: (ref21 = config.net) != null ? ref21 : '',
-          Privileged: (ref22 = config.privileged) != null ? ref22 : false,
-          PortBindings: (ref23 = config.ports) != null ? ref23 : null,
-          ExtraHosts: (ref24 = config.add_hosts) != null ? ref24 : null,
-          RestartPolicy: (ref25 = config.restart) != null ? ref25 : {
+          Binds: (ref18 = config.volumes) != null ? ref18 : null,
+          Links: (ref19 = config.links) != null ? ref19 : null,
+          Dns: (ref20 = config.dns) != null ? ref20 : null,
+          CapAdd: (ref21 = config.cap_add) != null ? ref21 : null,
+          CapDrop: (ref22 = config.cap_drop) != null ? ref22 : null,
+          NetworkMode: (ref23 = config.net) != null ? ref23 : '',
+          Privileged: (ref24 = config.privileged) != null ? ref24 : false,
+          PortBindings: (ref25 = config.ports) != null ? ref25 : null,
+          ExtraHosts: (ref26 = config.add_hosts) != null ? ref26 : null,
+          RestartPolicy: (ref27 = config.restart) != null ? ref27 : {
             Name: ''
           }
         }

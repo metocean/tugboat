@@ -320,6 +320,24 @@ module.exports = (groupname, services, path, cb) ->
     config.command = config.command.split ' ' if config.command?
     config.image = config.name if !config.image?
   
+  # Automatically assign a link alias if not provided,
+  # then replace link name with container name.
+  servicenames = Object.keys(services)
+  for name, config of services
+    if config.links?
+      for link, index in config.links
+        [oldname, alias] = link.split(':', 1)
+
+        if not alias?
+          alias = oldname
+
+        if oldname not in servicenames
+          errors.push new TUGBOATFormatException "Could not resolve link. Service #{name.cyan} is linking to nonexistent service #{oldname.cyan}."
+          continue
+        newname = "#{groupname}_#{oldname}_1"
+
+        config.links[index] = newname + ':' + alias
+
   # Convert configuration into docker format
   for name, config of services
     pname = name

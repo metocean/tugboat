@@ -9,7 +9,8 @@
     "colors": "1.0.3",
     "ducke": "2.3.8",
     "ducke-modem": "1.0.0",
-    "js-yaml": "3.2.5"
+    "js-yaml": "3.2.5",
+    "toposort": "0.2.10"
   },
   "repository": {
     "type": "git",
