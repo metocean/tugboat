@@ -11,11 +11,44 @@ module.exports = (tugboat, groupname, servicenames, callback) ->
       
       groupname = groupname.replace '.yml', ''
       
+      if !results[groupname]?
+        console.error()
+        console.error "  Cannot diff #{groupname.red}, #{groupname}.yml not found in this directory"
+        console.error()
+        process.exit 1
+      
+      group = results[groupname]
+      
+      if !group.isknown
+        console.error()
+        console.error "  Cannot up #{groupname.red}, #{groupname}.yml not found in this directory"
+        console.error()
+        process.exit 1
+      
       console.log()
-      console.log "  Diff of #{groupname.blue}:"
+      console.log "  Diff of #{groupname.blue}..."
       console.log()
       
-      for _, service of results[groupname].services
+      servicestoprocess = []
+      if servicenames.length isnt 0
+        haderror = no
+        for name in servicenames
+          if !group.services[name]?
+            console.error "  The service '#{name}' is not available in the group '#{group.name}'".red
+            haderror = yes
+          else
+            servicestoprocess.push group.services[name]
+        if haderror
+          process.exit 1
+      else
+        servicestoprocess.push service for _, service of group.services
+      
+      if servicestoprocess.length is 0
+        seq (cb) ->
+          console.log "  No services to process".magenta
+          cb()
+      
+      for service in servicestoprocess
         outputname = service.name
         outputname += ' ' while outputname.length < 32
         outputname = outputname.cyan

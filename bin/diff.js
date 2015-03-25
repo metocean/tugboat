@@ -9,7 +9,7 @@ module.exports = function(tugboat, groupname, servicenames, callback) {
       return init_errors(errors);
     }
     return tugboat.diff(function(err, results) {
-      var c, cname, m, outputname, service, _, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+      var c, cname, group, haderror, m, name, outputname, service, servicestoprocess, _, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _len6, _m, _n, _o, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
       if (err != null) {
         if (err.stack) {
           console.error(err.stack);
@@ -19,12 +19,52 @@ module.exports = function(tugboat, groupname, servicenames, callback) {
         return;
       }
       groupname = groupname.replace('.yml', '');
+      if (results[groupname] == null) {
+        console.error();
+        console.error("  Cannot diff " + groupname.red + ", " + groupname + ".yml not found in this directory");
+        console.error();
+        process.exit(1);
+      }
+      group = results[groupname];
+      if (!group.isknown) {
+        console.error();
+        console.error("  Cannot up " + groupname.red + ", " + groupname + ".yml not found in this directory");
+        console.error();
+        process.exit(1);
+      }
       console.log();
-      console.log("  Diff of " + groupname.blue + ":");
+      console.log("  Diff of " + groupname.blue + "...");
       console.log();
-      _ref = results[groupname].services;
-      for (_ in _ref) {
-        service = _ref[_];
+      servicestoprocess = [];
+      if (servicenames.length !== 0) {
+        haderror = false;
+        for (_i = 0, _len = servicenames.length; _i < _len; _i++) {
+          name = servicenames[_i];
+          if (group.services[name] == null) {
+            console.error(("  The service '" + name + "' is not available in the group '" + group.name + "'").red);
+            haderror = true;
+          } else {
+            servicestoprocess.push(group.services[name]);
+          }
+        }
+        if (haderror) {
+          process.exit(1);
+        }
+      } else {
+        _ref = group.services;
+        for (_ in _ref) {
+          service = _ref[_];
+          servicestoprocess.push(service);
+        }
+      }
+      if (servicestoprocess.length === 0) {
+        seq(function(cb) {
+          console.log("  No services to process".magenta);
+          return cb();
+        });
+      }
+      for (_j = 0, _len1 = servicestoprocess.length; _j < _len1; _j++) {
+        service = servicestoprocess[_j];
         outputname = service.name;
         while (outputname.length < 32) {
           outputname += ' ';
@@ -36,33 +76,33 @@ module.exports = function(tugboat, groupname, servicenames, callback) {
         if (service.diff.iserror) {
           console.error("  " + outputname + " " + 'Error:'.red);
           _ref1 = service.diff.messages;
-          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-            m = _ref1[_i];
+          for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+            m = _ref1[_k];
             console.log("  " + outputname + " " + m.red);
           }
           continue;
         }
         _ref2 = service.diff.messages;
-        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-          m = _ref2[_j];
+        for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
+          m = _ref2[_l];
           console.log("  " + outputname + " " + m.magenta);
         }
         cname = function(c) {
           return c.container.Names[0].substr('1').cyan;
         };
         _ref3 = service.diff.cull;
-        for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
-          c = _ref3[_k];
+        for (_m = 0, _len4 = _ref3.length; _m < _len4; _m++) {
+          c = _ref3[_m];
           console.log("  " + outputname + " Culling " + (cname(c)));
         }
         _ref4 = service.diff.migrate;
-        for (_l = 0, _len3 = _ref4.length; _l < _len3; _l++) {
-          c = _ref4[_l];
+        for (_n = 0, _len5 = _ref4.length; _n < _len5; _n++) {
+          c = _ref4[_n];
           console.log("  " + outputname + " Migrating " + (cname(c)));
         }
         _ref5 = service.diff.keep;
-        for (_m = 0, _len4 = _ref5.length; _m < _len4; _m++) {
-          c = _ref5[_m];
+        for (_o = 0, _len6 = _ref5.length; _o < _len6; _o++) {
+          c = _ref5[_o];
           console.log("  " + outputname + " Keeping " + (cname(c)));
         }
         if (service.diff.create === 1) {
