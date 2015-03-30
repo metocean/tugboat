@@ -40,8 +40,10 @@ commands =
   logs: require './logs'
   exec: require './exec'
   # Different cache options for the same build function
-  build: (tugboat, names) -> build tugboat, names, yes
-  rebuild: (tugboat, names) -> build tugboat, names, no
+  build: (tugboat, groupname, servicenames) ->
+    build tugboat, groupname, servicenames, yes
+  rebuild: (tugboat, groupname, servicenames) ->
+    build tugboat, groupname, servicenames, no
 
 process.on 'uncaughtException', (err) ->
   console.error '  Caught exception: '.red
@@ -99,10 +101,10 @@ cmds =
     usage_error 'tug rm requires a group name'
   
   build: ->
-    commands.build tugboat, args
+    commands.build tugboat, args[0], args[1..]
   
   rebuild: ->
-    commands.rebuild tugboat, args
+    commands.rebuild tugboat, args[0], args[1..]
   
   pull: ->
     commands.pull tugboat, args

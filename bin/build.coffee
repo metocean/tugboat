@@ -1,7 +1,7 @@
 seq = require '../src/seq'
 init_errors = require './errors'
 
-module.exports = (tugboat, groupnames, usecache, callback) ->
+module.exports = (tugboat, groupname, servicenames, usecache, callback) ->
   tugboat.init (errors) ->
     return init_errors errors if errors?
     
@@ -12,10 +12,11 @@ module.exports = (tugboat, groupnames, usecache, callback) ->
       process.exit 1
     
     # Build everything if no group names are passed
-    if groupnames.length is 0
-      groupnames = Object.keys tugboat._groups
-    
-    groupnames = groupnames.map (g) -> g.replace '.yml', ''
+    groupnames =
+      if !groupname?
+        Object.keys tugboat._groups
+      else
+        [groupname.replace '.yml', '']
     
     haderror = no
     for name in groupnames
@@ -35,8 +36,23 @@ module.exports = (tugboat, groupnames, usecache, callback) ->
             console.log "  Building #{name.blue}..."
             console.log()
             cb()
-          for servicename, config of group.services
-            do (servicename, config) ->
+          
+          servicestoprocess = []
+          if servicenames.length isnt 0
+            haderror = no
+            for name in servicenames
+              if !group.services[name]?
+                console.error "  The service '#{name}' is not available in the group '#{group.name}'".red
+                haderror = yes
+              else
+                servicestoprocess.push group.services[name]
+            if haderror
+              process.exit 1
+          else
+            servicestoprocess.push service for _, service of group.services
+          
+          for config in servicestoprocess
+            do (config) ->
               return if !config.build?
               # Build each group, build each service
               seq "#{config.pname.cyan}", (cb) ->
