@@ -2,7 +2,7 @@
 
 Manage groups of dockers.
 
-Similar to [fig](http://www.fig.sh/) but with support for multiple .yml files.
+Similar to [docker compuse](https://docs.docker.com/compose/) but with support for multiple .yml files and a friendlier syntax.
 
 [![NPM version](https://badge.fury.io/js/tugboat.svg)](http://badge.fury.io/js/tugboat)
 
@@ -35,12 +35,14 @@ npm install tugboat
 
   Management:
 
-    cull        Terminate, stop and remove services
-    recreate    Terminate, stop, remove and recreate services
     rm          Delete services
+    cull        Stop and delete services
+    recreate    Stop, delete, then run services
     kill        Gracefully terminate services
     build       Build services
     rebuild     Build services from scratch
+    logs        Display group logs
+    exec        Run a command inside a service
 ```
 
 ## Examples
@@ -48,15 +50,48 @@ npm install tugboat
 In the test.yml file:
 
 ```yml
+volumes:
+- config:/config
+
 importantping:
   image: ubuntu
   dns: 8.8.8.8
-  volumes:
-  - share:/share
   command: ping google.com
 ```
 
-Running `tug up test` will create a container called `test_importantping_1`
-. Any changes to the file will be compared to running continers. Additional `tug up test` commands will test differences and only restart the container if changes are detected.
+Running `tug up test` will create a container called `test_importantping_1`.  Additional `tug up test` commands will test differences to the yml file and only restart the container if changes are detected.
 
-The yml format is identical to the [fig.yml format](http://www.fig.sh/yml.html).
+Global options (`volumes` in the above example) are applied to all docker services.
+
+The yml format supports most options from the [docker compose yml format](https://docs.docker.com/compose/yml/), and a few more from the [docker cli](https://docs.docker.com/reference/run/):
+
+
+Option | Available globally
+------ | ------------------
+add_hosts | ✔
+build | ✘
+cap_add | ✔
+cap_drop | ✔
+command | ✘
+dns | ✔
+domainname | ✔
+env_file | ✔
+entrypoint | ✘
+environment | ✔
+expose | ✔
+hostname | ✘
+image | ✘
+links | ✔
+mem_limit | ✘
+net | ✔
+notes | ✔
+ports | ✔
+privileged | ✔
+restart | ✔
+scripts | ✔
+user | ✔
+volumes | ✔
+working_dir | ✘
+
+
+If there's an important docker compose option that isn't supported by tugboat, raise an issue.

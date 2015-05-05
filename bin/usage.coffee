@@ -2,8 +2,6 @@ require 'colors'
 Tugboat = require '../src/tugboat'
 
 usage = """
-👾
-
   Usage: #{'tug'.cyan} command parameters
 
   Common:
@@ -15,9 +13,9 @@ usage = """
   
   Management:
   
-    cull        Terminate, stop and remove services
-    recreate    Terminate, stop, remove and recreate services
     rm          Delete services
+    cull        Stop and delete services
+    recreate    Stop, delete, then run services
     kill        Gracefully terminate services
     build       Build services
     rebuild     Build services from scratch
