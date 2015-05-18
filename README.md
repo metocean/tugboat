@@ -2,7 +2,7 @@
 
 Manage groups of dockers.
 
-Similar to [docker compuse](https://docs.docker.com/compose/) but with support for multiple .yml files and a friendlier syntax.
+Similar to [docker compose](https://docs.docker.com/compose/) but with support for multiple .yml files and a friendlier syntax.
 
 [![NPM version](https://badge.fury.io/js/tugboat.svg)](http://badge.fury.io/js/tugboat)
 
