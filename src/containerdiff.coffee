@@ -46,10 +46,21 @@ module.exports = (container, service, image) ->
     return "command different (#{sourceCmd} -> #{targetCmd})"
   
   targetenv = []
-  if target.Env?
-    targetenv = targetenv.concat target.Env
   if image.inspect.ContainerConfig.Env?
     targetenv = targetenv.concat image.inspect.ContainerConfig.Env
+
+  # It's not enough to concat target.env, you have to check for duplicates.
+  # Without converting to an object, because order preservation isn't guaranteed
+  if target.Env?
+    currentKeys = (e.split('=')[0] for e in targetenv)
+    for env in target.Env
+      envKey = env.split('=')[0]
+      if envKey not in currentKeys
+        targetenv.push env
+      else
+        for value, index in currentKeys
+          if envKey == value
+            targetenv[index] = env
   
   # console.log 'Checking Env'
   for item in source.Config.Env
@@ -99,23 +110,31 @@ module.exports = (container, service, image) ->
   
   # console.log 'Checking ExposedPorts'
   unless !source.Config.ExposedPorts? and !target.ExposedPorts?
-    if !source.Config.ExposedPorts? or !target.ExposedPorts?
+
+    # Extend target ports with the container config ports
+    targetPorts = target.ExposedPorts
+    if image.inspect.ContainerConfig.ExposedPorts?
+      targetPorts = {} if not targetPorts?
+      for k, v of image.inspect.ContainerConfig.ExposedPorts
+        targetPorts[k] = v
+
+    if !source.Config.ExposedPorts? or !targetPorts?
       sourceout = 'null'
       if source.Config.ExposedPorts?
         sourceout = "#{Object.keys(source.Config.ExposedPorts).length} items"
       targetout = 'null'
-      if target.ExposedPorts?
-        targetout = "#{Object.keys(target.ExposedPorts).length} items"
+      if targetPorts?
+        targetout = "#{Object.keys(targetPorts).length} items"
       return "expose different (#{sourceout} -> #{targetout})"
     
-    if Object.keys(source.Config.ExposedPorts).length isnt Object.keys(target.ExposedPorts).length
+    if Object.keys(source.Config.ExposedPorts).length isnt Object.keys(targetPorts).length
       return "expose different (#{Object.keys(source.Config.ExposedPorts).length} items -> #{Object.keys(target.ExposedPorts).length} items)"
-    
+
     for port, binding of source.Config.ExposedPorts
-      if !target.ExposedPorts[port]?
+      if !targetPorts[port]?
         return "expose different (#{port} not found in target)"
       
-      binding2 = target.ExposedPorts[port]
+      binding2 = targetPorts[port]
       
       if binding.HostIp isnt binding2.HostIp
         return "expose different (#{port}, #{binding.HostIp} -> #{binding2.HostIp})"
