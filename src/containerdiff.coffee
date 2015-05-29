@@ -46,10 +46,21 @@ module.exports = (container, service, image) ->
     return "command different (#{sourceCmd} -> #{targetCmd})"
   
   targetenv = []
-  if target.Env?
-    targetenv = targetenv.concat target.Env
   if image.inspect.ContainerConfig.Env?
     targetenv = targetenv.concat image.inspect.ContainerConfig.Env
+
+  # It's not enough to concat target.env, you have to check for duplicates.
+  # Without converting to an object, because order preservation isn't guaranteed
+  if target.Env?
+    currentKeys = (e.split('=')[0] for e in targetenv)
+    for env in target.Env
+      envKey = env.split('=')[0]
+      if envKey not in currentKeys
+        targetenv.push env
+      else
+        for value, index in currentKeys
+          if envKey == value
+            targetenv[index] = env
   
   # console.log 'Checking Env'
   for item in source.Config.Env
