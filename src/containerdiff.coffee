@@ -110,23 +110,31 @@ module.exports = (container, service, image) ->
   
   # console.log 'Checking ExposedPorts'
   unless !source.Config.ExposedPorts? and !target.ExposedPorts?
-    if !source.Config.ExposedPorts? or !target.ExposedPorts?
+
+    # Extend target ports with the container config ports
+    targetPorts = target.ExposedPorts
+    if image.inspect.ContainerConfig.ExposedPorts?
+      targetPorts = {} if not targetPorts?
+      for k, v of image.inspect.ContainerConfig.ExposedPorts
+        targetPorts[k] = v
+
+    if !source.Config.ExposedPorts? or !targetPorts?
       sourceout = 'null'
       if source.Config.ExposedPorts?
         sourceout = "#{Object.keys(source.Config.ExposedPorts).length} items"
       targetout = 'null'
-      if target.ExposedPorts?
-        targetout = "#{Object.keys(target.ExposedPorts).length} items"
+      if targetPorts?
+        targetout = "#{Object.keys(targetPorts).length} items"
       return "expose different (#{sourceout} -> #{targetout})"
     
-    if Object.keys(source.Config.ExposedPorts).length isnt Object.keys(target.ExposedPorts).length
+    if Object.keys(source.Config.ExposedPorts).length isnt Object.keys(targetPorts).length
       return "expose different (#{Object.keys(source.Config.ExposedPorts).length} items -> #{Object.keys(target.ExposedPorts).length} items)"
-    
+
     for port, binding of source.Config.ExposedPorts
-      if !target.ExposedPorts[port]?
+      if !targetPorts[port]?
         return "expose different (#{port} not found in target)"
       
-      binding2 = target.ExposedPorts[port]
+      binding2 = targetPorts[port]
       
       if binding.HostIp isnt binding2.HostIp
         return "expose different (#{port}, #{binding.HostIp} -> #{binding2.HostIp})"

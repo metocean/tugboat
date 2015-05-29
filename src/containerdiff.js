@@ -2,7 +2,7 @@
 var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 module.exports = function(container, service, image) {
-  var binding, binding2, currentKeys, e, env, envKey, i, index, item, j, k, l, len, len1, len2, len3, len4, len5, m, n, name, port, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, source, sourceCmd, sourceout, target, targetCmd, targetenv, targetout, term, value;
+  var binding, binding2, currentKeys, e, env, envKey, i, index, item, j, k, l, len, len1, len2, len3, len4, len5, m, n, name, o, port, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, ref8, source, sourceCmd, sourceout, target, targetCmd, targetPorts, targetenv, targetout, term, v, value;
   if (container.inspect.Image !== image.image.Id) {
     return "Different image (" + (container.inspect.Image.substr(0, 12)) + " -> " + (image.image.Id.substr(0, 12)) + ")";
   }
@@ -72,7 +72,7 @@ module.exports = function(container, service, image) {
       if (indexOf.call(currentKeys, envKey) < 0) {
         targetenv.push(env);
       } else {
-        for (index = k = 0, len2 = currentKeys.length; k < len2; index = ++k) {
+        for (index = l = 0, len2 = currentKeys.length; l < len2; index = ++l) {
           value = currentKeys[index];
           if (envKey === value) {
             targetenv[index] = env;
@@ -82,8 +82,8 @@ module.exports = function(container, service, image) {
     }
   }
   ref3 = source.Config.Env;
-  for (l = 0, len3 = ref3.length; l < len3; l++) {
-    item = ref3[l];
+  for (m = 0, len3 = ref3.length; m < len3; m++) {
+    item = ref3[m];
     if (targetenv.filter(function(e) {
       return e === item;
     }).length === 0) {
@@ -101,8 +101,8 @@ module.exports = function(container, service, image) {
       return "dns different (" + source.HostConfig.Dns.length + " items -> " + target.HostConfig.Dns.length + " items)";
     }
     ref4 = source.HostConfig.Dns;
-    for (m = 0, len4 = ref4.length; m < len4; m++) {
-      e = ref4[m];
+    for (n = 0, len4 = ref4.length; n < len4; n++) {
+      e = ref4[n];
       if (target.HostConfig.Dns.indexOf(e) === -1) {
         return "dns different (" + e + " -> no dns provided)";
       }
@@ -139,27 +139,38 @@ module.exports = function(container, service, image) {
     }
   }
   if (!((source.Config.ExposedPorts == null) && (target.ExposedPorts == null))) {
-    if ((source.Config.ExposedPorts == null) || (target.ExposedPorts == null)) {
+    targetPorts = target.ExposedPorts;
+    if (image.inspect.ContainerConfig.ExposedPorts != null) {
+      if (targetPorts == null) {
+        targetPorts = {};
+      }
+      ref6 = image.inspect.ContainerConfig.ExposedPorts;
+      for (k in ref6) {
+        v = ref6[k];
+        targetPorts[k] = v;
+      }
+    }
+    if ((source.Config.ExposedPorts == null) || (targetPorts == null)) {
       sourceout = 'null';
       if (source.Config.ExposedPorts != null) {
         sourceout = (Object.keys(source.Config.ExposedPorts).length) + " items";
       }
       targetout = 'null';
-      if (target.ExposedPorts != null) {
-        targetout = (Object.keys(target.ExposedPorts).length) + " items";
+      if (targetPorts != null) {
+        targetout = (Object.keys(targetPorts).length) + " items";
       }
       return "expose different (" + sourceout + " -> " + targetout + ")";
     }
-    if (Object.keys(source.Config.ExposedPorts).length !== Object.keys(target.ExposedPorts).length) {
+    if (Object.keys(source.Config.ExposedPorts).length !== Object.keys(targetPorts).length) {
       return "expose different (" + (Object.keys(source.Config.ExposedPorts).length) + " items -> " + (Object.keys(target.ExposedPorts).length) + " items)";
     }
-    ref6 = source.Config.ExposedPorts;
-    for (port in ref6) {
-      binding = ref6[port];
-      if (target.ExposedPorts[port] == null) {
+    ref7 = source.Config.ExposedPorts;
+    for (port in ref7) {
+      binding = ref7[port];
+      if (targetPorts[port] == null) {
         return "expose different (" + port + " not found in target)";
       }
-      binding2 = target.ExposedPorts[port];
+      binding2 = targetPorts[port];
       if (binding.HostIp !== binding2.HostIp) {
         return "expose different (" + port + ", " + binding.HostIp + " -> " + binding2.HostIp + ")";
       }
@@ -175,9 +186,9 @@ module.exports = function(container, service, image) {
     if (source.HostConfig.Binds.length !== target.HostConfig.Binds.length) {
       return "volumes different (" + source.HostConfig.Binds.length + " items -> " + target.HostConfig.Binds.length + " items)";
     }
-    ref7 = source.HostConfig.Binds;
-    for (n = 0, len5 = ref7.length; n < len5; n++) {
-      e = ref7[n];
+    ref8 = source.HostConfig.Binds;
+    for (o = 0, len5 = ref8.length; o < len5; o++) {
+      e = ref8[o];
       if (target.HostConfig.Binds.indexOf(e) === -1) {
         return "volumes different (" + e + " -> volume not bound)";
       }
