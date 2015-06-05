@@ -97,13 +97,14 @@ module.exports = class Tugboat
           return callback err if err?
           for id, inspect of detailedimages
             imagerepo.ids[id].inspect = inspect
-          groupsgrouped = groupdiff @_groups, containers
-          servicesdiffed = servicediff imagerepo, groupsgrouped
+
+          # These functions don't handle their own errors
           try
+            groupsgrouped = groupdiff @_groups, containers
+            servicesdiffed = servicediff imagerepo, groupsgrouped
             callback null, servicesdiffed
           catch e
-            console.error '   Unhandled error in tugboat.diff:'.red, e
-            process.exit 1
+            return callback e
           
   groupcull: (groupdiff, callback) =>
     errors = []

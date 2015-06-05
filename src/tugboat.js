@@ -187,14 +187,13 @@ module.exports = Tugboat = (function() {
               inspect = detailedimages[id];
               imagerepo.ids[id].inspect = inspect;
             }
-            groupsgrouped = groupdiff(_this._groups, containers);
-            servicesdiffed = servicediff(imagerepo, groupsgrouped);
             try {
+              groupsgrouped = groupdiff(_this._groups, containers);
+              servicesdiffed = servicediff(imagerepo, groupsgrouped);
               return callback(null, servicesdiffed);
             } catch (_error) {
               e = _error;
-              console.error('   Unhandled error in tugboat.diff:'.red, e);
-              return process.exit(1);
+              return callback(e);
             }
           });
         });
