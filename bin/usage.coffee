@@ -3,6 +3,7 @@ Tugboat = require '../src/tugboat'
 
 usage = """
   Usage: #{'tug'.cyan} command parameters
+         #{'tug'.cyan} option
 
   Common:
   
@@ -21,6 +22,11 @@ usage = """
     rebuild     Build services from scratch
     logs        Display group logs
     exec        Run a command inside a service
+
+  Options:
+
+    -h          Display this usage information
+    -v          Display the version number
 
 """
 build = require './build'
@@ -114,6 +120,13 @@ cmds =
   exec: ->
     return commands.exec tugboat, args[0], args[1], args[2..] if args.length > 1
     usage_error 'tug exec requires a group name and a service name'
+
+  '-h': ->
+    console.log usage
+
+  '-v': ->
+    pjson = require '../package.json'
+    console.log pjson.version
 
 command = args[0]
 args.shift()

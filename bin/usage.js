@@ -5,7 +5,7 @@ require('colors');
 
 Tugboat = require('../src/tugboat');
 
-usage = "Usage: " + 'tug'.cyan + " command parameters\n\nCommon:\n\n  ps          List all running and available groups\n  up          Update and run services\n  down        Stop services\n  diff        Describe the changes needed to update\n\nManagement:\n\n  rm          Delete services\n  cull        Stop and delete services\n  recreate    Stop, delete, then run services\n  kill        Gracefully terminate services\n  build       Build services\n  rebuild     Build services from scratch\n  logs        Display group logs\n  exec        Run a command inside a service\n";
+usage = "Usage: " + 'tug'.cyan + " command parameters\n       " + 'tug'.cyan + " option\n\nCommon:\n\n  ps          List all running and available groups\n  up          Update and run services\n  down        Stop services\n  diff        Describe the changes needed to update\n\nManagement:\n\n  rm          Delete services\n  cull        Stop and delete services\n  recreate    Stop, delete, then run services\n  kill        Gracefully terminate services\n  build       Build services\n  rebuild     Build services from scratch\n  logs        Display group logs\n  exec        Run a command inside a service\n\nOptions:\n\n  -h          Display this usage information\n  -v          Display the version number\n";
 
 build = require('./build');
 
@@ -126,6 +126,14 @@ cmds = {
       return commands.exec(tugboat, args[0], args[1], args.slice(2));
     }
     return usage_error('tug exec requires a group name and a service name');
+  },
+  '-h': function() {
+    return console.log(usage);
+  },
+  '-v': function() {
+    var pjson;
+    pjson = require('../package.json');
+    return console.log(pjson.version);
   }
 };
 

@@ -25,6 +25,7 @@ npm install tugboat
 
 ```
   Usage: tug command parameters
+         tug option
 
   Common:
 
@@ -43,6 +44,11 @@ npm install tugboat
     rebuild     Build services from scratch
     logs        Display group logs
     exec        Run a command inside a service
+
+  Options:
+
+    -h          Display this usage information
+    -v          Display the version number
 ```
 
 ## Examples
