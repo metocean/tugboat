@@ -99,8 +99,12 @@ module.exports = class Tugboat
             imagerepo.ids[id].inspect = inspect
           groupsgrouped = groupdiff @_groups, containers
           servicesdiffed = servicediff imagerepo, groupsgrouped
-          callback null, servicesdiffed
-  
+          try
+            callback null, servicesdiffed
+          catch e
+            console.error '   Unhandled error in tugboat.diff:'.red, e
+            process.exit 1
+          
   groupcull: (groupdiff, callback) =>
     errors = []
     messages = []
