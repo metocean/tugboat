@@ -36,10 +36,10 @@ module.exports = (container, service, image) ->
       return "#{term} different (#{source.HostConfig[name]} -> #{target.HostConfig[name]})"
   
   # console.log 'Checking Cmd'
-  sourceCmd = source.Config.Cmd.join ' '
-  targetCmd = target.Cmd
-  if !targetCmd?
-    targetCmd = image.inspect.Config.Cmd
+  sourceCmd = source.Config.Cmd or source.Config.Entrypoint
+  if targetCmd?
+    sourceCmd = sourceCmd.join ' '
+  targetCmd = target.Cmd or image.inspect.Config.Cmd or image.inspect.Config.Entrypoint
   if targetCmd?
     targetCmd = targetCmd.join ' '
   if sourceCmd isnt targetCmd
