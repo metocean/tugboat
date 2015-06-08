@@ -37,7 +37,7 @@ module.exports = (container, service, image) ->
   
   # console.log 'Checking Cmd'
   sourceCmd = source.Config.Cmd or source.Config.Entrypoint
-  if targetCmd?
+  if sourceCmd?
     sourceCmd = sourceCmd.join ' '
   targetCmd = target.Cmd or image.inspect.Config.Cmd or image.inspect.Config.Entrypoint
   if targetCmd?

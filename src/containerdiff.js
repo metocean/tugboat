@@ -41,7 +41,7 @@ module.exports = function(container, service, image) {
     }
   }
   sourceCmd = source.Config.Cmd || source.Config.Entrypoint;
-  if (typeof targetCmd !== "undefined" && targetCmd !== null) {
+  if (sourceCmd != null) {
     sourceCmd = sourceCmd.join(' ');
   }
   targetCmd = target.Cmd || image.inspect.Config.Cmd || image.inspect.Config.Entrypoint;
