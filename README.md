@@ -1,3 +1,5 @@
+# Use [tugboat-py](https://github.com/metocean/tugboat-py) instead - it's based on the docker compose codebase and better supported
+
 # Tugboat
 
 Manage groups of dockers.
